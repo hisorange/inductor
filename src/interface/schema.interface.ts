@@ -14,9 +14,7 @@ export interface ISchema {
   columns: {
     [name: string]: {
       kind: 'column';
-
       type: ColumnType;
-
       name: string;
     };
   };
