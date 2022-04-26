@@ -1,0 +1,38 @@
+{
+  "name": "@hisorange/inductor",
+  "version": "1.0.0",
+  "description": "Bidirectonal PostgreSQL specialized database manager.",
+  "keywords": [
+    "orm",
+    "postgresql",
+    "postgres",
+    "database",
+    "schema",
+    "data-model",
+    "inspector"
+  ],
+  "main": "build/index.js",
+  "repository": "https://github.com/hisorange/inductor",
+  "author": "Zsolt Varga <hello@hisorange.me>",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc --build ./tsconfig.json",
+    "test": "jest",
+    "db:start": "docker-compose up -d --renew-anon-volumes",
+    "db:stop": "docker-compose down",
+    "db:reset": "yarn db:stop && yarn db:start",
+    "db:logs": "docker-compose logs --no-log-prefix --tail 100 -f"
+  },
+  "devDependencies": {
+    "@types/jest": "^27.0.0",
+    "@types/node": "^16.0.0",
+    "jest": "^27.0.0",
+    "ts-jest": "^27.0.0",
+    "typescript": "^4.6.0"
+  },
+  "dependencies": {
+    "knex": "^2.0.0",
+    "knex-schema-inspector": "^1.7.5",
+    "pg": "^8.7.3"
+  }
+}

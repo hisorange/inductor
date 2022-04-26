@@ -1,0 +1,9 @@
+.github
+build/*.spec.js
+build/**/*.spec.js
+src/
+tests/
+.prettierrc
+jest.config.js
+tsconfig.json
+yarn.lock

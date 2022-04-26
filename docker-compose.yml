@@ -1,0 +1,13 @@
+version: '3.6'
+
+services:
+  inductor-db:
+    image: postgres:14-alpine
+    hostname: inductor-db
+    container_name: inductor-db
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: inductor
+      POSTGRES_USER: inductor
+      POSTGRES_DB: inductor
