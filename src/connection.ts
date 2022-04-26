@@ -1,9 +1,9 @@
 import knex, { Knex } from 'knex';
-import { IBlueprint } from './interface/blueprint.interface';
+import { ISchema } from './interface/schema.interface';
 import { Migrator } from './migrator';
 
 /**
- * This class manages the connection and keeps the state
+ * This class manages the connection and applies the state of the database.
  */
 export class Connection {
   /**
@@ -17,9 +17,9 @@ export class Connection {
   readonly migrator: Migrator;
 
   /**
-   * Associated blueprint with the connection
+   * Associated schemas with the connection
    */
-  protected blueprints: IBlueprint[] = [];
+  protected schemas: ISchema[] = [];
 
   /**
    * Create a new connection
@@ -27,7 +27,6 @@ export class Connection {
   constructor(
     protected config: {
       connection: Knex.PgConnectionConfig;
-      access: 'read' | 'write';
     },
   ) {
     this.knex = knex({
@@ -39,16 +38,16 @@ export class Connection {
   }
 
   /**
-   * Associate a blueprint with the connection
+   * Associate a schema with the connection
    */
-  async associate(blueprint: IBlueprint) {
-    // Check if the blueprint is already associated
-    if (this.blueprints.find(b => b.id === blueprint.id)) {
-      throw new Error(`Blueprint ${blueprint.id} is already associated`);
+  async associate(schema: ISchema) {
+    // Check if the schemas is already associated
+    if (this.schemas.find(b => b.name === schema.name)) {
+      throw new Error(`Schema ${schema.name} is already associated`);
     }
 
-    this.blueprints.push(blueprint);
-    await this.migrator.apply(this.blueprints);
+    this.schemas.push(schema);
+    await this.migrator.apply(this.schemas);
   }
 
   close() {

@@ -1,5 +1,6 @@
 import { Connection } from '../src/connection';
-import { IBlueprint } from '../src/interface/blueprint.interface';
+import { ColumnType } from '../src/enum/column-type.enum';
+import { ISchema } from '../src/interface/schema.interface';
 import { createConnection } from './util/create-connection';
 
 describe('Table creation', () => {
@@ -14,14 +15,21 @@ describe('Table creation', () => {
   });
 
   test.each(['test', '__test', 'TeSt_ted'])(
-    'should create the [%s] table from the blueprint',
+    'should create the [%s] table from the schema',
     async (id: string) => {
-      const blueprint: IBlueprint = {
-        id,
+      const schema: ISchema = {
+        name: id,
         kind: 'table',
+        columns: {
+          id: {
+            kind: 'column',
+            type: ColumnType.TEXT,
+            name: 'id',
+          },
+        },
       };
 
-      await conn.associate(blueprint);
+      await conn.associate(schema);
 
       expect(await conn.migrator.inspector.tables()).toContain(id);
     },

@@ -1,4 +1,5 @@
 .github
+.vscode
 build/*.spec.js
 build/**/*.spec.js
 src/

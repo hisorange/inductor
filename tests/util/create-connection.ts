@@ -9,7 +9,6 @@ export const createConnection = () => {
       user: 'inductor',
       password: 'inductor',
     },
-    access: 'write',
   };
 
   return new Connection(config);

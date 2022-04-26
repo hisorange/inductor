@@ -1,6 +1,7 @@
 import { Knex } from 'knex';
 import { Inspector } from './inspector';
-import { IBlueprint } from './interface/blueprint.interface';
+import { ISchema } from './interface/schema.interface';
+import { createTable } from './migrator/create-table';
 
 // Calculates and applies the changes on the database
 export class Migrator {
@@ -14,24 +15,20 @@ export class Migrator {
   }
 
   /**
-   * Reads the connection's database into a set of structure, and update it to match the blueprints
+   * Reads the connection's database into a set of structure, and update it to match the schemas
    */
-  async apply(blueprints: IBlueprint[]) {
+  async apply(schemas: ISchema[]) {
     const tables = await this.inspector.tables();
     const queries: Knex.SchemaBuilder[] = [];
 
-    blueprints.forEach(blueprint => {
-      if (blueprint.kind === 'table') {
-        if (!tables.includes(blueprint.id)) {
-          queries.push(this.createTable(blueprint));
+    schemas.forEach(schema => {
+      if (schema.kind === 'table') {
+        if (!tables.includes(schema.name)) {
+          queries.push(createTable(this.knex.schema, schema));
         }
       }
     });
 
     await Promise.all(queries);
-  }
-
-  protected createTable(blueprint: IBlueprint) {
-    return this.knex.schema.createTable(blueprint.id, () => {});
   }
 }
