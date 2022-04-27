@@ -34,6 +34,7 @@ export const reverseTable = async (inspector: Inspector, table: string) => {
     schema.columns[column.name] = {
       type,
       kind: 'column',
+      isNullable: column.is_nullable,
     };
   }
 

@@ -1,3 +1,4 @@
+import cloneDeep from 'lodash.clonedeep';
 import { Connection } from '../src/connection';
 import { ISchema } from '../src/interface/schema.interface';
 import { allColumn } from './util/all-column';
@@ -17,27 +18,43 @@ describe('Alter table', () => {
   test.each(Object.keys(allColumn))(
     'should be able to reverse the column [%s]',
     async cName => {
+      const tableName = `alter_test_${cName}`;
+
       // Remove the changes
-      await conn.knex.schema.dropTableIfExists('alter_test');
+      await conn.knex.schema.dropTableIfExists(tableName);
 
       // Create the table
       const schema: ISchema = {
-        name: 'alter_test',
+        name: tableName,
         kind: 'table',
         columns: {
           [cName]: allColumn[cName],
         },
       };
-      await conn.associate(schema);
+      schema.columns[cName].isNullable = false;
 
-      expect(await conn.migrator.inspector.hasTable('alter_test')).toBeTruthy();
+      await conn.associate(schema);
+      const currentColumn = await conn.migrator.inspector.columnInfo(
+        tableName,
+        cName,
+      );
+      expect(currentColumn.is_nullable).toBeFalsy();
+
+      const alteredSchema = cloneDeep(schema);
+      // Change the nullable
+      alteredSchema.columns[cName].isNullable = true;
 
       // Reapply the state
-      await conn.associate(schema);
+      await conn.associate(alteredSchema);
 
       // Verify the changes
-      const newColumns = await conn.migrator.inspector.columnInfo('alter_test');
-      expect(newColumns.map(c => c.name)).toContain(cName);
+      const newColumns = await conn.migrator.inspector.columnInfo(
+        tableName,
+        cName,
+      );
+      expect(newColumns.is_nullable).toBe(
+        alteredSchema.columns[cName].isNullable,
+      );
     },
     15_000,
   );

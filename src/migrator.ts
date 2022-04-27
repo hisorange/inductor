@@ -4,6 +4,7 @@ import { ISchema } from './interface/schema.interface';
 import { alterTable } from './migrator/alter.table';
 import { createTable } from './migrator/create.table';
 import { reverseTable } from './migrator/reverse.table';
+import { sanitizeSchema } from './migrator/sanitize.schema';
 
 // Calculates and applies the changes on the database
 export class Migrator {
@@ -26,7 +27,10 @@ export class Migrator {
     const tables = await this.inspector.tables();
     const queries: Knex.SchemaBuilder[] = [];
 
-    for (const schema of schemas) {
+    for (let schema of schemas) {
+      // Fix inconsistent schemas
+      schema = sanitizeSchema(schema);
+
       if (schema.kind === 'table') {
         // If the table doesn't exist, create it
         if (!tables.includes(schema.name)) {

@@ -8,29 +8,45 @@ export const alterTable = (
   currentSchema: ISchema,
   expectedSchema: ISchema,
 ): Knex.SchemaBuilder => {
-  return builder.alterTable(expectedSchema.name, async table => {
+  return builder.alterTable(expectedSchema.name, async alter => {
     const differences = diff(currentSchema, expectedSchema);
+
+    // console.log('Differences:', differences);
+    // console.log('Current schema:', currentSchema);
+    // console.log('Expected schema:', expectedSchema);
 
     for (const change of differences) {
       const { op, path } = change;
 
-      if (path[0] === 'columns' && path.length === 2) {
+      if (path[0] === 'columns') {
         const columnName = path[1] as string;
 
         switch (op) {
           // New column added
           case 'add':
-            createColumn(table, columnName, expectedSchema.columns[columnName]);
+            createColumn(alter, columnName, expectedSchema.columns[columnName]);
             break;
 
           // Column removed
           case 'remove':
-            table.dropColumn(columnName);
+            alter.dropColumn(columnName);
             break;
 
           // Column changed
           case 'replace':
-            throw new Error('Column change is not implemented');
+            // Change the nullable state
+            if (path[1] === columnName && path[2] === 'isNullable') {
+              if (expectedSchema.columns[columnName].isNullable) {
+                alter.setNullable(columnName);
+              } else {
+                alter.dropNullable(columnName);
+              }
+            } else {
+              console.error(
+                'Column change is not implemented:' +
+                  JSON.stringify(differences, null, 2),
+              );
+            }
         }
       } else {
         console.error(
