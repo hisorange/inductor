@@ -32,6 +32,7 @@ describe('Alter table', () => {
         },
       };
       schema.columns[cName].isNullable = false;
+      schema.columns[cName].isUnique = false;
 
       await conn.associate(schema);
       const currentColumn = await conn.migrator.inspector.columnInfo(
@@ -39,10 +40,12 @@ describe('Alter table', () => {
         cName,
       );
       expect(currentColumn.is_nullable).toBeFalsy();
+      expect(currentColumn.is_unique).toBeFalsy();
 
       const alteredSchema = cloneDeep(schema);
       // Change the nullable
       alteredSchema.columns[cName].isNullable = true;
+      alteredSchema.columns[cName].isUnique = true;
 
       // Reapply the state
       await conn.associate(alteredSchema);
@@ -55,6 +58,7 @@ describe('Alter table', () => {
       expect(newColumns.is_nullable).toBe(
         alteredSchema.columns[cName].isNullable,
       );
+      expect(newColumns.is_unique).toBe(alteredSchema.columns[cName].isUnique);
     },
     15_000,
   );

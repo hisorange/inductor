@@ -16,6 +16,26 @@ export const sanitizeSchema = (schema: ISchema) => {
       ) {
         definition.isNullable = false;
       }
+
+      // Unique is not supported for these types
+      if (
+        [
+          ColumnType.BOX,
+          ColumnType.CIRCLE,
+          ColumnType.JSON,
+          ColumnType.JSONB,
+          ColumnType.LINE,
+          ColumnType.LSEG,
+          ColumnType.PATH,
+          ColumnType.PG_SNAPSHOT,
+          ColumnType.POINT,
+          ColumnType.POLYGON,
+          ColumnType.TXID_SNAPSHOT,
+          ColumnType.XML,
+        ].includes(definition.type)
+      ) {
+        definition.isUnique = false;
+      }
     }
   }
 

@@ -41,10 +41,16 @@ export const alterTable = (
               } else {
                 alter.dropNullable(columnName);
               }
+            } else if (path[1] === columnName && path[2] === 'isUnique') {
+              if (expectedSchema.columns[columnName].isUnique) {
+                alter.unique([columnName]);
+              } else {
+                alter.dropUnique([columnName]);
+              }
             } else {
               console.error(
                 'Column change is not implemented:' +
-                  JSON.stringify(differences, null, 2),
+                  JSON.stringify(change, null, 2),
               );
             }
         }

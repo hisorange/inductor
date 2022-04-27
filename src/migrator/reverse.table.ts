@@ -35,6 +35,7 @@ export const reverseTable = async (inspector: Inspector, table: string) => {
       type,
       kind: 'column',
       isNullable: column.is_nullable,
+      isUnique: column.is_unique,
     };
   }
 
