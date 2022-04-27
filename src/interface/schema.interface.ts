@@ -1,4 +1,4 @@
-import { ColumnType } from '../enum/column-type.enum';
+import { IColumn } from './column.interface';
 
 export interface ISchema {
   /**
@@ -11,11 +11,10 @@ export interface ISchema {
    */
   name: string;
 
+  /**
+   * Columns of the table.
+   */
   columns: {
-    [name: string]: {
-      kind: 'column';
-      type: ColumnType;
-      name: string;
-    };
+    [name: string]: IColumn;
   };
 }

@@ -41,12 +41,10 @@ export class Connection {
    * Associate a schema with the connection
    */
   async associate(schema: ISchema) {
-    // Check if the schemas is already associated
-    if (this.schemas.find(b => b.name === schema.name)) {
-      throw new Error(`Schema ${schema.name} is already associated`);
-    }
-
+    // Remove the schema if it already exists
+    this.schemas = this.schemas.filter(s => s.name !== schema.name);
     this.schemas.push(schema);
+
     await this.migrator.apply(this.schemas);
   }
 
