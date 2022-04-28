@@ -23,7 +23,7 @@ export class Migrator {
   /**
    * Reads the connection's database into a set of structure, and update it to match the schemas
    */
-  async apply(schemas: ISchema[]) {
+  async setState(schemas: ISchema[]) {
     const tables = await this.inspector.tables();
     const queries: Knex.SchemaBuilder[] = [];
 

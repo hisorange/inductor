@@ -1,31 +1,37 @@
 import { Connection } from '../src/connection';
 import { ISchema } from '../src/interface/schema.interface';
-import { allColumn } from './util/all-column';
 import { createConnection } from './util/create-connection';
 
-describe('Table creation', () => {
-  let conn: Connection;
+describe('Create Table from Schema', () => {
+  let connection: Connection;
+  const testTables = ['test1', '_Test2', 'test_3'];
 
-  beforeAll(() => {
-    conn = createConnection();
+  beforeAll(async () => {
+    // Create the test connection
+    connection = createConnection();
+
+    // Drop test tables from previous tests
+    await Promise.all(
+      testTables.map(name => connection.knex.schema.dropTableIfExists(name)),
+    );
   });
 
   afterAll(async () => {
-    await conn.close();
+    await connection.close();
   });
 
-  test.each(['test', '__test', 'TeSt_ted'])(
-    'should create the [%s] table from the schema',
-    async (id: string) => {
+  test.each(testTables)(
+    'should create the [%s] table from schema',
+    async (tableName: string) => {
       const schema: ISchema = {
-        name: id,
+        name: tableName,
         kind: 'table',
-        columns: allColumn,
+        columns: {},
       };
 
-      await conn.associate(schema);
+      await connection.setState([schema]);
 
-      expect(await conn.migrator.inspector.tables()).toContain(id);
+      expect(await connection.knex.schema.hasTable(tableName)).toBeTruthy();
     },
     5_000,
   );
