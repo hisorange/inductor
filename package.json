@@ -17,7 +17,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc --build ./tsconfig.json",
-    "test": "jest",
+    "test": "jest -i",
     "db:start": "docker-compose up -d --renew-anon-volumes",
     "db:stop": "docker-compose down",
     "db:reset": "yarn db:stop && yarn db:start",
