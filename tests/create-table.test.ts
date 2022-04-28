@@ -4,7 +4,7 @@ import { createConnection } from './util/create-connection';
 
 describe('Create Table from Schema', () => {
   let connection: Connection;
-  const testTables = ['test1', '_Test2', 'test_3'];
+  const testTables = ['create_test1', 'create_Test2', 'create_test_3_____'];
 
   beforeAll(async () => {
     // Create the test connection
