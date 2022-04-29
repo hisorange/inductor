@@ -13,24 +13,28 @@ describe('Add Column', () => {
       type: ColumnType.INTEGER,
       isNullable: true,
       isUnique: true,
+      isPrimary: true,
     },
     col_var_2: {
       kind: 'column',
       type: ColumnType.INTEGER,
       isNullable: true,
       isUnique: false,
+      isPrimary: false,
     },
     col_var_3: {
       kind: 'column',
       type: ColumnType.INTEGER,
       isNullable: false,
       isUnique: true,
+      isPrimary: false,
     },
     col_var_4: {
       kind: 'column',
       type: ColumnType.INTEGER,
       isNullable: false,
       isUnique: false,
+      isPrimary: false,
     },
   };
 

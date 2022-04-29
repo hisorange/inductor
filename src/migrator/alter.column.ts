@@ -29,3 +29,20 @@ export const alterUnique = (
     builder.dropUnique([columnName]);
   }
 };
+
+/**
+ * Alter the columns' primary status
+ */
+export const alterPrimary = (
+  builder: Knex.CreateTableBuilder,
+  columnNames: string[],
+  dropPrimary: boolean,
+) => {
+  if (dropPrimary) {
+    builder.dropPrimary();
+  }
+
+  if (columnNames.length > 0) {
+    builder.primary(columnNames);
+  }
+};

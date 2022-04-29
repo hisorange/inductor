@@ -40,6 +40,7 @@ describe('Alter Unique', () => {
             type: ColumnType.INTEGER,
             isNullable: false,
             isUnique: false,
+            isPrimary: true,
           },
           [colName]: allColumn[colName],
           createdAt: {
@@ -47,6 +48,7 @@ describe('Alter Unique', () => {
             type: ColumnType.DATE,
             isNullable: false,
             isUnique: false,
+            isPrimary: false,
           },
         },
       };

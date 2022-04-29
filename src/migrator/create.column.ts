@@ -1,11 +1,14 @@
 import { Knex } from 'knex';
 import { ColumnType } from '../enum/column-type.enum';
 import { IColumn } from '../interface/column.interface';
+import { ISchema } from '../interface/schema.interface';
+import { filterPrimary } from '../util/primary.filter';
 
 export const createColumn = (
   table: Knex.CreateTableBuilder,
   name: string,
   column: IColumn,
+  schema: ISchema,
 ) => {
   let columnBuilder: Knex.ColumnBuilder;
 
@@ -153,5 +156,10 @@ export const createColumn = (
     columnBuilder.nullable();
   } else {
     columnBuilder.notNullable();
+  }
+
+  // Add primary constraint, only if this is the only primary column
+  if (column.isPrimary && filterPrimary(schema).length === 1) {
+    columnBuilder.primary();
   }
 };

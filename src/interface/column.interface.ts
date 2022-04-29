@@ -21,4 +21,9 @@ export interface IColumn {
    * Unique contraint.
    */
   isUnique: boolean;
+
+  /**
+   * Primary key constraint.
+   */
+  isPrimary: boolean;
 }

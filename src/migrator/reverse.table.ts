@@ -36,6 +36,7 @@ export const reverseTable = async (inspector: Inspector, table: string) => {
       kind: 'column',
       isNullable: column.is_nullable,
       isUnique: column.is_unique,
+      isPrimary: column.is_primary_key,
     };
   }
 

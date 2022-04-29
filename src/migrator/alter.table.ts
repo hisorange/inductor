@@ -1,7 +1,8 @@
 import { diff } from 'just-diff';
 import { Knex } from 'knex';
 import { ISchema } from '../interface/schema.interface';
-import { alterNullable, alterUnique } from './alter.column';
+import { filterPrimary } from '../util/primary.filter';
+import { alterNullable, alterPrimary, alterUnique } from './alter.column';
 import { createColumn } from './create.column';
 
 export const alterTable = (
@@ -11,6 +12,7 @@ export const alterTable = (
 ): Knex.SchemaBuilder => {
   return builder.alterTable(expectedSchema.name, async builder => {
     const difference = diff(currentSchema, expectedSchema);
+    let isPrimaryChanged = false;
 
     for (const change of difference) {
       const { op, path } = change;
@@ -21,7 +23,12 @@ export const alterTable = (
         switch (op) {
           // New column added
           case 'add':
-            createColumn(builder, name, expectedSchema.columns[name]);
+            createColumn(
+              builder,
+              name,
+              expectedSchema.columns[name],
+              expectedSchema,
+            );
             break;
 
           // Column removed
@@ -42,6 +49,9 @@ export const alterTable = (
                 case 'isUnique':
                   alterUnique(builder, name, def.isUnique);
                   break;
+                case 'isPrimary':
+                  isPrimaryChanged = true;
+                  break;
               }
             } else {
               console.error(
@@ -51,6 +61,29 @@ export const alterTable = (
             }
         }
       }
+    }
+
+    // Primary key changed
+    if (isPrimaryChanged) {
+      const primaries = [];
+
+      for (const colName in expectedSchema.columns) {
+        if (
+          Object.prototype.hasOwnProperty.call(expectedSchema.columns, colName)
+        ) {
+          const colDef = expectedSchema.columns[colName];
+
+          if (colDef.isPrimary) {
+            primaries.push(colName);
+          }
+        }
+      }
+
+      alterPrimary(
+        builder,
+        filterPrimary(expectedSchema),
+        !!filterPrimary(currentSchema).length,
+      );
     }
   });
 };

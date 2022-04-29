@@ -5,7 +5,7 @@ import { ISchema } from '../src/interface/schema.interface';
 import { allColumn } from './util/all-column';
 import { createConnection } from './util/create-connection';
 
-describe('Alter Nullable', () => {
+describe('Alter Primary', () => {
   let connection: Connection;
   const testTables = Object.keys(allColumn);
 
@@ -16,7 +16,7 @@ describe('Alter Nullable', () => {
     // Drop test tables from previous tests
     await Promise.all(
       testTables.map(name =>
-        connection.knex.schema.dropTableIfExists(`alter_nullable_${name}`),
+        connection.knex.schema.dropTableIfExists(`alter_primary_${name}`),
       ),
     );
   });
@@ -26,21 +26,21 @@ describe('Alter Nullable', () => {
   });
 
   test.each(testTables)(
-    'should be able to alter the NULLABLE flag for [%s] column',
+    'should be able to alter the PRIMARY flag for [%s] column',
     async colName => {
-      const tableName = `alter_nullable_${colName}`;
+      const tableName = `alter_primary_${colName}`;
 
       // Create the table
       const schemaRV1: ISchema = {
         name: tableName,
         kind: 'table',
         columns: {
-          id: {
+          prefix: {
             kind: 'column',
             type: ColumnType.INTEGER,
             isNullable: false,
             isUnique: false,
-            isPrimary: true,
+            isPrimary: false,
           },
           [colName]: allColumn[colName],
           createdAt: {
@@ -48,12 +48,12 @@ describe('Alter Nullable', () => {
             type: ColumnType.DATE,
             isNullable: false,
             isUnique: false,
-            isPrimary: true,
+            isPrimary: false,
           },
         },
       };
-      // Set nullable to false
-      schemaRV1.columns[colName].isNullable = false;
+      // Set primary to false
+      schemaRV1.columns[colName].isPrimary = false;
 
       // Apply the state
       await connection.setState([schemaRV1]);
@@ -62,11 +62,11 @@ describe('Alter Nullable', () => {
         tableName,
         colName,
       );
-      expect(columnRV1.is_nullable).toBeFalsy();
+      expect(columnRV1.is_primary_key).toBeFalsy();
 
       const schemaRV2 = cloneDeep(schemaRV1);
-      // Change the nullable
-      schemaRV2.columns[colName].isNullable = true;
+      // Change the primary flag
+      schemaRV2.columns[colName].isPrimary = true;
 
       // Apply the changes
       await connection.setState([schemaRV2]);
@@ -77,12 +77,14 @@ describe('Alter Nullable', () => {
         colName,
       );
 
-      // We are reading the isNullable because the sanity checker may change it for the given column type
-      expect(columnRV2.is_nullable).toBe(schemaRV2.columns[colName].isNullable);
+      // We are reading the isPrimary because the sanity checker may change it for the given column type
+      expect(columnRV2.is_primary_key).toBe(
+        schemaRV2.columns[colName].isPrimary,
+      );
 
       const schemaRV3 = cloneDeep(schemaRV2);
       // Revert the nullable
-      schemaRV3.columns[colName].isNullable = false;
+      schemaRV3.columns[colName].isPrimary = false;
 
       await connection.setState([schemaRV3]);
 
@@ -91,8 +93,10 @@ describe('Alter Nullable', () => {
         colName,
       );
 
-      // We are reading the isNullable because the sanity checker may change it for the given column type
-      expect(columnRV3.is_nullable).toBe(schemaRV3.columns[colName].isNullable);
+      // We are reading the isPrimary because the sanity checker may change it for the given column type
+      expect(columnRV3.is_primary_key).toBe(
+        schemaRV3.columns[colName].isPrimary,
+      );
     },
     5_000,
   );

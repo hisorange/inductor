@@ -1,5 +1,6 @@
 import { Connection } from '../src/connection';
 import { ISchema } from '../src/interface/schema.interface';
+import { allColumn } from './util/all-column';
 import { createConnection } from './util/create-connection';
 
 describe('Create Table from Schema', () => {
@@ -26,7 +27,7 @@ describe('Create Table from Schema', () => {
       const schema: ISchema = {
         name: tableName,
         kind: 'table',
-        columns: {},
+        columns: allColumn,
       };
 
       await connection.setState([schema]);
