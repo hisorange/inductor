@@ -60,6 +60,11 @@ export const sanitizeSchema = (schema: ISchema) => {
       if (definition.isPrimary) {
         definition.isNullable = false;
       }
+
+      // Primary keys are unique by design
+      if (definition.isPrimary) {
+        definition.isUnique = false;
+      }
     }
   }
 
