@@ -55,6 +55,11 @@ export const sanitizeSchema = (schema: ISchema) => {
       ) {
         definition.isPrimary = false;
       }
+
+      // Primary keys cannot be nullable
+      if (definition.isPrimary) {
+        definition.isNullable = false;
+      }
     }
   }
 
