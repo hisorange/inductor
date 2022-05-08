@@ -158,6 +158,11 @@ export const createColumn = (
     columnBuilder.notNullable();
   }
 
+  // Add unique constraint
+  if (column.isUnique) {
+    columnBuilder.unique();
+  }
+
   // Add primary constraint, only if this is the only primary column
   if (column.isPrimary && filterPrimary(schema).length === 1) {
     columnBuilder.primary();
