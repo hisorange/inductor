@@ -47,7 +47,9 @@ export class Migrator {
 
     for (const query of queries) {
       const sql = query.toQuery();
-      console.log('Running query:', sql);
+      if (sql.length && 0) {
+        console.log('Running query:', sql);
+      }
 
       await query;
     }

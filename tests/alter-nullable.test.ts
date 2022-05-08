@@ -48,7 +48,7 @@ describe('Alter Nullable', () => {
             type: ColumnType.DATE,
             isNullable: false,
             isUnique: false,
-            isPrimary: true,
+            isPrimary: false,
           },
         },
       };

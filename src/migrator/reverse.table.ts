@@ -1,6 +1,7 @@
 import { ColumnType } from '../enum/column-type.enum';
 import { Inspector } from '../inspector';
 import { ISchema } from '../interface/schema.interface';
+import { sanitizeSchema } from './sanitize.schema';
 
 export const reverseTable = async (inspector: Inspector, table: string) => {
   const schema: ISchema = {
@@ -40,5 +41,5 @@ export const reverseTable = async (inspector: Inspector, table: string) => {
     };
   }
 
-  return schema;
+  return sanitizeSchema(schema);
 };
