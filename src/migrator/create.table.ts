@@ -15,7 +15,22 @@ export const createTable = (
     }
 
     const primaries = filterPrimary(schema);
+
     if (primaries.length > 1) {
       table.primary(primaries);
+    }
+
+    // Apply the compositive unique constraints
+    for (const name in schema.uniques) {
+      if (Object.prototype.hasOwnProperty.call(schema.uniques, name)) {
+        // Prefix the unique name with the table name if it is not already prefixed
+        const uniqueName = name.startsWith(schema.name)
+          ? name
+          : `${schema.name}_${name}`;
+
+        table.unique(schema.uniques[name], {
+          indexName: uniqueName,
+        });
+      }
     }
   });

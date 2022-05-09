@@ -17,4 +17,11 @@ export interface ISchema {
   columns: {
     [name: string]: IColumn;
   };
+
+  /**
+   * Unique constraints of the table.
+   */
+  uniques: {
+    [name: string]: string[];
+  };
 }

@@ -51,6 +51,7 @@ describe('Alter Primary', () => {
             isPrimary: false,
           },
         },
+        uniques: {},
       };
       // Set primary to false
       schemaRV1.columns[colName].isPrimary = false;
@@ -114,6 +115,7 @@ describe('Alter Primary', () => {
           isPrimary: true,
         },
       },
+      uniques: {},
     };
 
     // Create with one primary

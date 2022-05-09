@@ -35,6 +35,7 @@ describe('Create Primary', () => {
         columns: {
           [colName]: allColumn[colName],
         },
+        uniques: {},
       };
       // Set primary to false
       schemaRV1.columns[colName].isPrimary = true;

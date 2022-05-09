@@ -34,6 +34,7 @@ describe('Alter Nullable', () => {
       const schemaRV1: ISchema = {
         name: tableName,
         kind: 'table',
+        uniques: {},
         columns: {
           id: {
             kind: 'column',

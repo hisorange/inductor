@@ -8,6 +8,7 @@ export const reverseTable = async (inspector: Inspector, table: string) => {
     name: table,
     kind: 'table',
     columns: {},
+    uniques: {},
   };
   const columns = await inspector.columnInfo(table);
   const compositivePrimaryKeys = await inspector.getCompositePrimaryKeys(table);

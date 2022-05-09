@@ -1,4 +1,5 @@
 import BaseAdapter from 'knex-schema-inspector/dist/dialects/postgres';
+import { ISchema } from './interface/schema.interface';
 import { IUnique } from './interface/unique.interface';
 
 /**
@@ -50,6 +51,19 @@ export class Inspector extends BaseAdapter {
     });
 
     return uniques;
+  }
+
+  async getCompositeUniques(tableName: string): Promise<ISchema['uniques']> {
+    const unique: ISchema['uniques'] = {};
+    const entries = await this.getUniques(tableName);
+
+    for (const entry of entries) {
+      if (entry.columns.length > 1) {
+        unique[entry.name] = entry.columns;
+      }
+    }
+
+    return unique;
   }
 
   /**

@@ -64,6 +64,7 @@ describe('Add Column', () => {
         name: tableName,
         kind: 'table',
         columns: cloneDeep(columns),
+        uniques: {},
       };
       delete schemaRV1.columns[col];
 

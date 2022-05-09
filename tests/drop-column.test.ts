@@ -64,6 +64,7 @@ describe('Drop Column', () => {
         name: tableName,
         kind: 'table',
         columns,
+        uniques: {},
       };
       // Apply the state
       await connection.setState([schemaRV1]);
