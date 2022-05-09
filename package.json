@@ -14,7 +14,7 @@
   "main": "build/index.js",
   "repository": "https://github.com/hisorange/inductor",
   "author": "Zsolt Varga <hello@hisorange.me>",
-  "license": "MIT",
+  "license": "GPL-3.0",
   "scripts": {
     "build": "tsc --build ./tsconfig.json",
     "test": "jest -i",
