@@ -100,4 +100,117 @@ describe('Alter Primary', () => {
     },
     5_000,
   );
+
+  test('should be able to add/remove the primary keys', async () => {
+    const schema: ISchema = {
+      name: 'alter_primary_extend',
+      kind: 'table',
+      columns: {
+        first: {
+          kind: 'column',
+          type: ColumnType.INTEGER,
+          isNullable: false,
+          isUnique: false,
+          isPrimary: true,
+        },
+      },
+    };
+
+    // Create with one primary
+    await connection.setState([schema]);
+
+    expect(
+      (
+        await connection.migrator.inspector.columnInfo('alter_primary_extend')
+      ).filter(c => c.is_primary_key).length,
+    ).toEqual(1);
+
+    // Extend the primary
+    const schemaExtend: ISchema = cloneDeep(schema);
+    schemaExtend.columns.second = {
+      kind: 'column',
+      type: ColumnType.INTEGER,
+      isNullable: false,
+      isUnique: false,
+      isPrimary: true,
+    };
+
+    // Update the state to extend the primary to two
+    await connection.setState([schemaExtend]);
+
+    expect(
+      (
+        await connection.migrator.inspector.columnInfo('alter_primary_extend')
+      ).filter(c => c.is_primary_key).length,
+    ).toEqual(0);
+
+    expect(
+      await connection.migrator.inspector.getCompositePrimaryKeys(
+        'alter_primary_extend',
+      ),
+    ).toStrictEqual(['first', 'second']);
+
+    // Add the third primary column
+    const schemaExtend2: ISchema = cloneDeep(schemaExtend);
+    schemaExtend2.columns.third = {
+      kind: 'column',
+      type: ColumnType.INTEGER,
+      isNullable: false,
+      isUnique: false,
+      isPrimary: true,
+    };
+
+    // Update the state to extend the primary to three
+    await connection.setState([schemaExtend2]);
+
+    expect(
+      (
+        await connection.migrator.inspector.columnInfo('alter_primary_extend')
+      ).filter(c => c.is_primary_key).length,
+    ).toEqual(0);
+
+    expect(
+      await connection.migrator.inspector.getCompositePrimaryKeys(
+        'alter_primary_extend',
+      ),
+    ).toStrictEqual(['first', 'second', 'third']);
+
+    // Remove the third primary column
+    const schemaExtend3: ISchema = cloneDeep(schemaExtend2);
+    schemaExtend3.columns.third.isPrimary = false;
+
+    // Update the state to remove the third primary
+    await connection.setState([schemaExtend3]);
+
+    expect(
+      (
+        await connection.migrator.inspector.columnInfo('alter_primary_extend')
+      ).filter(c => c.is_primary_key).length,
+    ).toEqual(0);
+
+    expect(
+      await connection.migrator.inspector.getCompositePrimaryKeys(
+        'alter_primary_extend',
+      ),
+    ).toStrictEqual(['first', 'second']);
+
+    // Remove the second primary column
+    const schemaExtend4: ISchema = cloneDeep(schemaExtend3);
+    schemaExtend4.columns.second.isPrimary = false;
+
+    // Update the state to remove the second primary
+    await connection.setState([schemaExtend4]);
+
+    expect(
+      (
+        await connection.migrator.inspector.columnInfo('alter_primary_extend')
+      ).filter(c => c.is_primary_key).length,
+    ).toEqual(1);
+
+    expect(
+      await connection.migrator.inspector.getCompositePrimaryKeys(
+        'alter_primary_extend',
+      ),
+    ).toStrictEqual(['first']);
+  });
 });

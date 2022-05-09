@@ -4,7 +4,7 @@ import { ISchema } from './interface/schema.interface';
 import { alterTable } from './migrator/alter.table';
 import { createTable } from './migrator/create.table';
 import { reverseTable } from './migrator/reverse.table';
-import { sanitizeSchema } from './migrator/sanitize.schema';
+import { sanitizeSchema } from './util/sanitize.schema';
 
 // Calculates and applies the changes on the database
 export class Migrator {

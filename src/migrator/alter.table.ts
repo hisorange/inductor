@@ -2,7 +2,7 @@ import { diff } from 'just-diff';
 import { Knex } from 'knex';
 import { ISchema } from '../interface/schema.interface';
 import { filterPrimary } from '../util/primary.filter';
-import { alterNullable, alterPrimary, alterUnique } from './alter.column';
+import { alterNullable, alterUnique } from './alter.column';
 import { createColumn } from './create.column';
 
 export const alterTable = (
@@ -12,7 +12,10 @@ export const alterTable = (
 ): Knex.SchemaBuilder => {
   return builder.alterTable(expectedSchema.name, async builder => {
     const difference = diff(currentSchema, expectedSchema);
+    // Track the primary keys change, since it may has to be altered after the columns
     let isPrimaryChanged = false;
+    let isPrimaryCreated = false;
+    let isPrimaryDropped = false;
 
     if (0) {
       console.log('Difference:', difference);
@@ -35,11 +38,25 @@ export const alterTable = (
               expectedSchema.columns[name],
               expectedSchema,
             );
+
+            // New column added to the primary list
+            if (expectedSchema.columns[name].isPrimary) {
+              isPrimaryChanged = true;
+              isPrimaryCreated = true;
+            }
+
             break;
 
           // Column removed
           case 'remove':
             builder.dropColumn(name);
+
+            // Column removed from the primary list
+            if (currentSchema.columns[name].isPrimary) {
+              isPrimaryChanged = true;
+              isPrimaryDropped = true;
+            }
+
             break;
 
           // Column altered
@@ -71,25 +88,43 @@ export const alterTable = (
 
     // Primary key changed
     if (isPrimaryChanged) {
-      const primaries = [];
+      const currentPrimaries = filterPrimary(currentSchema);
+      const expectedPrimaries = filterPrimary(expectedSchema);
 
-      for (const colName in expectedSchema.columns) {
-        if (
-          Object.prototype.hasOwnProperty.call(expectedSchema.columns, colName)
-        ) {
-          const colDef = expectedSchema.columns[colName];
+      // Remove the current primary keys
+      if (currentPrimaries.length > 0) {
+        // By default, it's easier to drop the primary keys
+        // But some exceptions are handled here
+        let shouldDropPrimary = true;
 
-          if (colDef.isPrimary) {
-            primaries.push(colName);
+        // Except when the primary was a single key and the column was dropped
+        // In this case the primary is cascades with the dropped column
+        if (currentPrimaries.length === 1 && expectedPrimaries.length === 0) {
+          if (isPrimaryDropped) {
+            shouldDropPrimary = false;
           }
+        }
+
+        if (shouldDropPrimary) {
+          builder.dropPrimary();
         }
       }
 
-      alterPrimary(
-        builder,
-        filterPrimary(expectedSchema),
-        !!filterPrimary(currentSchema).length,
-      );
+      // Add the new primary keys
+      if (expectedPrimaries.length > 0) {
+        let shouldAddCompositePrimary = true;
+
+        // Except when we add the first primary, and the column is created with the create column call
+        if (currentPrimaries.length === 0 && expectedPrimaries.length === 1) {
+          if (isPrimaryCreated) {
+            shouldAddCompositePrimary = false;
+          }
+        }
+
+        if (shouldAddCompositePrimary) {
+          builder.primary(expectedPrimaries);
+        }
+      }
     }
   });
 };
