@@ -9,9 +9,17 @@ export const reverseTable = async (inspector: Inspector, table: string) => {
     kind: 'table',
     columns: {},
     uniques: {},
+    indexes: {},
   };
   const columns = await inspector.columnInfo(table);
   const compositivePrimaryKeys = await inspector.getCompositePrimaryKeys(table);
+  const compositiveUniques = await inspector.getCompositeUniques(table);
+
+  // Merge compositive uniques into the schema, but remove the table prefix from the name
+  for (const [name, uniques] of Object.entries(compositiveUniques)) {
+    const unprefixedName = name.replace(`${table}_`, '');
+    schema.uniques[unprefixedName] = uniques;
+  }
 
   for (const column of columns) {
     let type = column.data_type as ColumnType;

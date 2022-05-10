@@ -176,4 +176,109 @@ describe('Unique Constraint', () => {
       }
     },
   );
+
+  test('should be able to alter between compound unique states', async () => {
+    const schema: ISchema = {
+      name: 'unique_test_upgrade',
+      kind: 'table',
+      uniques: {},
+      indexes: {},
+      columns: {
+        col_1: {
+          kind: 'column',
+          type: ColumnType.INTEGER,
+          isNullable: false,
+          isUnique: true,
+          isPrimary: false,
+        },
+        col_2: {
+          kind: 'column',
+          type: ColumnType.INTEGER,
+          isNullable: false,
+          isUnique: false,
+          isPrimary: false,
+        },
+      },
+    };
+
+    // Create the table with a single unique
+    await connection.setState([schema]);
+
+    // Verify the single unique column
+    expect(
+      (
+        await connection.migrator.inspector.columnInfo(
+          'unique_test_upgrade',
+          'col_1',
+        )
+      ).is_unique,
+    ).toBeTruthy();
+
+    // Set the second column as unique to convert the index into a compositive one
+    schema.columns.col_1.isUnique = false;
+    schema.uniques.test_cmp_1 = ['col_1', 'col_2'];
+
+    // Apply the statement
+    await connection.setState([schema]);
+
+    // Verify the composite unique column
+    expect(
+      (
+        await connection.migrator.inspector.columnInfo(
+          'unique_test_upgrade',
+          'col_1',
+        )
+      ).is_unique,
+    ).toBeFalsy();
+    expect(
+      (
+        await connection.migrator.inspector.columnInfo(
+          'unique_test_upgrade',
+          'col_2',
+        )
+      ).is_unique,
+    ).toBeFalsy();
+
+    // Verify the composite unique
+    const uniques = await connection.migrator.inspector.getCompositeUniques(
+      'unique_test_upgrade',
+    );
+    expect(uniques).toStrictEqual({
+      unique_test_upgrade_test_cmp_1: ['col_1', 'col_2'],
+    });
+
+    // Create a new column and add it to the composite unique
+    schema.columns.col_3 = {
+      kind: 'column',
+      type: ColumnType.INTEGER,
+      isNullable: false,
+      isUnique: false,
+      isPrimary: false,
+    };
+
+    schema.uniques.test_cmp_1.push('col_3');
+
+    // Apply the statement
+    await connection.setState([schema]);
+
+    // Verify the composite unique
+    const uniques2 = await connection.migrator.inspector.getCompositeUniques(
+      'unique_test_upgrade',
+    );
+    expect(uniques2).toStrictEqual({
+      unique_test_upgrade_test_cmp_1: ['col_1', 'col_2', 'col_3'],
+    });
+
+    // Remove the composite unique
+    delete schema.uniques.test_cmp_1;
+
+    // Apply the statement
+    await connection.setState([schema]);
+
+    // Verify the composite unique
+    const uniques3 = await connection.migrator.inspector.getCompositeUniques(
+      'unique_test_upgrade',
+    );
+    expect(uniques3).toStrictEqual({});
+  });
 });

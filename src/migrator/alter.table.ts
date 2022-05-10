@@ -84,6 +84,34 @@ export const alterTable = (
             }
         }
       }
+      // Change is affecting the unique set
+      else if (path[0] === 'uniques') {
+        const name = path[1] as string;
+        // Prefix the unique name with the table name if it is not already prefixed
+        const indexName = name.startsWith(expectedSchema.name)
+          ? name
+          : `${expectedSchema.name}_${name}`;
+
+        switch (op) {
+          // New unique added
+          case 'add':
+            // We have to check if the unique existed before
+            // because the add is only applied to the columns
+            if (currentSchema.uniques[name]) {
+              builder.dropUnique(currentSchema.uniques[name], indexName);
+            }
+
+            builder.unique(expectedSchema.uniques[name], {
+              indexName,
+            });
+            break;
+
+          // Unique removed
+          case 'remove':
+            builder.dropUnique(currentSchema.uniques[name], indexName);
+            break;
+        }
+      }
     }
 
     // Primary key changed
