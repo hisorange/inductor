@@ -29,6 +29,7 @@ describe('Create Table from Schema', () => {
         kind: 'table',
         columns: allColumn,
         uniques: {},
+        indexes: {},
       };
 
       await connection.setState([schema]);

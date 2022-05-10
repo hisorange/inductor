@@ -24,4 +24,11 @@ export interface ISchema {
   uniques: {
     [name: string]: string[];
   };
+
+  /**
+   * Indices of the table.
+   */
+  indexes: {
+    [name: string]: string[];
+  };
 }

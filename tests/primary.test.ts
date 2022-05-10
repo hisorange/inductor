@@ -38,6 +38,7 @@ describe('Primary Constraint', () => {
           [colName]: allColumn[colName],
         },
         uniques: {},
+        indexes: {},
       };
       // Set primary to false
       schemaRV1.columns[colName].isPrimary = true;
@@ -83,6 +84,7 @@ describe('Primary Constraint', () => {
           },
         },
         uniques: {},
+        indexes: {},
       };
       // Set primary to false
       schemaRV1.columns[colName].isPrimary = false;
@@ -147,6 +149,7 @@ describe('Primary Constraint', () => {
         },
       },
       uniques: {},
+      indexes: {},
     };
 
     // Create with one primary

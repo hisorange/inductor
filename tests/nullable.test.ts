@@ -35,6 +35,7 @@ describe('Nullable Flag', () => {
         name: tableName,
         kind: 'table',
         uniques: {},
+        indexes: {},
         columns: {
           id: {
             kind: 'column',

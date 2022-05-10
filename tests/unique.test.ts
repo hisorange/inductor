@@ -34,6 +34,7 @@ describe('Unique Constraint', () => {
         name: tableName,
         kind: 'table',
         uniques: {},
+        indexes: {},
         columns: {
           [columnKey]: allColumn[columnKey],
         },
@@ -62,6 +63,7 @@ describe('Unique Constraint', () => {
         name: tableName,
         kind: 'table',
         uniques: {},
+        indexes: {},
         columns: {
           id: {
             kind: 'column',
@@ -134,6 +136,7 @@ describe('Unique Constraint', () => {
         name: tableName,
         kind: 'table',
         uniques: {},
+        indexes: {},
         columns: {
           [columnKey]: allColumn[columnKey],
           pair_for_comp: {
