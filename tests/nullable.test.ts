@@ -5,7 +5,7 @@ import { ISchema } from '../src/interface/schema.interface';
 import { allColumn } from './util/all-column';
 import { createConnection } from './util/create-connection';
 
-describe('Alter Nullable', () => {
+describe('Nullable Flag', () => {
   let connection: Connection;
   const testTables = Object.keys(allColumn);
 
