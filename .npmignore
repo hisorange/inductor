@@ -1,10 +1,13 @@
 .github
 .vscode
-build/*.spec.js
-build/**/*.spec.js
+build/*.test.js
+build/**/*.test.js
 src/
 tests/
+.gitignore
 .prettierrc
+docker-compose.yml
 jest.config.js
 tsconfig.json
+readme.md
 yarn.lock
