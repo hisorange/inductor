@@ -27,6 +27,7 @@
     "@types/jest": "^27.0.0",
     "@types/lodash.clonedeep": "^4.5.7",
     "@types/node": "^16.0.0",
+    "@types/uuid": "^8.3.4",
     "jest": "^27.0.0",
     "lodash.clonedeep": "^4.5.0",
     "ts-jest": "^27.0.0",
@@ -36,6 +37,8 @@
     "just-diff": "^5.0.1",
     "knex": "^2.0.0",
     "knex-schema-inspector": "^1.7.5",
-    "pg": "^8.7.3"
+    "objection": "^3.0.1",
+    "pg": "^8.7.3",
+    "uuid": "^8.3.2"
   }
 }
