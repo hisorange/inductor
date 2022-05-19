@@ -11,3 +11,4 @@ services:
       POSTGRES_PASSWORD: inductor
       POSTGRES_USER: inductor
       POSTGRES_DB: inductor
+    mem_limit: 200m

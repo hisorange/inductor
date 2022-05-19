@@ -1,4 +1,5 @@
 import { Knex } from 'knex';
+import { Logger } from 'pino';
 import { Inspector } from './inspector';
 import { ISchema } from './interface/schema.interface';
 import { alterTable } from './migrator/alter.table';
@@ -16,7 +17,7 @@ export class Migrator {
   /**
    * Initialize the migrator
    */
-  constructor(protected knex: Knex) {
+  constructor(readonly logger: Logger, protected knex: Knex) {
     this.inspector = new Inspector(knex);
   }
 
@@ -28,6 +29,8 @@ export class Migrator {
     const queries: Knex.SchemaBuilder[] = [];
 
     for (let schema of schemas) {
+      this.logger.debug('Processing schema %s', schema.name);
+
       // Fix inconsistent schemas
       schema = sanitizeSchema(schema);
 
@@ -47,8 +50,9 @@ export class Migrator {
 
     for (const query of queries) {
       const sql = query.toQuery();
-      if (sql.length && 0) {
-        console.log('Running query:', sql);
+
+      if (sql.length) {
+        this.logger.debug(sql);
       }
 
       await query;

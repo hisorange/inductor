@@ -1,5 +1,6 @@
 import knex, { Knex } from 'knex';
 import { Model, ModelClass, Pojo } from 'objection';
+import pino, { Logger } from 'pino';
 import { ISchema } from './interface/schema.interface';
 import { Migrator } from './migrator';
 import { filterPrimary } from './util/primary.filter';
@@ -8,6 +9,11 @@ import { filterPrimary } from './util/primary.filter';
  * This class manages the connection and applies the state of the database.
  */
 export class Connection {
+  /**
+   * Pino instance
+   */
+  readonly logger: Logger;
+
   /**
    * Store the Knex instance
    */
@@ -37,8 +43,18 @@ export class Connection {
   constructor(
     protected config: {
       connection: Knex.PgConnectionConfig;
+      logger?: Logger;
     },
   ) {
+    this.logger =
+      config.logger ||
+      pino({
+        name: `inductor.${this.config.connection.database}`,
+        level: process.env.NODE_ENV !== 'production' ? 'debug' : 'warn',
+      });
+
+    this.logger.info('Creating connection');
+
     this.knex = knex({
       client: 'pg',
       connection: {
@@ -47,7 +63,9 @@ export class Connection {
       },
     });
 
-    this.migrator = new Migrator(this.knex);
+    this.migrator = new Migrator(this.logger, this.knex);
+
+    this.logger.debug('Instance initialized');
   }
 
   /**
@@ -73,6 +91,8 @@ export class Connection {
    * Associate a schema with the connection
    */
   async setState(schemas: ISchema[]) {
+    this.logger.info('Applying new state');
+
     this.schemas = new Map();
 
     for (const schema of schemas) {
@@ -87,7 +107,10 @@ export class Connection {
       });
     }
 
+    this.logger.info('Migrating database');
     await this.migrator.setState(schemas);
+
+    this.logger.info('State applied');
   }
 
   /**
@@ -144,6 +167,8 @@ export class Connection {
   }
 
   close() {
+    this.logger.info('Closing connection');
+
     return this.knex.destroy();
   }
 }
