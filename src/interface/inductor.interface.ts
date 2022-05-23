@@ -13,6 +13,11 @@ export interface IInductor {
   readState(): Promise<ISchema[]>;
 
   /**
+   * Calculate the changes needed to migrate the database to the target state.
+   */
+  cmpState(schemas: ISchema[]): Promise<string[]>;
+
+  /**
    * Get the associated model by it's name.
    *
    * @throws {Error} If the model is not found.

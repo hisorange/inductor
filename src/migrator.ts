@@ -35,41 +35,54 @@ export class Migrator {
     return schemas;
   }
 
-  /**
-   * Reads the connection's database into a set of structure, and update it to match the schemas
-   */
-  async setState(schemas: ISchema[]) {
+  async cmpState(schemas: ISchema[]): Promise<Knex.SchemaBuilder[]> {
     const tables = await this.inspector.tables();
-    const queries: Knex.SchemaBuilder[] = [];
+    const changes: Knex.SchemaBuilder[] = [];
 
-    for (let schema of schemas) {
-      this.logger.debug('Processing schema %s', schema.name);
+    for (let targetState of schemas) {
+      this.logger.debug('Processing schema %s', targetState.name);
 
       // Fix inconsistent schemas
-      schema = sanitizeSchema(schema);
+      targetState = sanitizeSchema(targetState);
 
-      if (schema.kind === 'table') {
+      if (targetState.kind === 'table') {
         // If the table doesn't exist, create it
-        if (!tables.includes(schema.name)) {
-          queries.push(createTable(this.knex.schema, schema));
+        if (!tables.includes(targetState.name)) {
+          changes.push(createTable(this.knex.schema, targetState));
         }
         // If the table exists, compare the state and apply the alterations
         else {
-          const currentSchema = await reverseTable(this.inspector, schema.name);
+          const currentState = await reverseTable(
+            this.inspector,
+            targetState.name,
+          );
 
-          queries.push(alterTable(this.knex.schema, currentSchema, schema));
+          changes.push(alterTable(this.knex.schema, currentState, targetState));
         }
       }
     }
 
-    for (const query of queries) {
-      const sql = query.toQuery();
+    return changes;
+  }
 
-      if (sql.length) {
-        this.logger.debug(sql);
+  /**
+   * Reads the connection's database into a set of structure, and update it to match the schemas
+   */
+  async setState(schemas: ISchema[]): Promise<void> {
+    const changes = await this.cmpState(schemas);
+
+    if (changes.length) {
+      this.logger.info('Applying [%d] changes', changes.length);
+
+      for (const query of changes) {
+        const sql = query.toQuery();
+
+        if (sql.length) {
+          this.logger.debug(sql);
+        }
+
+        await query;
       }
-
-      await query;
     }
   }
 }

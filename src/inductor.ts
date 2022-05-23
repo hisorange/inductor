@@ -91,6 +91,12 @@ export class Inductor implements IInductor {
     return this.dbName as string;
   }
 
+  async cmpState(schemas: ISchema[]): Promise<string[]> {
+    return await this.migrator
+      .cmpState(schemas)
+      .then(changes => changes.map(change => change.toQuery()));
+  }
+
   async setState(schemas: ISchema[]) {
     this.logger.info('Applying new state');
 
