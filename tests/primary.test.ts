@@ -1,28 +1,28 @@
 import cloneDeep from 'lodash.clonedeep';
-import { Connection } from '../src/connection';
 import { ColumnType } from '../src/enum/column-type.enum';
+import { Inductor } from '../src/inductor';
 import { ISchema } from '../src/interface/schema.interface';
 import { allColumn } from './util/all-column';
-import { createConnection } from './util/create-connection';
+import { createTestInstance } from './util/create-connection';
 
 describe('Primary Constraint', () => {
-  let connection: Connection;
+  let inductor: Inductor;
   const testTables = Object.keys(allColumn);
 
   beforeAll(async () => {
     // Create the test connection
-    connection = createConnection();
+    inductor = createTestInstance();
 
     // Drop test tables from previous tests
     await Promise.all(
       testTables.map(name =>
-        connection.knex.schema.dropTableIfExists(`alter_primary_${name}`),
+        inductor.knex.schema.dropTableIfExists(`alter_primary_${name}`),
       ),
     );
   });
 
   afterAll(async () => {
-    await connection.close();
+    await inductor.close();
   });
 
   test.each(testTables)(
@@ -44,9 +44,9 @@ describe('Primary Constraint', () => {
       schemaRV1.columns[colName].isPrimary = true;
 
       // Apply the state
-      await connection.setState([schemaRV1]);
+      await inductor.setState([schemaRV1]);
 
-      const columnRV1 = await connection.migrator.inspector.columnInfo(
+      const columnRV1 = await inductor.migrator.inspector.columnInfo(
         tableName,
         colName,
       );
@@ -90,9 +90,9 @@ describe('Primary Constraint', () => {
       schemaRV1.columns[colName].isPrimary = false;
 
       // Apply the state
-      await connection.setState([schemaRV1]);
+      await inductor.setState([schemaRV1]);
 
-      const columnRV1 = await connection.migrator.inspector.columnInfo(
+      const columnRV1 = await inductor.migrator.inspector.columnInfo(
         tableName,
         colName,
       );
@@ -103,10 +103,10 @@ describe('Primary Constraint', () => {
       schemaRV2.columns[colName].isPrimary = true;
 
       // Apply the changes
-      await connection.setState([schemaRV2]);
+      await inductor.setState([schemaRV2]);
 
       // Verify the changes
-      const columnRV2 = await connection.migrator.inspector.columnInfo(
+      const columnRV2 = await inductor.migrator.inspector.columnInfo(
         tableName,
         colName,
       );
@@ -120,9 +120,9 @@ describe('Primary Constraint', () => {
       // Revert the nullable
       schemaRV3.columns[colName].isPrimary = false;
 
-      await connection.setState([schemaRV3]);
+      await inductor.setState([schemaRV3]);
 
-      const columnRV3 = await connection.migrator.inspector.columnInfo(
+      const columnRV3 = await inductor.migrator.inspector.columnInfo(
         tableName,
         colName,
       );
@@ -153,11 +153,11 @@ describe('Primary Constraint', () => {
     };
 
     // Create with one primary
-    await connection.setState([schema]);
+    await inductor.setState([schema]);
 
     expect(
       (
-        await connection.migrator.inspector.columnInfo('alter_primary_extend')
+        await inductor.migrator.inspector.columnInfo('alter_primary_extend')
       ).filter(c => c.is_primary_key).length,
     ).toEqual(1);
 
@@ -172,16 +172,16 @@ describe('Primary Constraint', () => {
     };
 
     // Update the state to extend the primary to two
-    await connection.setState([schemaExtend]);
+    await inductor.setState([schemaExtend]);
 
     expect(
       (
-        await connection.migrator.inspector.columnInfo('alter_primary_extend')
+        await inductor.migrator.inspector.columnInfo('alter_primary_extend')
       ).filter(c => c.is_primary_key).length,
     ).toEqual(0);
 
     expect(
-      await connection.migrator.inspector.getCompositePrimaryKeys(
+      await inductor.migrator.inspector.getCompositePrimaryKeys(
         'alter_primary_extend',
       ),
     ).toStrictEqual(['first', 'second']);
@@ -197,16 +197,16 @@ describe('Primary Constraint', () => {
     };
 
     // Update the state to extend the primary to three
-    await connection.setState([schemaExtend2]);
+    await inductor.setState([schemaExtend2]);
 
     expect(
       (
-        await connection.migrator.inspector.columnInfo('alter_primary_extend')
+        await inductor.migrator.inspector.columnInfo('alter_primary_extend')
       ).filter(c => c.is_primary_key).length,
     ).toEqual(0);
 
     expect(
-      await connection.migrator.inspector.getCompositePrimaryKeys(
+      await inductor.migrator.inspector.getCompositePrimaryKeys(
         'alter_primary_extend',
       ),
     ).toStrictEqual(['first', 'second', 'third']);
@@ -216,16 +216,16 @@ describe('Primary Constraint', () => {
     schemaExtend3.columns.third.isPrimary = false;
 
     // Update the state to remove the third primary
-    await connection.setState([schemaExtend3]);
+    await inductor.setState([schemaExtend3]);
 
     expect(
       (
-        await connection.migrator.inspector.columnInfo('alter_primary_extend')
+        await inductor.migrator.inspector.columnInfo('alter_primary_extend')
       ).filter(c => c.is_primary_key).length,
     ).toEqual(0);
 
     expect(
-      await connection.migrator.inspector.getCompositePrimaryKeys(
+      await inductor.migrator.inspector.getCompositePrimaryKeys(
         'alter_primary_extend',
       ),
     ).toStrictEqual(['first', 'second']);
@@ -235,16 +235,16 @@ describe('Primary Constraint', () => {
     schemaExtend4.columns.second.isPrimary = false;
 
     // Update the state to remove the second primary
-    await connection.setState([schemaExtend4]);
+    await inductor.setState([schemaExtend4]);
 
     expect(
       (
-        await connection.migrator.inspector.columnInfo('alter_primary_extend')
+        await inductor.migrator.inspector.columnInfo('alter_primary_extend')
       ).filter(c => c.is_primary_key).length,
     ).toEqual(1);
 
     expect(
-      await connection.migrator.inspector.getCompositePrimaryKeys(
+      await inductor.migrator.inspector.getCompositePrimaryKeys(
         'alter_primary_extend',
       ),
     ).toStrictEqual(['first']);

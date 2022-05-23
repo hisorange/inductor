@@ -22,6 +22,20 @@ export class Migrator {
   }
 
   /**
+   * Read the database state and return it as a list of schemas.
+   */
+  async readState(): Promise<ISchema[]> {
+    const schemas = [];
+
+    for (const table of await this.inspector.tables()) {
+      const schema = await reverseTable(this.inspector, table);
+      schemas.push(schema);
+    }
+
+    return schemas;
+  }
+
+  /**
    * Reads the connection's database into a set of structure, and update it to match the schemas
    */
   async setState(schemas: ISchema[]) {

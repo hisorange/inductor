@@ -1,24 +1,24 @@
-import { Connection } from '../src/connection';
+import { Inductor } from '../src/inductor';
 import { ISchema } from '../src/interface/schema.interface';
 import { allColumn } from './util/all-column';
-import { createConnection } from './util/create-connection';
+import { createTestInstance } from './util/create-connection';
 
 describe('Create Table from Schema', () => {
-  let connection: Connection;
+  let inductor: Inductor;
   const testTables = ['create_test1', 'create_Test2', 'create_test_3_____'];
 
   beforeAll(async () => {
     // Create the test connection
-    connection = createConnection();
+    inductor = createTestInstance();
 
     // Drop test tables from previous tests
     await Promise.all(
-      testTables.map(name => connection.knex.schema.dropTableIfExists(name)),
+      testTables.map(name => inductor.knex.schema.dropTableIfExists(name)),
     );
   });
 
   afterAll(async () => {
-    await connection.close();
+    await inductor.close();
   });
 
   test.each(testTables)(
@@ -32,9 +32,9 @@ describe('Create Table from Schema', () => {
         indexes: {},
       };
 
-      await connection.setState([schema]);
+      await inductor.setState([schema]);
 
-      expect(await connection.knex.schema.hasTable(tableName)).toBeTruthy();
+      expect(await inductor.knex.schema.hasTable(tableName)).toBeTruthy();
     },
     5_000,
   );

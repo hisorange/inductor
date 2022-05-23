@@ -1,14 +1,12 @@
 import knex, { Knex } from 'knex';
 import { Model, ModelClass, Pojo } from 'objection';
 import pino, { Logger } from 'pino';
+import { IInductor } from './interface/inductor.interface';
 import { ISchema } from './interface/schema.interface';
 import { Migrator } from './migrator';
 import { filterPrimary } from './util/primary.filter';
 
-/**
- * This class manages the connection and applies the state of the database.
- */
-export class Connection {
+export class Inductor implements IInductor {
   /**
    * Pino instance
    */
@@ -51,6 +49,7 @@ export class Connection {
       pino({
         name: `inductor.${this.config.connection.database}`,
         level: process.env.NODE_ENV !== 'production' ? 'debug' : 'warn',
+        enabled: process.env.NODE_ENV !== 'test',
       });
 
     this.logger.info('Creating connection');
@@ -60,6 +59,11 @@ export class Connection {
       connection: {
         application_name: 'Inductor',
         ...this.config.connection,
+      },
+      pool: {
+        max: 50,
+        min: 0,
+        idleTimeoutMillis: 5_000,
       },
     });
 
@@ -72,7 +76,7 @@ export class Connection {
    * Get the database's name.
    */
   async getDatabaseName(): Promise<string> {
-    // Check if the database name is already set
+    // Check if the database name is already read
     if (!this.dbName) {
       this.dbName = (
         await this.knex
@@ -87,9 +91,6 @@ export class Connection {
     return this.dbName as string;
   }
 
-  /**
-   * Associate a schema with the connection
-   */
   async setState(schemas: ISchema[]) {
     this.logger.info('Applying new state');
 
@@ -113,11 +114,14 @@ export class Connection {
     this.logger.info('State applied');
   }
 
-  /**
-   * Get the associated model for the connection.
-   */
-  getModel(name: string): ModelClass<Model> | undefined {
-    return this.schemas.get(name)?.model;
+  getModel<T extends Model = Model>(name: string): ModelClass<T> {
+    const association = this.schemas.get(name);
+
+    if (!association) {
+      throw new Error(`Model ${name} not found`);
+    }
+
+    return association.model as ModelClass<T>;
   }
 
   /**
@@ -164,6 +168,10 @@ export class Connection {
     model.prototype.$beforeUpdate = onUpdate(schema);
 
     return model;
+  }
+
+  async readState(): Promise<ISchema[]> {
+    return this.migrator.readState();
   }
 
   close() {

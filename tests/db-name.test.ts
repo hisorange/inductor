@@ -1,20 +1,20 @@
-import { Connection } from '../src/connection';
-import { createConnection } from './util/create-connection';
+import { Inductor } from '../src/inductor';
+import { createTestInstance } from './util/create-connection';
 
 describe('Database Name', () => {
-  let connection: Connection;
+  let inductor: Inductor;
 
   beforeAll(async () => {
     // Create the test connection
-    connection = createConnection();
+    inductor = createTestInstance();
   });
 
   afterAll(async () => {
-    await connection.close();
+    await inductor.close();
   });
 
   test('should be able to get the database name', async () => {
-    const name = await connection.getDatabaseName();
+    const name = await inductor.getDatabaseName();
 
     expect(name).toBe('inductor');
   });

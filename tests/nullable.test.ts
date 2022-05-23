@@ -1,28 +1,28 @@
 import cloneDeep from 'lodash.clonedeep';
-import { Connection } from '../src/connection';
 import { ColumnType } from '../src/enum/column-type.enum';
+import { Inductor } from '../src/inductor';
 import { ISchema } from '../src/interface/schema.interface';
 import { allColumn } from './util/all-column';
-import { createConnection } from './util/create-connection';
+import { createTestInstance } from './util/create-connection';
 
 describe('Nullable Flag', () => {
-  let connection: Connection;
+  let inductor: Inductor;
   const testTables = Object.keys(allColumn);
 
   beforeAll(async () => {
     // Create the test connection
-    connection = createConnection();
+    inductor = createTestInstance();
 
     // Drop test tables from previous tests
     await Promise.all(
       testTables.map(name =>
-        connection.knex.schema.dropTableIfExists(`alter_nullable_${name}`),
+        inductor.knex.schema.dropTableIfExists(`alter_nullable_${name}`),
       ),
     );
   });
 
   afterAll(async () => {
-    await connection.close();
+    await inductor.close();
   });
 
   test.each(testTables)(
@@ -58,9 +58,9 @@ describe('Nullable Flag', () => {
       schemaRV1.columns[colName].isNullable = false;
 
       // Apply the state
-      await connection.setState([schemaRV1]);
+      await inductor.setState([schemaRV1]);
 
-      const columnRV1 = await connection.migrator.inspector.columnInfo(
+      const columnRV1 = await inductor.migrator.inspector.columnInfo(
         tableName,
         colName,
       );
@@ -71,10 +71,10 @@ describe('Nullable Flag', () => {
       schemaRV2.columns[colName].isNullable = true;
 
       // Apply the changes
-      await connection.setState([schemaRV2]);
+      await inductor.setState([schemaRV2]);
 
       // Verify the changes
-      const columnRV2 = await connection.migrator.inspector.columnInfo(
+      const columnRV2 = await inductor.migrator.inspector.columnInfo(
         tableName,
         colName,
       );
@@ -86,9 +86,9 @@ describe('Nullable Flag', () => {
       // Revert the nullable
       schemaRV3.columns[colName].isNullable = false;
 
-      await connection.setState([schemaRV3]);
+      await inductor.setState([schemaRV3]);
 
-      const columnRV3 = await connection.migrator.inspector.columnInfo(
+      const columnRV3 = await inductor.migrator.inspector.columnInfo(
         tableName,
         colName,
       );

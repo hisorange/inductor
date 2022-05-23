@@ -1,28 +1,28 @@
 import cloneDeep from 'lodash.clonedeep';
-import { Connection } from '../src/connection';
 import { ColumnType } from '../src/enum/column-type.enum';
+import { Inductor } from '../src/inductor';
 import { ISchema } from '../src/interface/schema.interface';
 import { allColumn } from './util/all-column';
-import { createConnection } from './util/create-connection';
+import { createTestInstance } from './util/create-connection';
 
 describe('Unique Constraint', () => {
-  let connection: Connection;
+  let inductor: Inductor;
 
   const testTables = Object.keys(allColumn);
 
   beforeAll(async () => {
     // Create the test connection
-    connection = createConnection();
+    inductor = createTestInstance();
 
     // Drop test tables from previous tests
     await Promise.all(
       testTables.map(name =>
-        connection.knex.schema.dropTableIfExists(`alter_unique_${name}`),
+        inductor.knex.schema.dropTableIfExists(`alter_unique_${name}`),
       ),
     );
   });
   afterAll(async () => {
-    await connection.close();
+    await inductor.close();
   });
 
   test.each(Object.keys(allColumn))(
@@ -43,11 +43,11 @@ describe('Unique Constraint', () => {
       schema.columns[columnKey].isUnique = true;
 
       // Apply the statement
-      await connection.setState([schema]);
+      await inductor.setState([schema]);
 
-      expect(await connection.knex.schema.hasTable(tableName)).toBeTruthy();
+      expect(await inductor.knex.schema.hasTable(tableName)).toBeTruthy();
       expect(
-        (await connection.migrator.inspector.columnInfo(tableName, columnKey))
+        (await inductor.migrator.inspector.columnInfo(tableName, columnKey))
           .is_unique,
       ).toBe(schema.columns[columnKey].isUnique);
     },
@@ -86,9 +86,9 @@ describe('Unique Constraint', () => {
       schemaRV1.columns[colName].isUnique = false;
 
       // Apply the state
-      await connection.setState([schemaRV1]);
+      await inductor.setState([schemaRV1]);
 
-      const columnRV1 = await connection.migrator.inspector.columnInfo(
+      const columnRV1 = await inductor.migrator.inspector.columnInfo(
         tableName,
         colName,
       );
@@ -99,10 +99,10 @@ describe('Unique Constraint', () => {
       schemaRV2.columns[colName].isUnique = true;
 
       // Apply the changes
-      await connection.setState([schemaRV2]);
+      await inductor.setState([schemaRV2]);
 
       // Verify the changes
-      const columnRV2 = await connection.migrator.inspector.columnInfo(
+      const columnRV2 = await inductor.migrator.inspector.columnInfo(
         tableName,
         colName,
       );
@@ -114,9 +114,9 @@ describe('Unique Constraint', () => {
       // Revert the nullable
       schemaRV3.columns[colName].isUnique = false;
 
-      await connection.setState([schemaRV3]);
+      await inductor.setState([schemaRV3]);
 
-      const columnRV3 = await connection.migrator.inspector.columnInfo(
+      const columnRV3 = await inductor.migrator.inspector.columnInfo(
         tableName,
         colName,
       );
@@ -158,12 +158,12 @@ describe('Unique Constraint', () => {
       };
 
       // Apply the statement
-      await connection.setState([schema]);
+      await inductor.setState([schema]);
 
       const reversedUniqueName = `${tableName}_pair`;
 
       // Verify if the column is not unique
-      const uniques = await connection.migrator.inspector.getCompositeUniques(
+      const uniques = await inductor.migrator.inspector.getCompositeUniques(
         tableName,
       );
 
@@ -202,12 +202,12 @@ describe('Unique Constraint', () => {
     };
 
     // Create the table with a single unique
-    await connection.setState([schema]);
+    await inductor.setState([schema]);
 
     // Verify the single unique column
     expect(
       (
-        await connection.migrator.inspector.columnInfo(
+        await inductor.migrator.inspector.columnInfo(
           'unique_test_upgrade',
           'col_1',
         )
@@ -219,12 +219,12 @@ describe('Unique Constraint', () => {
     schema.uniques.test_cmp_1 = ['col_1', 'col_2'];
 
     // Apply the statement
-    await connection.setState([schema]);
+    await inductor.setState([schema]);
 
     // Verify the composite unique column
     expect(
       (
-        await connection.migrator.inspector.columnInfo(
+        await inductor.migrator.inspector.columnInfo(
           'unique_test_upgrade',
           'col_1',
         )
@@ -232,7 +232,7 @@ describe('Unique Constraint', () => {
     ).toBeFalsy();
     expect(
       (
-        await connection.migrator.inspector.columnInfo(
+        await inductor.migrator.inspector.columnInfo(
           'unique_test_upgrade',
           'col_2',
         )
@@ -240,7 +240,7 @@ describe('Unique Constraint', () => {
     ).toBeFalsy();
 
     // Verify the composite unique
-    const uniques = await connection.migrator.inspector.getCompositeUniques(
+    const uniques = await inductor.migrator.inspector.getCompositeUniques(
       'unique_test_upgrade',
     );
     expect(uniques).toStrictEqual({
@@ -259,10 +259,10 @@ describe('Unique Constraint', () => {
     schema.uniques.test_cmp_1.push('col_3');
 
     // Apply the statement
-    await connection.setState([schema]);
+    await inductor.setState([schema]);
 
     // Verify the composite unique
-    const uniques2 = await connection.migrator.inspector.getCompositeUniques(
+    const uniques2 = await inductor.migrator.inspector.getCompositeUniques(
       'unique_test_upgrade',
     );
     expect(uniques2).toStrictEqual({
@@ -273,10 +273,10 @@ describe('Unique Constraint', () => {
     delete schema.uniques.test_cmp_1;
 
     // Apply the statement
-    await connection.setState([schema]);
+    await inductor.setState([schema]);
 
     // Verify the composite unique
-    const uniques3 = await connection.migrator.inspector.getCompositeUniques(
+    const uniques3 = await inductor.migrator.inspector.getCompositeUniques(
       'unique_test_upgrade',
     );
     expect(uniques3).toStrictEqual({});

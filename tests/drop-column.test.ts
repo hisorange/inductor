@@ -1,11 +1,11 @@
 import cloneDeep from 'lodash.clonedeep';
-import { Connection } from '../src/connection';
 import { ColumnType } from '../src/enum/column-type.enum';
+import { Inductor } from '../src/inductor';
 import { ISchema } from '../src/interface/schema.interface';
-import { createConnection } from './util/create-connection';
+import { createTestInstance } from './util/create-connection';
 
 describe('Drop Column', () => {
-  let connection: Connection;
+  let inductor: Inductor;
 
   const columns: ISchema['columns'] = {
     col_var_1: {
@@ -42,16 +42,16 @@ describe('Drop Column', () => {
 
   beforeAll(async () => {
     // Create the test connection
-    connection = createConnection();
+    inductor = createTestInstance();
 
     // Drop test tables from previous tests
     await Promise.all(
-      testTables.map(name => connection.knex.schema.dropTableIfExists(name)),
+      testTables.map(name => inductor.knex.schema.dropTableIfExists(name)),
     );
   });
 
   afterAll(async () => {
-    await connection.close();
+    await inductor.close();
   });
 
   test.each(Object.keys(columns))(
@@ -68,9 +68,9 @@ describe('Drop Column', () => {
         indexes: {},
       };
       // Apply the state
-      await connection.setState([schemaRV1]);
+      await inductor.setState([schemaRV1]);
 
-      const columnRV1 = await connection.migrator.inspector.hasColumn(
+      const columnRV1 = await inductor.migrator.inspector.hasColumn(
         tableName,
         col,
       );
@@ -80,8 +80,8 @@ describe('Drop Column', () => {
       delete schemaRV2.columns[col];
 
       // Apply the changes
-      await connection.setState([schemaRV2]);
-      const columnRV2 = await connection.migrator.inspector.hasColumn(
+      await inductor.setState([schemaRV2]);
+      const columnRV2 = await inductor.migrator.inspector.hasColumn(
         tableName,
         col,
       );

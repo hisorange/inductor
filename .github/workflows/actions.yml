@@ -33,6 +33,7 @@ jobs:
         with:
           node-version: 16.x
       - run: yarn install
+      - run: yarn test:types
       - run: yarn build
       - run: yarn test
         env:

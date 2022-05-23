@@ -1,7 +1,7 @@
-import { Connection } from '../../src/connection';
+import { Inductor } from '../../src/inductor';
 
-export const createConnection = () => {
-  const config: Connection['config'] = {
+export const createTestInstance = () => {
+  const config: Inductor['config'] = {
     connection: {
       host: 'localhost',
       port: 5432,
@@ -11,5 +11,5 @@ export const createConnection = () => {
     },
   };
 
-  return new Connection(config);
+  return new Inductor(config);
 };

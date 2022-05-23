@@ -14,9 +14,13 @@
   "main": "build/index.js",
   "repository": "https://github.com/hisorange/inductor",
   "author": "Zsolt Varga <hello@hisorange.me>",
+  "engine": {
+    "node": ">=16.0.0"
+  },
   "license": "GPL-3.0",
   "scripts": {
     "build": "tsc --build ./tsconfig.json",
+    "test:types": "tsc --noEmit",
     "test": "jest -i",
     "db:start": "docker-compose up -d --renew-anon-volumes",
     "db:stop": "docker-compose down",

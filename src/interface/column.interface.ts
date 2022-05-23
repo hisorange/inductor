@@ -13,7 +13,7 @@ export interface IColumn {
   type: ColumnType;
 
   /**
-   * Nullable rule.
+   * Nullable constraint.
    */
   isNullable: boolean;
 
