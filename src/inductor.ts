@@ -128,31 +128,50 @@ export class Inductor implements IInductor {
    * Convert the schema into a model class.
    */
   protected toModel(schema: ISchema): ModelClass<Model> {
+    // Prepare fast lookup maps for both propery and column name conversions.
+    // Even tho this is a small amount of data, it's worth it to avoid
+    // having to iterate over the properties of the model class.
+    const columnMap = new Map<string, string>();
+    const propertyMap = new Map<string, string>();
+
+    for (const columnName in Object.keys(schema.columns)) {
+      const propertyName = schema.columns[columnName]?.alias ?? columnName;
+
+      // Map column names to property names
+      columnMap.set(columnName, propertyName);
+      // Map property names to column names
+      propertyMap.set(propertyName, columnName);
+    }
+
     // Map database columns to code level references
     // Database -> Model = Getter
-    const toProperty = (s: ISchema) => {
-      return (database: Pojo): Pojo => {
-        return database;
-      };
+    const databaseToModel = (dbPojo: Pojo): Pojo => {
+      const modelPojo: Pojo = {};
+
+      for (const columnName of Object.keys(dbPojo)) {
+        modelPojo[columnMap.get(columnName)!] = dbPojo[columnName];
+      }
+
+      return dbPojo;
     };
 
     // Map code level references to database columns
     // Database -> Model = Setter
-    const toColumn = (s: ISchema) => {
-      return (code: Pojo): Pojo => {
-        return code;
-      };
+    const modelToDatabase = (modelPojo: Pojo): Pojo => {
+      const dbPojo: Pojo = {};
+
+      for (const propertyName of Object.keys(modelPojo)) {
+        dbPojo[propertyMap.get(propertyName)!] = modelPojo[propertyName];
+      }
+
+      return dbPojo;
     };
 
     // Hook before the model is created
-    const onCreate = (schema: ISchema) => {
-      return function () {};
-    };
+    const onCreate = () => {};
 
     // Hook before the model is updated
-    const onUpdate = (s: ISchema) => {
-      return function () {};
-    };
+    const onUpdate = () => {};
 
     const model = class extends Model {};
 
@@ -160,12 +179,12 @@ export class Inductor implements IInductor {
     model.idColumn = filterPrimary(schema);
 
     model.columnNameMappers = {
-      parse: toProperty(schema),
-      format: toColumn(schema),
+      parse: databaseToModel,
+      format: modelToDatabase,
     };
 
-    model.prototype.$beforeInsert = onCreate(schema);
-    model.prototype.$beforeUpdate = onUpdate(schema);
+    // model.prototype.$beforeInsert = onCreate;
+    // model.prototype.$beforeUpdate = onUpdate;
 
     return model;
   }

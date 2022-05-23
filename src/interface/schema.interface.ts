@@ -12,6 +12,14 @@ export interface ISchema {
   name: string;
 
   /**
+   * Sharding configuration.
+   */
+  shard?: {
+    kind: 'hash';
+    column: string;
+  };
+
+  /**
    * Columns of the table.
    */
   columns: {

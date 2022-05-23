@@ -8,6 +8,11 @@ export interface IColumn {
   kind: 'column';
 
   /**
+   * Property alias on the model.
+   */
+  alias?: string;
+
+  /**
    * Mapping to the PostgreSQL 14's data type
    */
   type: ColumnType;
