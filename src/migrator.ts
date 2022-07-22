@@ -40,21 +40,21 @@ export class Migrator {
     const changes: Knex.SchemaBuilder[] = [];
 
     for (let targetState of schemas) {
-      this.logger.debug('Processing schema %s', targetState.name);
+      this.logger.debug('Processing schema %s', targetState.tableName);
 
       // Fix inconsistent schemas
       targetState = sanitizeSchema(targetState);
 
       if (targetState.kind === 'table') {
         // If the table doesn't exist, create it
-        if (!tables.includes(targetState.name)) {
+        if (!tables.includes(targetState.tableName)) {
           changes.push(createTable(this.knex.schema, targetState));
         }
         // If the table exists, compare the state and apply the alterations
         else {
           const currentState = await reverseTable(
             this.inspector,
-            targetState.name,
+            targetState.tableName,
           );
 
           changes.push(alterTable(this.knex.schema, currentState, targetState));

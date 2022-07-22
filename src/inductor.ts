@@ -108,7 +108,7 @@ export class Inductor implements IInductor {
       // Associate the knex instance with the newly created model class.
       model.knex(this.knex);
 
-      this.schemas.set(schema.name, {
+      this.schemas.set(schema.tableName, {
         schema,
         model,
       });
@@ -141,7 +141,8 @@ export class Inductor implements IInductor {
     const propertyMap = new Map<string, string>();
 
     for (const columnName in Object.keys(schema.columns)) {
-      const propertyName = schema.columns[columnName]?.alias ?? columnName;
+      const propertyName =
+        schema.columns[columnName]?.propertyName ?? columnName;
 
       // Map column names to property names
       columnMap.set(columnName, propertyName);
@@ -181,7 +182,7 @@ export class Inductor implements IInductor {
 
     const model = class extends Model {};
 
-    model.tableName = schema.name;
+    model.tableName = schema.tableName;
     model.idColumn = filterPrimary(schema);
 
     model.columnNameMappers = {

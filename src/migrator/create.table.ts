@@ -7,7 +7,7 @@ export const createTable = (
   builder: Knex.SchemaBuilder,
   schema: ISchema,
 ): Knex.SchemaBuilder =>
-  builder.createTable(schema.name, table => {
+  builder.createTable(schema.tableName, table => {
     for (const name in schema.columns) {
       if (Object.prototype.hasOwnProperty.call(schema.columns, name)) {
         createColumn(table, name, schema.columns[name], schema);
@@ -24,9 +24,9 @@ export const createTable = (
     for (const name in schema.uniques) {
       if (Object.prototype.hasOwnProperty.call(schema.uniques, name)) {
         // Prefix the unique name with the table name if it is not already prefixed
-        const uniqueName = name.startsWith(schema.name)
+        const uniqueName = name.startsWith(schema.tableName)
           ? name
-          : `${schema.name}_${name}`;
+          : `${schema.tableName}_${name}`;
 
         table.unique(schema.uniques[name], {
           indexName: uniqueName,

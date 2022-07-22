@@ -61,7 +61,7 @@ describe('Add Column', () => {
 
       // Create the table
       const schemaRV1: ISchema = {
-        name: tableName,
+        tableName,
         kind: 'table',
         columns: cloneDeep(columns),
         uniques: {},

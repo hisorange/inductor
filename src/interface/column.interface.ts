@@ -10,7 +10,7 @@ export interface IColumn {
   /**
    * Property alias on the model.
    */
-  alias?: string;
+  propertyName?: string;
 
   /**
    * Mapping to the PostgreSQL 14's data type

@@ -25,7 +25,7 @@ describe('Create Table from Schema', () => {
     'should create the [%s] table from schema',
     async (tableName: string) => {
       const schema: ISchema = {
-        name: tableName,
+        tableName,
         kind: 'table',
         columns: allColumn,
         uniques: {},

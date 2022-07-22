@@ -4,39 +4,31 @@ export interface ISchema {
   /**
    * Can define view or table.
    */
-  kind: 'table' | 'view';
+  kind: 'table';
 
   /**
    * Programatical identified. (applied as the table's name)
    */
-  name: string;
-
-  /**
-   * Sharding configuration.
-   */
-  shard?: {
-    kind: 'hash';
-    column: string;
-  };
+  tableName: string;
 
   /**
    * Columns of the table.
    */
   columns: {
-    [name: string]: IColumn;
+    [columnName: string]: IColumn;
   };
 
   /**
    * Unique constraints of the table.
    */
   uniques: {
-    [name: string]: string[];
+    [constraintName: string]: string[];
   };
 
   /**
    * Indices of the table.
    */
   indexes: {
-    [name: string]: string[];
+    [indexName: string]: string[];
   };
 }

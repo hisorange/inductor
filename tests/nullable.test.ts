@@ -32,7 +32,7 @@ describe('Nullable Flag', () => {
 
       // Create the table
       const schemaRV1: ISchema = {
-        name: tableName,
+        tableName,
         kind: 'table',
         uniques: {},
         indexes: {},

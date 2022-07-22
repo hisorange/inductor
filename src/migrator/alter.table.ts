@@ -10,7 +10,7 @@ export const alterTable = (
   currentSchema: ISchema,
   expectedSchema: ISchema,
 ): Knex.SchemaBuilder => {
-  return builder.alterTable(expectedSchema.name, async builder => {
+  return builder.alterTable(expectedSchema.tableName, async builder => {
     const difference = diff(currentSchema, expectedSchema);
     // Track the primary keys change, since it may has to be altered after the columns
     let isPrimaryChanged = false;
@@ -88,9 +88,9 @@ export const alterTable = (
       else if (path[0] === 'uniques') {
         const name = path[1] as string;
         // Prefix the unique name with the table name if it is not already prefixed
-        const indexName = name.startsWith(expectedSchema.name)
+        const indexName = name.startsWith(expectedSchema.tableName)
           ? name
-          : `${expectedSchema.name}_${name}`;
+          : `${expectedSchema.tableName}_${name}`;
 
         switch (op) {
           // New unique added

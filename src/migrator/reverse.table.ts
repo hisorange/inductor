@@ -5,7 +5,7 @@ import { sanitizeSchema } from '../util/sanitize.schema';
 
 export const reverseTable = async (inspector: Inspector, table: string) => {
   const schema: ISchema = {
-    name: table,
+    tableName: table,
     kind: 'table',
     columns: {},
     uniques: {},

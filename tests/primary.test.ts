@@ -32,7 +32,7 @@ describe('Primary Constraint', () => {
 
       // Create the table
       const schemaRV1: ISchema = {
-        name: tableName,
+        tableName,
         kind: 'table',
         columns: {
           [colName]: allColumn[colName],
@@ -64,7 +64,7 @@ describe('Primary Constraint', () => {
 
       // Create the table
       const schemaRV1: ISchema = {
-        name: tableName,
+        tableName,
         kind: 'table',
         columns: {
           prefix: {
@@ -137,7 +137,7 @@ describe('Primary Constraint', () => {
 
   test('should be able to add/remove the primary keys', async () => {
     const schema: ISchema = {
-      name: 'alter_primary_extend',
+      tableName: 'alter_primary_extend',
       kind: 'table',
       columns: {
         first: {

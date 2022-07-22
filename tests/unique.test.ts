@@ -31,7 +31,7 @@ describe('Unique Constraint', () => {
       const tableName = `unique_test_${columnKey}`;
 
       const schema: ISchema = {
-        name: tableName,
+        tableName,
         kind: 'table',
         uniques: {},
         indexes: {},
@@ -60,7 +60,7 @@ describe('Unique Constraint', () => {
 
       // Create the table
       const schemaRV1: ISchema = {
-        name: tableName,
+        tableName,
         kind: 'table',
         uniques: {},
         indexes: {},
@@ -133,7 +133,7 @@ describe('Unique Constraint', () => {
       const tableName = `unique_test_comp_${columnKey}`;
 
       const schema: ISchema = {
-        name: tableName,
+        tableName,
         kind: 'table',
         uniques: {},
         indexes: {},
@@ -179,7 +179,7 @@ describe('Unique Constraint', () => {
 
   test('should be able to alter between compound unique states', async () => {
     const schema: ISchema = {
-      name: 'unique_test_upgrade',
+      tableName: 'unique_test_upgrade',
       kind: 'table',
       uniques: {},
       indexes: {},
