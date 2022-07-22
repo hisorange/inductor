@@ -1,5 +1,5 @@
 import { Knex } from 'knex';
-import { ColumnType } from '../enum/column-type.enum';
+import { PostgresColumnType } from '../enum/column-type.enum';
 import { IColumn } from '../interface/column.interface';
 import { ISchema } from '../interface/schema.interface';
 import { filterPrimary } from '../util/primary.filter';
@@ -13,137 +13,137 @@ export const createColumn = (
   let columnBuilder: Knex.ColumnBuilder;
 
   switch (column.type) {
-    case ColumnType.BIGINT:
+    case PostgresColumnType.BIGINT:
       columnBuilder = table.bigInteger(name);
       break;
-    case ColumnType.BIGSERIAL:
+    case PostgresColumnType.BIGSERIAL:
       columnBuilder = table.specificType(name, 'bigserial');
       break;
-    case ColumnType.BIT:
+    case PostgresColumnType.BIT:
       columnBuilder = table.specificType(name, 'bit');
       break;
-    case ColumnType.BIT_VARYING:
+    case PostgresColumnType.BIT_VARYING:
       columnBuilder = table.specificType(name, 'bit varying');
       break;
-    case ColumnType.BOOLEAN:
+    case PostgresColumnType.BOOLEAN:
       columnBuilder = table.boolean(name);
       break;
-    case ColumnType.BOX:
+    case PostgresColumnType.BOX:
       columnBuilder = table.specificType(name, 'box');
       break;
-    case ColumnType.BYTEA:
+    case PostgresColumnType.BYTEA:
       columnBuilder = table.specificType(name, 'bytea');
       break;
-    case ColumnType.CHAR:
+    case PostgresColumnType.CHAR:
       columnBuilder = table.specificType(name, 'character');
       break;
-    case ColumnType.CHAR_VARYING:
+    case PostgresColumnType.CHAR_VARYING:
       columnBuilder = table.specificType(name, 'character varying');
       break;
-    case ColumnType.CIDR:
+    case PostgresColumnType.CIDR:
       columnBuilder = table.specificType(name, 'cidr');
       break;
-    case ColumnType.CIRCLE:
+    case PostgresColumnType.CIRCLE:
       columnBuilder = table.specificType(name, 'circle');
       break;
-    case ColumnType.DATE:
+    case PostgresColumnType.DATE:
       columnBuilder = table.date(name);
       break;
-    case ColumnType.DOUBLE:
+    case PostgresColumnType.DOUBLE:
       columnBuilder = table.specificType(name, 'double precision');
       break;
-    case ColumnType.INET:
+    case PostgresColumnType.INET:
       columnBuilder = table.specificType(name, 'inet');
       break;
-    case ColumnType.INTEGER:
+    case PostgresColumnType.INTEGER:
       columnBuilder = table.integer(name);
       break;
-    case ColumnType.INTERVAL:
+    case PostgresColumnType.INTERVAL:
       columnBuilder = table.specificType(name, 'interval');
       break;
-    case ColumnType.JSON:
+    case PostgresColumnType.JSON:
       columnBuilder = table.json(name);
       break;
-    case ColumnType.JSONB:
+    case PostgresColumnType.JSONB:
       columnBuilder = table.jsonb(name);
       break;
-    case ColumnType.LINE:
+    case PostgresColumnType.LINE:
       columnBuilder = table.specificType(name, 'line');
       break;
-    case ColumnType.LSEG:
+    case PostgresColumnType.LSEG:
       columnBuilder = table.specificType(name, 'lseg');
       break;
-    case ColumnType.MACADDR:
+    case PostgresColumnType.MACADDR:
       columnBuilder = table.specificType(name, 'macaddr');
       break;
-    case ColumnType.MACADDR8:
+    case PostgresColumnType.MACADDR8:
       columnBuilder = table.specificType(name, 'macaddr8');
       break;
-    case ColumnType.MONEY:
+    case PostgresColumnType.MONEY:
       columnBuilder = table.specificType(name, 'money');
       break;
-    case ColumnType.NUMERIC:
+    case PostgresColumnType.NUMERIC:
       columnBuilder = table.specificType(name, 'numeric');
       break;
-    case ColumnType.PATH:
+    case PostgresColumnType.PATH:
       columnBuilder = table.specificType(name, 'path');
       break;
-    case ColumnType.PG_LSN:
+    case PostgresColumnType.PG_LSN:
       columnBuilder = table.specificType(name, 'pg_lsn');
       break;
-    case ColumnType.PG_SNAPSHOT:
+    case PostgresColumnType.PG_SNAPSHOT:
       columnBuilder = table.specificType(name, 'pg_snapshot');
       break;
-    case ColumnType.POINT:
+    case PostgresColumnType.POINT:
       columnBuilder = table.specificType(name, 'point');
       break;
-    case ColumnType.POLYGON:
+    case PostgresColumnType.POLYGON:
       columnBuilder = table.specificType(name, 'polygon');
       break;
-    case ColumnType.REAL:
+    case PostgresColumnType.REAL:
       columnBuilder = table.specificType(name, 'real');
       break;
-    case ColumnType.SMALLINT:
+    case PostgresColumnType.SMALLINT:
       columnBuilder = table.smallint(name);
       break;
-    case ColumnType.SMALLSERIAL:
+    case PostgresColumnType.SMALLSERIAL:
       columnBuilder = table.specificType(name, 'smallserial');
       break;
-    case ColumnType.SERIAL:
+    case PostgresColumnType.SERIAL:
       columnBuilder = table.specificType(name, 'serial');
       break;
-    case ColumnType.TEXT:
+    case PostgresColumnType.TEXT:
       columnBuilder = table.text(name);
       break;
-    case ColumnType.TIME:
+    case PostgresColumnType.TIME:
       columnBuilder = table.time(name);
       break;
-    case ColumnType.TIME_WITH_TIMEZONE:
+    case PostgresColumnType.TIME_WITH_TIMEZONE:
       columnBuilder = table.specificType(name, 'time with time zone');
       break;
-    case ColumnType.TIMESTAMP:
+    case PostgresColumnType.TIMESTAMP:
       columnBuilder = table.timestamp(name, {
         useTz: false,
       });
       break;
-    case ColumnType.TIMESTAMP_WITH_TIMEZONE:
+    case PostgresColumnType.TIMESTAMP_WITH_TIMEZONE:
       columnBuilder = table.timestamp(name, {
         useTz: true,
       });
       break;
-    case ColumnType.TSQUERY:
+    case PostgresColumnType.TSQUERY:
       columnBuilder = table.specificType(name, 'tsquery');
       break;
-    case ColumnType.TSVECTOR:
+    case PostgresColumnType.TSVECTOR:
       columnBuilder = table.specificType(name, 'tsvector');
       break;
-    case ColumnType.TXID_SNAPSHOT:
+    case PostgresColumnType.TXID_SNAPSHOT:
       columnBuilder = table.specificType(name, 'txid_snapshot');
       break;
-    case ColumnType.UUID:
+    case PostgresColumnType.UUID:
       columnBuilder = table.uuid(name);
       break;
-    case ColumnType.XML:
+    case PostgresColumnType.XML:
       columnBuilder = table.specificType(name, 'xml');
       break;
 

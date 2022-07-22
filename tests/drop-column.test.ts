@@ -1,5 +1,5 @@
 import cloneDeep from 'lodash.clonedeep';
-import { ColumnType } from '../src/enum/column-type.enum';
+import { PostgresColumnType } from '../src/enum/column-type.enum';
 import { Inductor } from '../src/inductor';
 import { ISchema } from '../src/interface/schema.interface';
 import { createTestInstance } from './util/create-connection';
@@ -10,28 +10,28 @@ describe('Drop Column', () => {
   const columns: ISchema['columns'] = {
     col_var_1: {
       kind: 'column',
-      type: ColumnType.INTEGER,
-      isNullable: true,
-      isUnique: true,
+      type: PostgresColumnType.INTEGER,
+      isNullable: false,
+      isUnique: false,
       isPrimary: true,
     },
     col_var_2: {
       kind: 'column',
-      type: ColumnType.INTEGER,
+      type: PostgresColumnType.INTEGER,
       isNullable: true,
       isUnique: false,
       isPrimary: false,
     },
     col_var_3: {
       kind: 'column',
-      type: ColumnType.INTEGER,
+      type: PostgresColumnType.INTEGER,
       isNullable: false,
       isUnique: true,
       isPrimary: false,
     },
     col_var_4: {
       kind: 'column',
-      type: ColumnType.INTEGER,
+      type: PostgresColumnType.INTEGER,
       isNullable: false,
       isUnique: false,
       isPrimary: false,

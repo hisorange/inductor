@@ -1,4 +1,4 @@
-import { ColumnType } from '../enum/column-type.enum';
+import { PostgresColumnType } from '../enum/column-type.enum';
 
 export interface IColumn {
   /**
@@ -15,7 +15,7 @@ export interface IColumn {
   /**
    * Mapping to the PostgreSQL 14's data type
    */
-  type: ColumnType;
+  type: PostgresColumnType;
 
   /**
    * Nullable constraint.

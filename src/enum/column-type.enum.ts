@@ -1,4 +1,4 @@
-export enum ColumnType {
+export enum PostgresColumnType {
   BIGINT = 'bigint',
   BIGSERIAL = 'bigserial',
   BIT = 'bit',

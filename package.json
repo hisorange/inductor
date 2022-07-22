@@ -19,7 +19,7 @@
   },
   "license": "GPL-3.0",
   "scripts": {
-    "build": "tsc --build ./tsconfig.json",
+    "build": "tsc --build ./tsconfig.build.json",
     "test:types": "tsc --noEmit",
     "test": "jest -i",
     "db:start": "docker-compose up -d --renew-anon-volumes",

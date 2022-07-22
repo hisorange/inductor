@@ -1,7 +1,8 @@
 import cloneDeep from 'lodash.clonedeep';
-import { ColumnType } from '../src/enum/column-type.enum';
+import { PostgresColumnType } from '../src/enum/column-type.enum';
 import { Inductor } from '../src/inductor';
 import { ISchema } from '../src/interface/schema.interface';
+import { validateSchema } from '../src/util/schema.validator';
 import { allColumn } from './util/all-column';
 import { createTestInstance } from './util/create-connection';
 
@@ -42,6 +43,12 @@ describe('Unique Constraint', () => {
       // Set the column to unique
       schema.columns[columnKey].isUnique = true;
 
+      try {
+        validateSchema(schema);
+      } catch (error) {
+        return;
+      }
+
       // Apply the statement
       await inductor.setState([schema]);
 
@@ -67,7 +74,7 @@ describe('Unique Constraint', () => {
         columns: {
           id: {
             kind: 'column',
-            type: ColumnType.INTEGER,
+            type: PostgresColumnType.INTEGER,
             isNullable: false,
             isUnique: false,
             isPrimary: true,
@@ -75,7 +82,7 @@ describe('Unique Constraint', () => {
           [colName]: allColumn[colName],
           createdAt: {
             kind: 'column',
-            type: ColumnType.DATE,
+            type: PostgresColumnType.DATE,
             isNullable: false,
             isUnique: false,
             isPrimary: false,
@@ -84,6 +91,12 @@ describe('Unique Constraint', () => {
       };
       // Set nullable to false
       schemaRV1.columns[colName].isUnique = false;
+
+      try {
+        validateSchema(schemaRV1);
+      } catch (error) {
+        return;
+      }
 
       // Apply the state
       await inductor.setState([schemaRV1]);
@@ -97,6 +110,12 @@ describe('Unique Constraint', () => {
       const schemaRV2 = cloneDeep(schemaRV1);
       // Change the nullable
       schemaRV2.columns[colName].isUnique = true;
+
+      try {
+        validateSchema(schemaRV2);
+      } catch (error) {
+        return;
+      }
 
       // Apply the changes
       await inductor.setState([schemaRV2]);
@@ -140,7 +159,7 @@ describe('Unique Constraint', () => {
         columns: {
           [columnKey]: allColumn[columnKey],
           pair_for_comp: {
-            type: ColumnType.BIGINT,
+            type: PostgresColumnType.BIGINT,
             kind: 'column',
             isUnique: false,
             isPrimary: false,
@@ -156,6 +175,12 @@ describe('Unique Constraint', () => {
       schema.uniques = {
         pair: [columnKey, 'pair_for_comp'],
       };
+
+      try {
+        validateSchema(schema);
+      } catch (error) {
+        return;
+      }
 
       // Apply the statement
       await inductor.setState([schema]);
@@ -186,14 +211,14 @@ describe('Unique Constraint', () => {
       columns: {
         col_1: {
           kind: 'column',
-          type: ColumnType.INTEGER,
+          type: PostgresColumnType.INTEGER,
           isNullable: false,
           isUnique: true,
           isPrimary: false,
         },
         col_2: {
           kind: 'column',
-          type: ColumnType.INTEGER,
+          type: PostgresColumnType.INTEGER,
           isNullable: false,
           isUnique: false,
           isPrimary: false,
@@ -250,7 +275,7 @@ describe('Unique Constraint', () => {
     // Create a new column and add it to the composite unique
     schema.columns.col_3 = {
       kind: 'column',
-      type: ColumnType.INTEGER,
+      type: PostgresColumnType.INTEGER,
       isNullable: false,
       isUnique: false,
       isPrimary: false,

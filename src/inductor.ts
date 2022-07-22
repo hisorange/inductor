@@ -5,6 +5,7 @@ import { IInductor } from './interface/inductor.interface';
 import { ISchema } from './interface/schema.interface';
 import { Migrator } from './migrator';
 import { filterPrimary } from './util/primary.filter';
+import { validateSchema } from './util/schema.validator';
 
 export class Inductor implements IInductor {
   /**
@@ -25,7 +26,7 @@ export class Inductor implements IInductor {
   /**
    * Associated schemas with the connection
    */
-  protected schemas = new Map<
+  protected schemaDictionary = new Map<
     string,
     { schema: ISchema; model: ModelClass<Model> }
   >();
@@ -100,19 +101,24 @@ export class Inductor implements IInductor {
   async setState(schemas: ISchema[]) {
     this.logger.info('Applying new state');
 
-    this.schemas = new Map();
+    const newSchemaMap = new Map();
 
     for (const schema of schemas) {
+      // Validate the schema
+      validateSchema(schema);
+
       const model = this.toModel(schema);
 
       // Associate the knex instance with the newly created model class.
       model.knex(this.knex);
 
-      this.schemas.set(schema.tableName, {
+      newSchemaMap.set(schema.tableName, {
         schema,
         model,
       });
     }
+
+    this.schemaDictionary = newSchemaMap;
 
     this.logger.info('Migrating database');
     await this.migrator.setState(schemas);
@@ -121,7 +127,7 @@ export class Inductor implements IInductor {
   }
 
   getModel<T extends Model = Model>(name: string): ModelClass<T> {
-    const association = this.schemas.get(name);
+    const association = this.schemaDictionary.get(name);
 
     if (!association) {
       throw new Error(`Model ${name} not found`);

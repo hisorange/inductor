@@ -1,5 +1,6 @@
 import { Inductor } from '../src/inductor';
 import { ISchema } from '../src/interface/schema.interface';
+import { validateSchema } from '../src/util/schema.validator';
 import { allColumn } from './util/all-column';
 import { createTestInstance } from './util/create-connection';
 
@@ -31,6 +32,12 @@ describe('Create Table from Schema', () => {
         uniques: {},
         indexes: {},
       };
+
+      try {
+        validateSchema(schema);
+      } catch (error) {
+        return;
+      }
 
       await inductor.setState([schema]);
 

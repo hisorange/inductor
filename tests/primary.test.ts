@@ -1,7 +1,8 @@
 import cloneDeep from 'lodash.clonedeep';
-import { ColumnType } from '../src/enum/column-type.enum';
+import { PostgresColumnType } from '../src/enum/column-type.enum';
 import { Inductor } from '../src/inductor';
 import { ISchema } from '../src/interface/schema.interface';
+import { validateSchema } from '../src/util/schema.validator';
 import { allColumn } from './util/all-column';
 import { createTestInstance } from './util/create-connection';
 
@@ -43,6 +44,13 @@ describe('Primary Constraint', () => {
       // Set primary to false
       schemaRV1.columns[colName].isPrimary = true;
 
+      // Validate the schema
+      try {
+        validateSchema(schemaRV1);
+      } catch (error) {
+        return;
+      }
+
       // Apply the state
       await inductor.setState([schemaRV1]);
 
@@ -69,7 +77,7 @@ describe('Primary Constraint', () => {
         columns: {
           prefix: {
             kind: 'column',
-            type: ColumnType.INTEGER,
+            type: PostgresColumnType.INTEGER,
             isNullable: false,
             isUnique: false,
             isPrimary: false,
@@ -77,7 +85,7 @@ describe('Primary Constraint', () => {
           [colName]: allColumn[colName],
           createdAt: {
             kind: 'column',
-            type: ColumnType.DATE,
+            type: PostgresColumnType.DATE,
             isNullable: false,
             isUnique: false,
             isPrimary: false,
@@ -88,6 +96,13 @@ describe('Primary Constraint', () => {
       };
       // Set primary to false
       schemaRV1.columns[colName].isPrimary = false;
+
+      // Validate the schema
+      try {
+        validateSchema(schemaRV1);
+      } catch (error) {
+        return;
+      }
 
       // Apply the state
       await inductor.setState([schemaRV1]);
@@ -101,6 +116,13 @@ describe('Primary Constraint', () => {
       const schemaRV2 = cloneDeep(schemaRV1);
       // Change the primary flag
       schemaRV2.columns[colName].isPrimary = true;
+
+      // Validate the schema
+      try {
+        validateSchema(schemaRV2);
+      } catch (error) {
+        return;
+      }
 
       // Apply the changes
       await inductor.setState([schemaRV2]);
@@ -142,7 +164,7 @@ describe('Primary Constraint', () => {
       columns: {
         first: {
           kind: 'column',
-          type: ColumnType.INTEGER,
+          type: PostgresColumnType.INTEGER,
           isNullable: false,
           isUnique: false,
           isPrimary: true,
@@ -165,7 +187,7 @@ describe('Primary Constraint', () => {
     const schemaExtend: ISchema = cloneDeep(schema);
     schemaExtend.columns.second = {
       kind: 'column',
-      type: ColumnType.INTEGER,
+      type: PostgresColumnType.INTEGER,
       isNullable: false,
       isUnique: false,
       isPrimary: true,
@@ -190,7 +212,7 @@ describe('Primary Constraint', () => {
     const schemaExtend2: ISchema = cloneDeep(schemaExtend);
     schemaExtend2.columns.third = {
       kind: 'column',
-      type: ColumnType.INTEGER,
+      type: PostgresColumnType.INTEGER,
       isNullable: false,
       isUnique: false,
       isPrimary: true,

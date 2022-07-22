@@ -1,7 +1,7 @@
-import { ColumnType } from '../enum/column-type.enum';
+import { PostgresColumnType } from '../enum/column-type.enum';
 import { Inspector } from '../inspector';
 import { ISchema } from '../interface/schema.interface';
-import { sanitizeSchema } from '../util/sanitize.schema';
+import { validateSchema } from '../util/schema.validator';
 
 export const reverseTable = async (inspector: Inspector, table: string) => {
   const schema: ISchema = {
@@ -22,7 +22,7 @@ export const reverseTable = async (inspector: Inspector, table: string) => {
   }
 
   for (const column of columns) {
-    let type = column.data_type as ColumnType;
+    let type = column.data_type as PostgresColumnType;
 
     // Determine if the column is a serial
     if (
@@ -30,23 +30,30 @@ export const reverseTable = async (inspector: Inspector, table: string) => {
       column.default_value.startsWith('nextval')
     ) {
       switch (type) {
-        case ColumnType.SMALLINT:
-          type = ColumnType.SMALLSERIAL;
+        case PostgresColumnType.SMALLINT:
+          type = PostgresColumnType.SMALLSERIAL;
           break;
-        case ColumnType.INTEGER:
-          type = ColumnType.SERIAL;
+        case PostgresColumnType.INTEGER:
+          type = PostgresColumnType.SERIAL;
           break;
-        case ColumnType.BIGINT:
-          type = ColumnType.BIGSERIAL;
+        case PostgresColumnType.BIGINT:
+          type = PostgresColumnType.BIGSERIAL;
           break;
       }
     }
 
     let isPrimary = column.is_primary_key;
+    const isSerial = isSerialType(type);
 
     // Determine if the column is a compositive primary key
-    if (compositivePrimaryKeys.includes(column.name)) {
+    if (isSerial || compositivePrimaryKeys.includes(column.name)) {
       isPrimary = true;
+    }
+
+    // Primary/serial cannot be unique or nullable
+    if (isPrimary || isSerial) {
+      column.is_nullable = false;
+      column.is_unique = false;
     }
 
     schema.columns[column.name] = {
@@ -58,5 +65,18 @@ export const reverseTable = async (inspector: Inspector, table: string) => {
     };
   }
 
-  return sanitizeSchema(schema);
+  validateSchema(schema);
+
+  return schema;
+};
+
+const isSerialType = (type: PostgresColumnType) => {
+  switch (type) {
+    case PostgresColumnType.SMALLSERIAL:
+    case PostgresColumnType.SERIAL:
+    case PostgresColumnType.BIGSERIAL:
+      return true;
+    default:
+      return false;
+  }
 };

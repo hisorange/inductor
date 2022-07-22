@@ -1,7 +1,8 @@
 import cloneDeep from 'lodash.clonedeep';
-import { ColumnType } from '../src/enum/column-type.enum';
+import { PostgresColumnType } from '../src/enum/column-type.enum';
 import { Inductor } from '../src/inductor';
 import { ISchema } from '../src/interface/schema.interface';
+import { validateSchema } from '../src/util/schema.validator';
 import { allColumn } from './util/all-column';
 import { createTestInstance } from './util/create-connection';
 
@@ -39,7 +40,7 @@ describe('Nullable Flag', () => {
         columns: {
           id: {
             kind: 'column',
-            type: ColumnType.INTEGER,
+            type: PostgresColumnType.INTEGER,
             isNullable: false,
             isUnique: false,
             isPrimary: true,
@@ -47,7 +48,7 @@ describe('Nullable Flag', () => {
           [colName]: allColumn[colName],
           createdAt: {
             kind: 'column',
-            type: ColumnType.DATE,
+            type: PostgresColumnType.DATE,
             isNullable: false,
             isUnique: false,
             isPrimary: false,
@@ -56,6 +57,12 @@ describe('Nullable Flag', () => {
       };
       // Set nullable to false
       schemaRV1.columns[colName].isNullable = false;
+
+      try {
+        validateSchema(schemaRV1);
+      } catch (error) {
+        return;
+      }
 
       // Apply the state
       await inductor.setState([schemaRV1]);
@@ -69,6 +76,13 @@ describe('Nullable Flag', () => {
       const schemaRV2 = cloneDeep(schemaRV1);
       // Change the nullable
       schemaRV2.columns[colName].isNullable = true;
+
+      // Check if the schema is valid with nullable flags
+      try {
+        validateSchema(schemaRV2);
+      } catch (error) {
+        return;
+      }
 
       // Apply the changes
       await inductor.setState([schemaRV2]);
