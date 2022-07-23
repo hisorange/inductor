@@ -16,7 +16,9 @@ describe('Nullable Flag', () => {
     // Drop test tables from previous tests
     await Promise.all(
       testTables.map(name =>
-        inductor.knex.schema.dropTableIfExists(`alter_nullable_${name}`),
+        inductor.driver.connection.schema.dropTableIfExists(
+          `alter_nullable_${name}`,
+        ),
       ),
     );
   });

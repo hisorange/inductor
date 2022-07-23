@@ -14,7 +14,7 @@ describe('Database Name', () => {
   });
 
   test('should be able to get the database name', async () => {
-    const name = await inductor.getDatabaseName();
+    const name = await inductor.driver.getDatabaseName();
 
     expect(name).toBe('inductor');
   });

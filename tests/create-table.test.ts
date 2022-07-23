@@ -13,7 +13,9 @@ describe('Create Table from Schema', () => {
 
     // Drop test tables from previous tests
     await Promise.all(
-      testTables.map(name => inductor.knex.schema.dropTableIfExists(name)),
+      testTables.map(name =>
+        inductor.driver.connection.schema.dropTableIfExists(name),
+      ),
     );
   });
 
@@ -40,7 +42,9 @@ describe('Create Table from Schema', () => {
 
       await inductor.setState([schema]);
 
-      expect(await inductor.knex.schema.hasTable(tableName)).toBeTruthy();
+      expect(
+        await inductor.driver.connection.schema.hasTable(tableName),
+      ).toBeTruthy();
     },
     5_000,
   );

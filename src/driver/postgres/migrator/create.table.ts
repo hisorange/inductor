@@ -1,6 +1,6 @@
 import { Knex } from 'knex';
+import { ColumnTools } from '../../../column-tools';
 import { ISchema } from '../../../interface/schema.interface';
-import { filterPrimary } from '../../../util/primary.filter';
 import { createColumn } from './create.column';
 
 export const createTable = (
@@ -14,7 +14,7 @@ export const createTable = (
       }
     }
 
-    const primaries = filterPrimary(schema);
+    const primaries = ColumnTools.filterPrimary(schema);
 
     if (primaries.length > 1) {
       table.primary(primaries);

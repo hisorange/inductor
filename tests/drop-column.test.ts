@@ -46,7 +46,9 @@ describe('Drop Column', () => {
 
     // Drop test tables from previous tests
     await Promise.all(
-      testTables.map(name => inductor.knex.schema.dropTableIfExists(name)),
+      testTables.map(name =>
+        inductor.driver.connection.schema.dropTableIfExists(name),
+      ),
     );
   });
 

@@ -1,7 +1,7 @@
 import { Knex } from 'knex';
+import { ColumnTools } from '../../../column-tools';
 import { IColumn } from '../../../interface/column.interface';
 import { ISchema } from '../../../interface/schema.interface';
-import { filterPrimary } from '../../../util/primary.filter';
 import { PostgresColumnType } from '../postgres.column-type';
 
 export const createColumn = (
@@ -164,7 +164,7 @@ export const createColumn = (
   }
 
   // Add primary constraint, only if this is the only primary column
-  if (column.isPrimary && filterPrimary(schema).length === 1) {
+  if (column.isPrimary && ColumnTools.filterPrimary(schema).length === 1) {
     columnBuilder.primary();
   }
 };

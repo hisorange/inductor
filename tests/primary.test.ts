@@ -16,7 +16,9 @@ describe('Primary Constraint', () => {
     // Drop test tables from previous tests
     await Promise.all(
       testTables.map(name =>
-        inductor.knex.schema.dropTableIfExists(`alter_primary_${name}`),
+        inductor.driver.connection.schema.dropTableIfExists(
+          `alter_primary_${name}`,
+        ),
       ),
     );
   });

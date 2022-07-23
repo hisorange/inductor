@@ -1,4 +1,4 @@
-import { ISchema } from '../interface/schema.interface';
+import { ISchema } from './interface/schema.interface';
 
 // Find and filter the primary column names from the schema
 export const filterPrimary = (schema: ISchema) => {
@@ -15,4 +15,8 @@ export const filterPrimary = (schema: ISchema) => {
   }
 
   return primaries;
+};
+
+export const ColumnTools = {
+  filterPrimary,
 };

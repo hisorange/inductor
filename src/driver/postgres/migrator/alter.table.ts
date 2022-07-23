@@ -1,7 +1,7 @@
 import { diff } from 'just-diff';
 import { Knex } from 'knex';
+import { ColumnTools } from '../../../column-tools';
 import { ISchema } from '../../../interface/schema.interface';
-import { filterPrimary } from '../../../util/primary.filter';
 import { alterNullable, alterUnique } from './alter.column';
 import { createColumn } from './create.column';
 
@@ -116,8 +116,8 @@ export const alterTable = (
 
     // Primary key changed
     if (isPrimaryChanged) {
-      const currentPrimaries = filterPrimary(currentSchema);
-      const expectedPrimaries = filterPrimary(expectedSchema);
+      const currentPrimaries = ColumnTools.filterPrimary(currentSchema);
+      const expectedPrimaries = ColumnTools.filterPrimary(expectedSchema);
 
       // Remove the current primary keys
       if (currentPrimaries.length > 0) {

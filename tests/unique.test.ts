@@ -17,7 +17,9 @@ describe('Unique Constraint', () => {
     // Drop test tables from previous tests
     await Promise.all(
       testTables.map(name =>
-        inductor.knex.schema.dropTableIfExists(`alter_unique_${name}`),
+        inductor.driver.connection.schema.dropTableIfExists(
+          `alter_unique_${name}`,
+        ),
       ),
     );
   });
@@ -51,7 +53,9 @@ describe('Unique Constraint', () => {
       // Apply the statement
       await inductor.setState([schema]);
 
-      expect(await inductor.knex.schema.hasTable(tableName)).toBeTruthy();
+      expect(
+        await inductor.driver.connection.schema.hasTable(tableName),
+      ).toBeTruthy();
       expect(
         (
           await inductor.driver.migrator.inspector.columnInfo(
