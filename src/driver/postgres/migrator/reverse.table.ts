@@ -1,9 +1,12 @@
-import { PostgresColumnType } from '../enum/column-type.enum';
-import { Inspector } from '../inspector';
-import { ISchema } from '../interface/schema.interface';
-import { validateSchema } from '../util/schema.validator';
+import { ISchema } from '../../../interface/schema.interface';
+import { PostgresColumnType } from '../postgres.column-type';
+import { PostgresInspector } from '../postgres.inspector';
+import { postgresValidateSchema } from '../postgres.schema-validator';
 
-export const reverseTable = async (inspector: Inspector, table: string) => {
+export const reverseTable = async (
+  inspector: PostgresInspector,
+  table: string,
+) => {
   const schema: ISchema = {
     tableName: table,
     kind: 'table',
@@ -65,7 +68,7 @@ export const reverseTable = async (inspector: Inspector, table: string) => {
     };
   }
 
-  validateSchema(schema);
+  postgresValidateSchema(schema);
 
   return schema;
 };

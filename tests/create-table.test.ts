@@ -1,6 +1,5 @@
 import { Inductor } from '../src/inductor';
 import { ISchema } from '../src/interface/schema.interface';
-import { validateSchema } from '../src/util/schema.validator';
 import { allColumn } from './util/all-column';
 import { createTestInstance } from './util/create-connection';
 
@@ -34,7 +33,7 @@ describe('Create Table from Schema', () => {
       };
 
       try {
-        validateSchema(schema);
+        inductor.driver.validateSchema(schema);
       } catch (error) {
         return;
       }

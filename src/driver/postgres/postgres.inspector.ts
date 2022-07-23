@@ -1,11 +1,11 @@
 import BaseAdapter from 'knex-schema-inspector/dist/dialects/postgres';
-import { ISchema } from './interface/schema.interface';
-import { IUnique } from './interface/unique.interface';
+import { ISchema } from '../../interface/schema.interface';
+import { IUnique } from '../../interface/unique.interface';
 
 /**
  * Reads the connection's database into a set of structure
  */
-export class Inspector extends BaseAdapter {
+export class PostgresInspector extends BaseAdapter {
   /**
    * Read the defined uniques for the given table name
    */

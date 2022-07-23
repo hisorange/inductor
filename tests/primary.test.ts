@@ -1,8 +1,7 @@
 import cloneDeep from 'lodash.clonedeep';
-import { PostgresColumnType } from '../src/enum/column-type.enum';
+import { PostgresColumnType } from '../src/driver/postgres/postgres.column-type';
 import { Inductor } from '../src/inductor';
 import { ISchema } from '../src/interface/schema.interface';
-import { validateSchema } from '../src/util/schema.validator';
 import { allColumn } from './util/all-column';
 import { createTestInstance } from './util/create-connection';
 
@@ -46,7 +45,7 @@ describe('Primary Constraint', () => {
 
       // Validate the schema
       try {
-        validateSchema(schemaRV1);
+        inductor.driver.validateSchema(schemaRV1);
       } catch (error) {
         return;
       }
@@ -54,7 +53,7 @@ describe('Primary Constraint', () => {
       // Apply the state
       await inductor.setState([schemaRV1]);
 
-      const columnRV1 = await inductor.migrator.inspector.columnInfo(
+      const columnRV1 = await inductor.driver.migrator.inspector.columnInfo(
         tableName,
         colName,
       );
@@ -99,7 +98,7 @@ describe('Primary Constraint', () => {
 
       // Validate the schema
       try {
-        validateSchema(schemaRV1);
+        inductor.driver.validateSchema(schemaRV1);
       } catch (error) {
         return;
       }
@@ -107,7 +106,7 @@ describe('Primary Constraint', () => {
       // Apply the state
       await inductor.setState([schemaRV1]);
 
-      const columnRV1 = await inductor.migrator.inspector.columnInfo(
+      const columnRV1 = await inductor.driver.migrator.inspector.columnInfo(
         tableName,
         colName,
       );
@@ -119,7 +118,7 @@ describe('Primary Constraint', () => {
 
       // Validate the schema
       try {
-        validateSchema(schemaRV2);
+        inductor.driver.validateSchema(schemaRV2);
       } catch (error) {
         return;
       }
@@ -128,7 +127,7 @@ describe('Primary Constraint', () => {
       await inductor.setState([schemaRV2]);
 
       // Verify the changes
-      const columnRV2 = await inductor.migrator.inspector.columnInfo(
+      const columnRV2 = await inductor.driver.migrator.inspector.columnInfo(
         tableName,
         colName,
       );
@@ -144,7 +143,7 @@ describe('Primary Constraint', () => {
 
       await inductor.setState([schemaRV3]);
 
-      const columnRV3 = await inductor.migrator.inspector.columnInfo(
+      const columnRV3 = await inductor.driver.migrator.inspector.columnInfo(
         tableName,
         colName,
       );
@@ -179,7 +178,9 @@ describe('Primary Constraint', () => {
 
     expect(
       (
-        await inductor.migrator.inspector.columnInfo('alter_primary_extend')
+        await inductor.driver.migrator.inspector.columnInfo(
+          'alter_primary_extend',
+        )
       ).filter(c => c.is_primary_key).length,
     ).toEqual(1);
 
@@ -198,12 +199,14 @@ describe('Primary Constraint', () => {
 
     expect(
       (
-        await inductor.migrator.inspector.columnInfo('alter_primary_extend')
+        await inductor.driver.migrator.inspector.columnInfo(
+          'alter_primary_extend',
+        )
       ).filter(c => c.is_primary_key).length,
     ).toEqual(0);
 
     expect(
-      await inductor.migrator.inspector.getCompositePrimaryKeys(
+      await inductor.driver.migrator.inspector.getCompositePrimaryKeys(
         'alter_primary_extend',
       ),
     ).toStrictEqual(['first', 'second']);
@@ -223,12 +226,14 @@ describe('Primary Constraint', () => {
 
     expect(
       (
-        await inductor.migrator.inspector.columnInfo('alter_primary_extend')
+        await inductor.driver.migrator.inspector.columnInfo(
+          'alter_primary_extend',
+        )
       ).filter(c => c.is_primary_key).length,
     ).toEqual(0);
 
     expect(
-      await inductor.migrator.inspector.getCompositePrimaryKeys(
+      await inductor.driver.migrator.inspector.getCompositePrimaryKeys(
         'alter_primary_extend',
       ),
     ).toStrictEqual(['first', 'second', 'third']);
@@ -242,12 +247,14 @@ describe('Primary Constraint', () => {
 
     expect(
       (
-        await inductor.migrator.inspector.columnInfo('alter_primary_extend')
+        await inductor.driver.migrator.inspector.columnInfo(
+          'alter_primary_extend',
+        )
       ).filter(c => c.is_primary_key).length,
     ).toEqual(0);
 
     expect(
-      await inductor.migrator.inspector.getCompositePrimaryKeys(
+      await inductor.driver.migrator.inspector.getCompositePrimaryKeys(
         'alter_primary_extend',
       ),
     ).toStrictEqual(['first', 'second']);
@@ -261,12 +268,14 @@ describe('Primary Constraint', () => {
 
     expect(
       (
-        await inductor.migrator.inspector.columnInfo('alter_primary_extend')
+        await inductor.driver.migrator.inspector.columnInfo(
+          'alter_primary_extend',
+        )
       ).filter(c => c.is_primary_key).length,
     ).toEqual(1);
 
     expect(
-      await inductor.migrator.inspector.getCompositePrimaryKeys(
+      await inductor.driver.migrator.inspector.getCompositePrimaryKeys(
         'alter_primary_extend',
       ),
     ).toStrictEqual(['first']);

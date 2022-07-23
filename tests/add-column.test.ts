@@ -1,5 +1,5 @@
 import cloneDeep from 'lodash.clonedeep';
-import { PostgresColumnType } from '../src/enum/column-type.enum';
+import { PostgresColumnType } from '../src/driver/postgres/postgres.column-type';
 import { Inductor } from '../src/inductor';
 import { ISchema } from '../src/interface/schema.interface';
 import { createTestInstance } from './util/create-connection';
@@ -72,7 +72,7 @@ describe('Add Column', () => {
       // Apply the state
       await inductor.setState([schemaRV1]);
 
-      const columnRV1 = await inductor.migrator.inspector.hasColumn(
+      const columnRV1 = await inductor.driver.inspector.hasColumn(
         tableName,
         col,
       );
@@ -84,7 +84,7 @@ describe('Add Column', () => {
 
       // Apply the changes
       await inductor.setState([schemaRV2]);
-      const columnRV2 = await inductor.migrator.inspector.hasColumn(
+      const columnRV2 = await inductor.driver.inspector.hasColumn(
         tableName,
         col,
       );

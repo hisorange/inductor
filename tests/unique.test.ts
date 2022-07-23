@@ -1,8 +1,7 @@
 import cloneDeep from 'lodash.clonedeep';
-import { PostgresColumnType } from '../src/enum/column-type.enum';
+import { PostgresColumnType } from '../src/driver/postgres/postgres.column-type';
 import { Inductor } from '../src/inductor';
 import { ISchema } from '../src/interface/schema.interface';
-import { validateSchema } from '../src/util/schema.validator';
 import { allColumn } from './util/all-column';
 import { createTestInstance } from './util/create-connection';
 
@@ -44,7 +43,7 @@ describe('Unique Constraint', () => {
       schema.columns[columnKey].isUnique = true;
 
       try {
-        validateSchema(schema);
+        inductor.driver.validateSchema(schema);
       } catch (error) {
         return;
       }
@@ -54,8 +53,12 @@ describe('Unique Constraint', () => {
 
       expect(await inductor.knex.schema.hasTable(tableName)).toBeTruthy();
       expect(
-        (await inductor.migrator.inspector.columnInfo(tableName, columnKey))
-          .is_unique,
+        (
+          await inductor.driver.migrator.inspector.columnInfo(
+            tableName,
+            columnKey,
+          )
+        ).is_unique,
       ).toBe(schema.columns[columnKey].isUnique);
     },
   );
@@ -93,7 +96,7 @@ describe('Unique Constraint', () => {
       schemaRV1.columns[colName].isUnique = false;
 
       try {
-        validateSchema(schemaRV1);
+        inductor.driver.validateSchema(schemaRV1);
       } catch (error) {
         return;
       }
@@ -101,7 +104,7 @@ describe('Unique Constraint', () => {
       // Apply the state
       await inductor.setState([schemaRV1]);
 
-      const columnRV1 = await inductor.migrator.inspector.columnInfo(
+      const columnRV1 = await inductor.driver.migrator.inspector.columnInfo(
         tableName,
         colName,
       );
@@ -112,7 +115,7 @@ describe('Unique Constraint', () => {
       schemaRV2.columns[colName].isUnique = true;
 
       try {
-        validateSchema(schemaRV2);
+        inductor.driver.validateSchema(schemaRV2);
       } catch (error) {
         return;
       }
@@ -121,7 +124,7 @@ describe('Unique Constraint', () => {
       await inductor.setState([schemaRV2]);
 
       // Verify the changes
-      const columnRV2 = await inductor.migrator.inspector.columnInfo(
+      const columnRV2 = await inductor.driver.migrator.inspector.columnInfo(
         tableName,
         colName,
       );
@@ -135,7 +138,7 @@ describe('Unique Constraint', () => {
 
       await inductor.setState([schemaRV3]);
 
-      const columnRV3 = await inductor.migrator.inspector.columnInfo(
+      const columnRV3 = await inductor.driver.migrator.inspector.columnInfo(
         tableName,
         colName,
       );
@@ -177,7 +180,7 @@ describe('Unique Constraint', () => {
       };
 
       try {
-        validateSchema(schema);
+        inductor.driver.validateSchema(schema);
       } catch (error) {
         return;
       }
@@ -188,9 +191,8 @@ describe('Unique Constraint', () => {
       const reversedUniqueName = `${tableName}_pair`;
 
       // Verify if the column is not unique
-      const uniques = await inductor.migrator.inspector.getCompositeUniques(
-        tableName,
-      );
+      const uniques =
+        await inductor.driver.migrator.inspector.getCompositeUniques(tableName);
 
       if (schema.uniques.pair.length === 2) {
         expect(uniques).toStrictEqual({
@@ -232,7 +234,7 @@ describe('Unique Constraint', () => {
     // Verify the single unique column
     expect(
       (
-        await inductor.migrator.inspector.columnInfo(
+        await inductor.driver.migrator.inspector.columnInfo(
           'unique_test_upgrade',
           'col_1',
         )
@@ -249,7 +251,7 @@ describe('Unique Constraint', () => {
     // Verify the composite unique column
     expect(
       (
-        await inductor.migrator.inspector.columnInfo(
+        await inductor.driver.migrator.inspector.columnInfo(
           'unique_test_upgrade',
           'col_1',
         )
@@ -257,7 +259,7 @@ describe('Unique Constraint', () => {
     ).toBeFalsy();
     expect(
       (
-        await inductor.migrator.inspector.columnInfo(
+        await inductor.driver.migrator.inspector.columnInfo(
           'unique_test_upgrade',
           'col_2',
         )
@@ -265,9 +267,10 @@ describe('Unique Constraint', () => {
     ).toBeFalsy();
 
     // Verify the composite unique
-    const uniques = await inductor.migrator.inspector.getCompositeUniques(
-      'unique_test_upgrade',
-    );
+    const uniques =
+      await inductor.driver.migrator.inspector.getCompositeUniques(
+        'unique_test_upgrade',
+      );
     expect(uniques).toStrictEqual({
       unique_test_upgrade_test_cmp_1: ['col_1', 'col_2'],
     });
@@ -287,9 +290,10 @@ describe('Unique Constraint', () => {
     await inductor.setState([schema]);
 
     // Verify the composite unique
-    const uniques2 = await inductor.migrator.inspector.getCompositeUniques(
-      'unique_test_upgrade',
-    );
+    const uniques2 =
+      await inductor.driver.migrator.inspector.getCompositeUniques(
+        'unique_test_upgrade',
+      );
     expect(uniques2).toStrictEqual({
       unique_test_upgrade_test_cmp_1: ['col_1', 'col_2', 'col_3'],
     });
@@ -301,9 +305,10 @@ describe('Unique Constraint', () => {
     await inductor.setState([schema]);
 
     // Verify the composite unique
-    const uniques3 = await inductor.migrator.inspector.getCompositeUniques(
-      'unique_test_upgrade',
-    );
+    const uniques3 =
+      await inductor.driver.migrator.inspector.getCompositeUniques(
+        'unique_test_upgrade',
+      );
     expect(uniques3).toStrictEqual({});
   });
 });

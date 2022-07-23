@@ -1,11 +1,12 @@
 import knex, { Knex } from 'knex';
 import { Model, ModelClass, Pojo } from 'objection';
 import pino, { Logger } from 'pino';
+import { PostgresDriver } from './driver/postgres/postgres.driver';
+import { postgresValidateSchema } from './driver/postgres/postgres.schema-validator';
+import { IDriver } from './interface/driver.interface';
 import { IInductor } from './interface/inductor.interface';
 import { ISchema } from './interface/schema.interface';
-import { Migrator } from './migrator';
 import { filterPrimary } from './util/primary.filter';
-import { validateSchema } from './util/schema.validator';
 
 export class Inductor implements IInductor {
   /**
@@ -19,11 +20,6 @@ export class Inductor implements IInductor {
   readonly knex: Knex;
 
   /**
-   * Store the migrator instance
-   */
-  readonly migrator: Migrator;
-
-  /**
    * Associated schemas with the connection
    */
   protected schemaDictionary = new Map<
@@ -35,6 +31,8 @@ export class Inductor implements IInductor {
    * Store the current connection's database name.
    */
   protected dbName: string | undefined;
+
+  readonly driver: IDriver;
 
   /**
    * Create a new connection
@@ -68,7 +66,7 @@ export class Inductor implements IInductor {
       },
     });
 
-    this.migrator = new Migrator(this.logger, this.knex);
+    this.driver = new PostgresDriver(this.logger, this.knex);
 
     this.logger.debug('Instance initialized');
   }
@@ -93,7 +91,7 @@ export class Inductor implements IInductor {
   }
 
   async cmpState(schemas: ISchema[]): Promise<string[]> {
-    return await this.migrator
+    return await this.driver.migrator
       .cmpState(schemas)
       .then(changes => changes.map(change => change.toQuery()));
   }
@@ -105,7 +103,7 @@ export class Inductor implements IInductor {
 
     for (const schema of schemas) {
       // Validate the schema
-      validateSchema(schema);
+      postgresValidateSchema(schema);
 
       const model = this.toModel(schema);
 
@@ -121,7 +119,7 @@ export class Inductor implements IInductor {
     this.schemaDictionary = newSchemaMap;
 
     this.logger.info('Migrating database');
-    await this.migrator.setState(schemas);
+    await this.driver.migrator.setState(schemas);
 
     this.logger.info('State applied');
   }
@@ -203,7 +201,7 @@ export class Inductor implements IInductor {
   }
 
   async readState(): Promise<ISchema[]> {
-    return this.migrator.readState();
+    return this.driver.migrator.readState();
   }
 
   close() {

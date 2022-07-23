@@ -1,4 +1,4 @@
-import { PostgresColumnType } from '../../src/enum/column-type.enum';
+import { PostgresColumnType } from '../../src/driver/postgres/postgres.column-type';
 import { ISchema } from '../../src/interface/schema.interface';
 
 export const allColumn: ISchema['columns'] = {

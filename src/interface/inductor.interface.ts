@@ -1,4 +1,5 @@
 import { Model, ModelClass } from 'objection';
+import { IDriver } from './driver.interface';
 import { ISchema } from './schema.interface';
 
 export interface IInductor {
@@ -23,4 +24,9 @@ export interface IInductor {
    * @throws {Error} If the model is not found.
    */
   getModel<T extends Model = Model>(name: string): ModelClass<T>;
+
+  /**
+   * Get the database provider specific driver.
+   */
+  readonly driver: IDriver;
 }

@@ -1,4 +1,4 @@
-import { PostgresColumnType } from '../enum/column-type.enum';
+import { PostgresColumnType } from '../driver/postgres/postgres.column-type';
 
 export interface IColumn {
   /**

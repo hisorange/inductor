@@ -1,6 +1,6 @@
 import { Knex } from 'knex';
-import { ISchema } from '../interface/schema.interface';
-import { filterPrimary } from '../util/primary.filter';
+import { ISchema } from '../../../interface/schema.interface';
+import { filterPrimary } from '../../../util/primary.filter';
 import { createColumn } from './create.column';
 
 export const createTable = (

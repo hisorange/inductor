@@ -1,8 +1,7 @@
 import cloneDeep from 'lodash.clonedeep';
-import { PostgresColumnType } from '../src/enum/column-type.enum';
+import { PostgresColumnType } from '../src/driver/postgres/postgres.column-type';
 import { Inductor } from '../src/inductor';
 import { ISchema } from '../src/interface/schema.interface';
-import { validateSchema } from '../src/util/schema.validator';
 import { allColumn } from './util/all-column';
 import { createTestInstance } from './util/create-connection';
 
@@ -59,7 +58,7 @@ describe('Nullable Flag', () => {
       schemaRV1.columns[colName].isNullable = false;
 
       try {
-        validateSchema(schemaRV1);
+        inductor.driver.validateSchema(schemaRV1);
       } catch (error) {
         return;
       }
@@ -67,7 +66,7 @@ describe('Nullable Flag', () => {
       // Apply the state
       await inductor.setState([schemaRV1]);
 
-      const columnRV1 = await inductor.migrator.inspector.columnInfo(
+      const columnRV1 = await inductor.driver.inspector.columnInfo(
         tableName,
         colName,
       );
@@ -79,7 +78,7 @@ describe('Nullable Flag', () => {
 
       // Check if the schema is valid with nullable flags
       try {
-        validateSchema(schemaRV2);
+        inductor.driver.validateSchema(schemaRV2);
       } catch (error) {
         return;
       }
@@ -88,7 +87,7 @@ describe('Nullable Flag', () => {
       await inductor.setState([schemaRV2]);
 
       // Verify the changes
-      const columnRV2 = await inductor.migrator.inspector.columnInfo(
+      const columnRV2 = await inductor.driver.inspector.columnInfo(
         tableName,
         colName,
       );
@@ -102,7 +101,7 @@ describe('Nullable Flag', () => {
 
       await inductor.setState([schemaRV3]);
 
-      const columnRV3 = await inductor.migrator.inspector.columnInfo(
+      const columnRV3 = await inductor.driver.inspector.columnInfo(
         tableName,
         colName,
       );

@@ -1,7 +1,7 @@
 import { diff } from 'just-diff';
 import { Knex } from 'knex';
-import { ISchema } from '../interface/schema.interface';
-import { filterPrimary } from '../util/primary.filter';
+import { ISchema } from '../../../interface/schema.interface';
+import { filterPrimary } from '../../../util/primary.filter';
 import { alterNullable, alterUnique } from './alter.column';
 import { createColumn } from './create.column';
 

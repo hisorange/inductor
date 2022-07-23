@@ -1,24 +1,21 @@
 import { Knex } from 'knex';
 import { Logger } from 'pino';
-import { Inspector } from './inspector';
-import { ISchema } from './interface/schema.interface';
+import { ISchema } from '../../interface/schema.interface';
 import { alterTable } from './migrator/alter.table';
 import { createTable } from './migrator/create.table';
 import { reverseTable } from './migrator/reverse.table';
+import { PostgresInspector } from './postgres.inspector';
 
 // Calculates and applies the changes on the database
-export class Migrator {
-  /**
-   * The connection to inspect
-   */
-  readonly inspector: Inspector;
-
+export class PostgresMigrator {
   /**
    * Initialize the migrator
    */
-  constructor(readonly logger: Logger, protected knex: Knex) {
-    this.inspector = new Inspector(knex);
-  }
+  constructor(
+    readonly logger: Logger,
+    readonly inspector: PostgresInspector,
+    protected knex: Knex,
+  ) {}
 
   /**
    * Read the database state and return it as a list of schemas.

@@ -1,6 +1,6 @@
-import { PostgresColumnType } from '../enum/column-type.enum';
-import { InvalidSchema } from '../exception/invalid-schema.exception';
-import { ISchema } from '../interface/schema.interface';
+import { InvalidSchema } from '../../exception/invalid-schema.exception';
+import { ISchema } from '../../interface/schema.interface';
+import { PostgresColumnType } from './postgres.column-type';
 
 const cannotBePrimary = [
   PostgresColumnType.BOX,
@@ -35,7 +35,7 @@ const cannotBeUnique = [
   PostgresColumnType.BIGSERIAL,
 ];
 
-export const validateSchema = (schema: ISchema): void => {
+export const postgresValidateSchema = (schema: ISchema): void => {
   // Validate the table name, or it's just spaces
   if (!schema.tableName || schema.tableName.trim().length === 0) {
     throw new InvalidSchema('Missing table name');

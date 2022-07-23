@@ -1,8 +1,8 @@
 import { Knex } from 'knex';
-import { PostgresColumnType } from '../enum/column-type.enum';
-import { IColumn } from '../interface/column.interface';
-import { ISchema } from '../interface/schema.interface';
-import { filterPrimary } from '../util/primary.filter';
+import { IColumn } from '../../../interface/column.interface';
+import { ISchema } from '../../../interface/schema.interface';
+import { filterPrimary } from '../../../util/primary.filter';
+import { PostgresColumnType } from '../postgres.column-type';
 
 export const createColumn = (
   table: Knex.CreateTableBuilder,
