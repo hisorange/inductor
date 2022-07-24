@@ -1,4 +1,5 @@
 import BaseAdapter from 'knex-schema-inspector/dist/dialects/postgres';
+import { IIndex } from '../../interface/index.interface';
 import { ISchema } from '../../interface/schema.interface';
 import { IUnique } from '../../interface/unique.interface';
 
@@ -6,6 +7,65 @@ import { IUnique } from '../../interface/unique.interface';
  * Reads the connection's database into a set of structure
  */
 export class PostgresInspector extends BaseAdapter {
+  /**
+   * Read the database table definition for indexes.
+   */
+  async getIndexes(tableName: string): Promise<IIndex[]> {
+    const query = this.knex({
+      f: 'pg_attribute',
+    })
+      .select({
+        schema: 'n.nspname',
+        table: 'c.relname',
+        column: 'f.attname',
+        idx_name: 'i.relname',
+        idx_type: 'am.amname',
+      })
+      .join(
+        { c: 'pg_class' },
+        {
+          'c.oid': 'f.attrelid',
+        },
+      )
+      .leftJoin({ n: 'pg_namespace' }, { 'n.oid': 'c.relnamespace' })
+      .leftJoin(
+        { p: 'pg_constraint' },
+        { 'p.conrelid': 'c.oid', 'f.attnum': this.knex.raw('ANY(p.conkey)') },
+      )
+      .leftJoin(
+        { ix: 'pg_index' },
+        {
+          'f.attnum': this.knex.raw('ANY(ix.indkey)'),
+          'c.oid': 'f.attrelid',
+          'ix.indrelid': 'c.oid',
+        },
+      )
+      .leftJoin({ i: 'pg_class' }, { 'ix.indexrelid': 'i.oid' })
+      .leftJoin({ am: 'pg_am' }, { 'am.oid': 'i.relam' })
+      .where({
+        'c.relkind': 'r',
+        'n.nspname': this.knex.raw('current_schema()'),
+        'c.relname': tableName,
+      })
+      .whereNot({
+        'i.oid': 0,
+      })
+      .whereNull('p.contype');
+
+    const rows = await query;
+    const indexes: IIndex[] = [];
+
+    rows.forEach(r => {
+      indexes.push({
+        name: r.idx_name,
+        columns: [r.column],
+        type: r.idx_type,
+      });
+    });
+
+    return indexes;
+  }
+
   /**
    * Read the defined uniques for the given table name
    */

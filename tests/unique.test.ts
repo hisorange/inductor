@@ -85,6 +85,7 @@ describe('Unique Constraint', () => {
             isNullable: false,
             isUnique: false,
             isPrimary: true,
+            isIndexed: false,
           },
           [colName]: allColumn[colName],
           createdAt: {
@@ -93,6 +94,7 @@ describe('Unique Constraint', () => {
             isNullable: false,
             isUnique: false,
             isPrimary: false,
+            isIndexed: false,
           },
         },
       };
@@ -171,6 +173,7 @@ describe('Unique Constraint', () => {
             isUnique: false,
             isPrimary: false,
             isNullable: false,
+            isIndexed: false,
           },
         },
       };
@@ -221,6 +224,7 @@ describe('Unique Constraint', () => {
           isNullable: false,
           isUnique: true,
           isPrimary: false,
+          isIndexed: false,
         },
         col_2: {
           kind: 'column',
@@ -228,6 +232,7 @@ describe('Unique Constraint', () => {
           isNullable: false,
           isUnique: false,
           isPrimary: false,
+          isIndexed: false,
         },
       },
     };
@@ -286,6 +291,7 @@ describe('Unique Constraint', () => {
       isNullable: false,
       isUnique: false,
       isPrimary: false,
+      isIndexed: false,
     };
 
     schema.uniques.test_cmp_1.push('col_3');

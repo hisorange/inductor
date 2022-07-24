@@ -10,7 +10,7 @@ export const createColumn = (
   column: IColumn,
   schema: ISchema,
 ) => {
-  let columnBuilder: Knex.ColumnBuilder;
+  let columnBuilder: Knex.PostgreSqlColumnBuilder;
 
   switch (column.type) {
     case PostgresColumnType.BIGINT:
@@ -161,6 +161,13 @@ export const createColumn = (
   // Add unique constraint
   if (column.isUnique) {
     columnBuilder.unique();
+  }
+
+  // Add index
+  if (column.isIndexed) {
+    columnBuilder.index(undefined, {
+      indexType: column.isIndexed,
+    });
   }
 
   // Add primary constraint, only if this is the only primary column

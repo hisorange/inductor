@@ -1,5 +1,6 @@
 import cloneDeep from 'lodash.clonedeep';
 import { PostgresColumnType } from '../src/driver/postgres/postgres.column-type';
+import { PostgresIndexType } from '../src/driver/postgres/postgres.index-type';
 import { Inductor } from '../src/inductor';
 import { ISchema } from '../src/interface/schema.interface';
 import { allColumn } from './util/all-column';
@@ -45,6 +46,7 @@ describe('Nullable Flag', () => {
             isNullable: false,
             isUnique: false,
             isPrimary: true,
+            isIndexed: false,
           },
           [colName]: allColumn[colName],
           createdAt: {
@@ -53,6 +55,7 @@ describe('Nullable Flag', () => {
             isNullable: false,
             isUnique: false,
             isPrimary: false,
+            isIndexed: PostgresIndexType.BRIN,
           },
         },
       };

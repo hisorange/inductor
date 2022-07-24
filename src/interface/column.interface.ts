@@ -1,4 +1,5 @@
 import { PostgresColumnType } from '../driver/postgres/postgres.column-type';
+import { PostgresIndexType } from '../driver/postgres/postgres.index-type';
 
 export interface IColumn {
   /**
@@ -31,4 +32,9 @@ export interface IColumn {
    * Primary key constraint.
    */
   isPrimary: boolean;
+
+  /**
+   * Index
+   */
+  isIndexed: false | PostgresIndexType;
 }

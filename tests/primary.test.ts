@@ -1,5 +1,6 @@
 import cloneDeep from 'lodash.clonedeep';
 import { PostgresColumnType } from '../src/driver/postgres/postgres.column-type';
+import { PostgresIndexType } from '../src/driver/postgres/postgres.index-type';
 import { Inductor } from '../src/inductor';
 import { ISchema } from '../src/interface/schema.interface';
 import { allColumn } from './util/all-column';
@@ -82,6 +83,7 @@ describe('Primary Constraint', () => {
             isNullable: false,
             isUnique: false,
             isPrimary: false,
+            isIndexed: false,
           },
           [colName]: allColumn[colName],
           createdAt: {
@@ -90,6 +92,7 @@ describe('Primary Constraint', () => {
             isNullable: false,
             isUnique: false,
             isPrimary: false,
+            isIndexed: PostgresIndexType.BRIN,
           },
         },
         uniques: {},
@@ -169,6 +172,7 @@ describe('Primary Constraint', () => {
           isNullable: false,
           isUnique: false,
           isPrimary: true,
+          isIndexed: false,
         },
       },
       uniques: {},
@@ -194,6 +198,7 @@ describe('Primary Constraint', () => {
       isNullable: false,
       isUnique: false,
       isPrimary: true,
+      isIndexed: false,
     };
 
     // Update the state to extend the primary to two
@@ -221,6 +226,7 @@ describe('Primary Constraint', () => {
       isNullable: false,
       isUnique: false,
       isPrimary: true,
+      isIndexed: false,
     };
 
     // Update the state to extend the primary to three

@@ -1,3 +1,4 @@
+import { IColumn } from '../../../interface/column.interface';
 import { ISchema } from '../../../interface/schema.interface';
 import { PostgresColumnType } from '../postgres.column-type';
 import { PostgresInspector } from '../postgres.inspector';
@@ -17,6 +18,11 @@ export const reverseTable = async (
   const columns = await inspector.columnInfo(table);
   const compositivePrimaryKeys = await inspector.getCompositePrimaryKeys(table);
   const compositiveUniques = await inspector.getCompositeUniques(table);
+  const indexes = await inspector.getIndexes(table);
+
+  const singleColumnIndexes = indexes.filter(
+    index => index.columns.length === 1,
+  );
 
   // Merge compositive uniques into the schema, but remove the table prefix from the name
   for (const [name, uniques] of Object.entries(compositiveUniques)) {
@@ -59,12 +65,24 @@ export const reverseTable = async (
       column.is_unique = false;
     }
 
+    let isIndexed: IColumn['isIndexed'] = false;
+
+    const singleColumnIndex = singleColumnIndexes.find(index =>
+      index.columns.includes(column.name),
+    );
+
+    // Determine if the column is an index
+    if (singleColumnIndex) {
+      isIndexed = singleColumnIndex.type;
+    }
+
     schema.columns[column.name] = {
       type,
       kind: 'column',
       isNullable: column.is_nullable,
       isUnique: column.is_unique,
       isPrimary,
+      isIndexed,
     };
   }
 
