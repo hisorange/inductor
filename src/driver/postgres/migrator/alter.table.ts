@@ -17,12 +17,6 @@ export const alterTable = (
     let isPrimaryCreated = false;
     let isPrimaryDropped = false;
 
-    if (0) {
-      console.log('Difference:', difference);
-      console.log('Current Schema:', currentSchema);
-      console.log('Expected Schema:', expectedSchema);
-    }
-
     for (const change of difference) {
       const { op, path } = change;
 

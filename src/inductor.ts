@@ -75,7 +75,7 @@ export class Inductor implements IInductor {
   async setState(schemas: ISchema[]) {
     this.logger.info('Applying new state');
 
-    const newSchemaMap = new Map();
+    const newSchemaMap: Inductor['currentState'] = new Map();
 
     for (const schema of schemas) {
       const model = this.driver.toModel(schema);

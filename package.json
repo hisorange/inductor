@@ -3,13 +3,13 @@
   "version": "1.4.0",
   "description": "Bidirectonal PostgreSQL specialized database manager.",
   "keywords": [
-    "orm",
-    "postgresql",
-    "postgres",
-    "database",
-    "schema",
     "data-model",
-    "inspector"
+    "database",
+    "inspector",
+    "orm",
+    "postgres",
+    "postgresql",
+    "schema"
   ],
   "main": "build/index.js",
   "repository": "https://github.com/hisorange/inductor",
@@ -20,12 +20,12 @@
   "license": "GPL-3.0",
   "scripts": {
     "build": "tsc --build ./tsconfig.build.json",
-    "test:types": "tsc --noEmit",
-    "test": "jest -i",
+    "db:logs": "docker-compose logs --no-log-prefix --tail 100 -f",
+    "db:reset": "yarn db:stop && yarn db:start",
     "db:start": "docker-compose up -d --renew-anon-volumes",
     "db:stop": "docker-compose down",
-    "db:reset": "yarn db:stop && yarn db:start",
-    "db:logs": "docker-compose logs --no-log-prefix --tail 100 -f"
+    "test:types": "tsc --noEmit",
+    "test": "jest -i"
   },
   "devDependencies": {
     "@types/jest": "^28.0.0",
@@ -40,14 +40,14 @@
   },
   "dependencies": {
     "just-diff": "^5.0.1",
-    "knex": "^2.2.0",
-    "knex-schema-inspector": "^2.0.3",
     "lodash.memoize": "^4.1.2",
-    "objection": "^3.0.1",
-    "pg": "^8.7.3",
     "uuid": "^8.3.2"
   },
   "optionalDependencies": {
+    "knex-schema-inspector": "^2.0.3",
+    "knex": "^2.2.0",
+    "objection": "^3.0.1",
+    "pg": "^8.7.3",
     "pino": "^7.11.0"
   }
 }
