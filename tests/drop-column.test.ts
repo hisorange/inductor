@@ -16,6 +16,7 @@ describe('Drop Column', () => {
       isUnique: false,
       isPrimary: true,
       isIndexed: false,
+      defaultValue: undefined,
     },
     col_var_2: {
       kind: 'column',
@@ -24,6 +25,7 @@ describe('Drop Column', () => {
       isUnique: false,
       isPrimary: false,
       isIndexed: false,
+      defaultValue: null,
     },
     col_var_3: {
       kind: 'column',
@@ -32,6 +34,7 @@ describe('Drop Column', () => {
       isUnique: true,
       isPrimary: false,
       isIndexed: false,
+      defaultValue: undefined,
     },
     col_var_4: {
       kind: 'column',
@@ -40,6 +43,7 @@ describe('Drop Column', () => {
       isUnique: false,
       isPrimary: false,
       isIndexed: PostgresIndexType.BTREE,
+      defaultValue: undefined,
     },
   };
 
@@ -69,7 +73,7 @@ describe('Drop Column', () => {
   });
 
   test.each(Object.keys(columns))(
-    'should be able to drop the [%s] column',
+    'should drop the [%s] column',
     async col => {
       const tableName = `drop_column_${col}`;
 

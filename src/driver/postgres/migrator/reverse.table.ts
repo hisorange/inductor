@@ -1,3 +1,4 @@
+import { ColumnTools } from '../../../column-tools';
 import { IColumn } from '../../../interface/column.interface';
 import { ISchema } from '../../../interface/schema.interface';
 import { PostgresColumnType } from '../postgres.column-type';
@@ -19,6 +20,7 @@ export const reverseTable = async (
   const compositivePrimaryKeys = await inspector.getCompositePrimaryKeys(table);
   const compositiveUniques = await inspector.getCompositeUniques(table);
   const indexes = await inspector.getIndexes(table);
+  const defaultValues = await inspector.getDefaultValues(table);
 
   const singleColumnIndexes = indexes.filter(
     index => index.columns.length === 1,
@@ -76,14 +78,55 @@ export const reverseTable = async (
       isIndexed = singleColumnIndex.type;
     }
 
-    schema.columns[column.name] = {
+    const columnDef: IColumn = {
       type,
       kind: 'column',
       isNullable: column.is_nullable,
       isUnique: column.is_unique,
       isPrimary,
       isIndexed,
+      defaultValue: undefined,
     };
+
+    let defaultValue: IColumn['defaultValue'] = defaultValues.find(
+      r => r.column === column.name,
+    )?.defaultValue;
+
+    // JSON columns need to get converted to strings
+    if (typeof defaultValue === 'string') {
+      // JSON columns need to get converted to strings
+      if (
+        type === PostgresColumnType.JSON ||
+        type === PostgresColumnType.JSONB
+      ) {
+        try {
+          defaultValue = JSON.parse(defaultValue);
+        } catch (error) {}
+      }
+      // Boolean columns need to get converted to booleans
+      else if (type === PostgresColumnType.BOOLEAN) {
+        defaultValue = defaultValue === 'true';
+      }
+      // Numeric columns need to get converted to numbers
+      else if (ColumnTools.postgres.isFloatType(columnDef)) {
+        defaultValue = parseFloat(defaultValue);
+
+        if (isNaN(defaultValue)) {
+          defaultValue = undefined;
+        }
+      }
+      // Integer columns need to get converted to numbers
+      else if (ColumnTools.postgres.isIntegerType(columnDef)) {
+        defaultValue = parseInt(defaultValue, 10);
+
+        if (isNaN(defaultValue)) {
+          defaultValue = undefined;
+        }
+      }
+    }
+
+    columnDef.defaultValue = defaultValue;
+    schema.columns[column.name] = columnDef;
   }
 
   postgresValidateSchema(schema);

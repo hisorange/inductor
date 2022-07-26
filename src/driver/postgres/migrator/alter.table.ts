@@ -69,6 +69,22 @@ export const alterTable = (
                 case 'isPrimary':
                   isPrimaryChanged = true;
                   break;
+                case 'isIndexed':
+                  // TODO: implement index type change
+                  break;
+                case 'defaultValue':
+                  const alterer = builder.specificType(name, def.type);
+
+                  // Add default value
+                  if (def.defaultValue !== undefined) {
+                    alterer.defaultTo(def.defaultValue);
+                  }
+
+                  alterer.alter({
+                    alterNullable: false,
+                    alterType: false,
+                  });
+                  break;
               }
             } else {
               console.error(

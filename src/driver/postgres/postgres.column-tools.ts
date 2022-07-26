@@ -41,12 +41,37 @@ const SerialTypes = [
   PostgresColumnType.SMALLSERIAL,
 ];
 
+const IntegerTypes = [
+  PostgresColumnType.BIGINT,
+  PostgresColumnType.INTEGER,
+  PostgresColumnType.SMALLINT,
+];
+
+const FloatTypes = [
+  PostgresColumnType.MONEY,
+  PostgresColumnType.DOUBLE,
+  PostgresColumnType.REAL,
+  PostgresColumnType.MONEY,
+  PostgresColumnType.NUMERIC,
+];
+
 export const PostgresColumnTools = {
   /**
    * Check if the column is serial type
    */
   isSerialType(column: IColumn): boolean {
     return SerialTypes.includes(column.type);
+  },
+
+  isFloatType(column: IColumn): boolean {
+    return FloatTypes.includes(column.type);
+  },
+
+  /**
+   * Columns which hold an integer
+   */
+  isIntegerType(column: IColumn): boolean {
+    return IntegerTypes.includes(column.type) || this.isSerialType(column);
   },
 
   /**

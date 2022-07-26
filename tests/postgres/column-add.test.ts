@@ -23,7 +23,7 @@ describe('[Postgres] Column Adding', () => {
   });
 
   test.each(cases)(
-    'should be able to add [%s] type column',
+    'should add [%s] type column',
     async (columnType: string, columnDef: IColumn) => {
       const columnSlug = columnType.replace(/\W/g, '_');
       const columnName = `column_${columnSlug}`;

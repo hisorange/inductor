@@ -49,7 +49,7 @@ describe('Primary Constraint', () => {
   });
 
   test.each(testTables)(
-    'should be able to create the PRIMARY flag for [%s] column',
+    'should create the PRIMARY flag for [%s] column',
     async colName => {
       const tableName = `create_primary_${colName}`;
 
@@ -88,7 +88,7 @@ describe('Primary Constraint', () => {
   );
 
   test.each(testTables)(
-    'should be able to alter the PRIMARY flag for [%s] column',
+    'should alter the PRIMARY flag for [%s] column',
     async colName => {
       const tableName = `alter_primary_${colName}`;
 
@@ -104,6 +104,7 @@ describe('Primary Constraint', () => {
             isUnique: false,
             isPrimary: false,
             isIndexed: false,
+            defaultValue: undefined,
           },
           [colName]: allColumn[colName],
           createdAt: {
@@ -113,6 +114,7 @@ describe('Primary Constraint', () => {
             isUnique: false,
             isPrimary: false,
             isIndexed: PostgresIndexType.BRIN,
+            defaultValue: undefined,
           },
         },
         uniques: {},
@@ -181,7 +183,7 @@ describe('Primary Constraint', () => {
     5_000,
   );
 
-  test('should be able to add/remove the primary keys', async () => {
+  test('should add/remove the primary keys', async () => {
     const schema: ISchema = {
       tableName: 'alter_primary_extend',
       kind: 'table',
@@ -193,6 +195,7 @@ describe('Primary Constraint', () => {
           isUnique: false,
           isPrimary: true,
           isIndexed: false,
+          defaultValue: undefined,
         },
       },
       uniques: {},
@@ -219,6 +222,7 @@ describe('Primary Constraint', () => {
       isUnique: false,
       isPrimary: true,
       isIndexed: false,
+      defaultValue: undefined,
     };
 
     // Update the state to extend the primary to two
@@ -247,6 +251,7 @@ describe('Primary Constraint', () => {
       isUnique: false,
       isPrimary: true,
       isIndexed: false,
+      defaultValue: undefined,
     };
 
     // Update the state to extend the primary to three

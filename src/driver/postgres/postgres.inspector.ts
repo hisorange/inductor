@@ -160,4 +160,60 @@ export class PostgresInspector extends BaseAdapter {
 
     return primaryKeys;
   }
+
+  async getDefaultValues(
+    tableName: string,
+  ): Promise<{ column: string; defaultValue: string }[]> {
+    const query = this.knex({
+      a: 'pg_catalog.pg_attribute',
+    })
+      .select({
+        column: 'a.attname',
+        isNotNull: 'attnotnull',
+        defaultValue: this.knex.raw('pg_get_expr(d.adbin, d.adrelid)'),
+      })
+      .leftJoin(
+        {
+          d: 'pg_catalog.pg_attrdef',
+        },
+        join => {
+          join.on(this.knex.raw('(a.attrelid, a.attnum)=(d.adrelid, d.adnum)'));
+        },
+      )
+      .join(
+        {
+          pc: 'pg_catalog.pg_class',
+        },
+        {
+          'pc.oid': 'a.attrelid',
+        },
+      )
+      .join(
+        {
+          pn: 'pg_catalog.pg_namespace',
+        },
+        {
+          'pn.oid': 'pc.relnamespace',
+        },
+      )
+      .whereNot('a.attisdropped', true)
+      .andWhere('a.attnum', '>', 0)
+      .andWhere({
+        'pn.nspname': this.knex.raw('current_schema()'),
+        'pc.relname': tableName,
+      });
+
+    return (await query).map(r => ({
+      column: r.column,
+      defaultValue:
+        r.defaultValue === null
+          ? r.isNotNull
+            ? undefined
+            : null
+          : r.defaultValue === 'NULL::bpchar' ||
+            r.defaultValue === 'NULL::"bit"'
+          ? null
+          : r.defaultValue.replace(/^'(.+)'::.+$/, '$1'),
+    }));
+  }
 }

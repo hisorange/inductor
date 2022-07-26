@@ -174,4 +174,15 @@ export const createColumn = (
   if (column.isPrimary && ColumnTools.filterPrimary(schema).length === 1) {
     columnBuilder.primary();
   }
+
+  // Add default value
+  if (column.defaultValue !== undefined) {
+    let defaultValue = column.defaultValue;
+
+    if (typeof defaultValue === 'object') {
+      defaultValue = JSON.stringify(defaultValue);
+    }
+
+    columnBuilder.defaultTo(column.defaultValue);
+  }
 };

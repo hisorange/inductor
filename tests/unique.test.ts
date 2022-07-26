@@ -56,7 +56,7 @@ describe('Unique Constraint', () => {
   });
 
   test.each(Object.keys(allColumn))(
-    'should be able to create simple unique on [%s] column type',
+    'should create simple unique on [%s] column type',
     async (columnKey: string) => {
       const tableName = `unique_test_${columnKey}`;
 
@@ -96,7 +96,7 @@ describe('Unique Constraint', () => {
   );
 
   test.each(testTables)(
-    'should be able to alter the UNIQUE flag for [%s] column',
+    'should alter the UNIQUE flag for [%s] column',
     async colName => {
       const tableName = `alter_unique_${colName}`;
 
@@ -114,6 +114,7 @@ describe('Unique Constraint', () => {
             isUnique: false,
             isPrimary: true,
             isIndexed: false,
+            defaultValue: undefined,
           },
           [colName]: allColumn[colName],
           createdAt: {
@@ -123,6 +124,7 @@ describe('Unique Constraint', () => {
             isUnique: false,
             isPrimary: false,
             isIndexed: false,
+            defaultValue: undefined,
           },
         },
       };
@@ -184,7 +186,7 @@ describe('Unique Constraint', () => {
   );
 
   test.each(Object.keys(allColumn))(
-    'should be able to create composite unique with [%s] column type',
+    'should create composite unique with [%s] column type',
     async (columnKey: string) => {
       const tableName = `unique_test_comp_${columnKey}`;
 
@@ -202,6 +204,7 @@ describe('Unique Constraint', () => {
             isPrimary: false,
             isNullable: false,
             isIndexed: false,
+            defaultValue: undefined,
           },
         },
       };
@@ -239,7 +242,7 @@ describe('Unique Constraint', () => {
     },
   );
 
-  test('should be able to alter between compound unique states', async () => {
+  test('should alter between compound unique states', async () => {
     const schema: ISchema = {
       tableName: 'unique_test_upgrade',
       kind: 'table',
@@ -253,6 +256,7 @@ describe('Unique Constraint', () => {
           isUnique: true,
           isPrimary: false,
           isIndexed: false,
+          defaultValue: undefined,
         },
         col_2: {
           kind: 'column',
@@ -261,6 +265,7 @@ describe('Unique Constraint', () => {
           isUnique: false,
           isPrimary: false,
           isIndexed: false,
+          defaultValue: undefined,
         },
       },
     };
@@ -320,6 +325,7 @@ describe('Unique Constraint', () => {
       isUnique: false,
       isPrimary: false,
       isIndexed: false,
+      defaultValue: undefined,
     };
 
     schema.uniques.test_cmp_1.push('col_3');

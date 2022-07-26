@@ -25,6 +25,13 @@ export const postgresValidateSchema = (schema: ISchema): void => {
         );
       }
 
+      // Nullable columns are automaticaly get a default value of NULL
+      if (definition.isNullable && definition.defaultValue === undefined) {
+        throw new InvalidSchema(
+          `Column [${name}] is nullable but has no default value defined`,
+        );
+      }
+
       // Serial columns cannot be nullable
       if (definition.isNullable && isSerialType) {
         throw new InvalidSchema(`Column [${name}] cannot be nullable`);

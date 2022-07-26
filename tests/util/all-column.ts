@@ -10,6 +10,7 @@ export const createColumnWithType = (type: PostgresColumnType): IColumn => {
     isUnique: false,
     isPrimary: false,
     isIndexed: false,
+    defaultValue: undefined,
   };
 
   // Fix the is primary flag

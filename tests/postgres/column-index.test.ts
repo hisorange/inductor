@@ -23,7 +23,7 @@ describe('[Postgres] Column Indexing', () => {
     ['brin', PostgresColumnType.DATE, PostgresIndexType.BRIN],
     ['spgist', PostgresColumnType.INET, PostgresIndexType.SPGIST],
   ])(
-    'should be able to create [%s] index on [%s] column',
+    'should create [%s] index on [%s] column',
     async (
       tableSuffix: string,
       columnType: PostgresColumnType,

@@ -1,3 +1,4 @@
+import { Pojo } from 'objection';
 import { PostgresColumnType } from '../driver/postgres/postgres.column-type';
 import { PostgresIndexType } from '../driver/postgres/postgres.index-type';
 
@@ -37,6 +38,18 @@ export interface IColumn<ColumnMeta = unknown> {
    * Index
    */
   isIndexed: false | PostgresIndexType;
+
+  /**
+   * Default value
+   */
+  defaultValue:
+    | string
+    | number
+    | boolean
+    | null
+    | undefined
+    | Array<unknown>
+    | Pojo;
 
   /**
    * Associated metadata with the database

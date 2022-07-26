@@ -26,7 +26,7 @@ describe('[Postgres] Alter Nullable', () => {
   });
 
   test.each(cases)(
-    'should be able to alter nullable flag for [%s] type column',
+    'should alter nullable flag for [%s] type column',
     async (columnType: string, columnDef: IColumn) => {
       const columnSlug = columnType.replace(/\W/g, '_');
       const columnName = `column_${columnSlug}`;
@@ -62,6 +62,7 @@ describe('[Postgres] Alter Nullable', () => {
 
       // Continue with a true state
       testSchema.columns[columnName].isNullable = true;
+      testSchema.columns[columnName].defaultValue = null;
       // Apply the new state
       await inductor.setState([testSchema]);
 
@@ -75,7 +76,8 @@ describe('[Postgres] Alter Nullable', () => {
       expect(trueReverseSchema).toStrictEqual(testSchema);
 
       // Continue with a false state
-      testSchema.columns[columnName].isNullable = true;
+      testSchema.columns[columnName].isNullable = false;
+      testSchema.columns[columnName].defaultValue = undefined;
       // Apply the new state
       await inductor.setState([testSchema]);
 
