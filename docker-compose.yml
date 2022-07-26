@@ -6,7 +6,7 @@ services:
     hostname: inductor-db
     container_name: inductor-db
     ports:
-      - 5432:5432
+      - 9999:5432
     environment:
       POSTGRES_PASSWORD: inductor
       POSTGRES_USER: inductor

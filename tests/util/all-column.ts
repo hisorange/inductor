@@ -1,15 +1,24 @@
-import { IColumn } from '../../src';
+import { ColumnTools, IColumn } from '../../src';
 import { PostgresColumnType } from '../../src/driver/postgres/postgres.column-type';
 import { ISchema } from '../../src/interface/schema.interface';
 
-export const createColumnWithType = (type: PostgresColumnType): IColumn => ({
-  type,
-  kind: 'column',
-  isNullable: false,
-  isUnique: false,
-  isPrimary: false,
-  isIndexed: false,
-});
+export const createColumnWithType = (type: PostgresColumnType): IColumn => {
+  const definition: IColumn = {
+    type,
+    kind: 'column',
+    isNullable: false,
+    isUnique: false,
+    isPrimary: false,
+    isIndexed: false,
+  };
+
+  // Fix the is primary flag
+  if (ColumnTools.postgres.isSerialType(definition)) {
+    definition.isPrimary = true;
+  }
+
+  return definition;
+};
 
 export const allColumn: ISchema['columns'] = {
   bigint: createColumnWithType(PostgresColumnType.BIGINT),

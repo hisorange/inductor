@@ -1,7 +1,7 @@
 import { PostgresColumnType } from '../driver/postgres/postgres.column-type';
 import { PostgresIndexType } from '../driver/postgres/postgres.index-type';
 
-export interface IColumn {
+export interface IColumn<ColumnMeta = unknown> {
   /**
    * Columns can be defined as a traditional column,
    * but also as virtual / stored / computed columns.
@@ -37,4 +37,9 @@ export interface IColumn {
    * Index
    */
   isIndexed: false | PostgresIndexType;
+
+  /**
+   * Associated metadata with the database
+   */
+  meta?: ColumnMeta;
 }

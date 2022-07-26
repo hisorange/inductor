@@ -18,13 +18,22 @@ describe('Primary Constraint', () => {
     await Promise.all(
       testTables.map(name =>
         inductor.driver.connection.schema.dropTableIfExists(
-          `alter_primary_${name}`,
+          `create_primary_${name}`,
         ),
       ),
     );
   });
 
   afterAll(async () => {
+    // Drop test tables from previous tests
+    await Promise.all(
+      testTables.map(name =>
+        inductor.driver.connection.schema.dropTableIfExists(
+          `create_primary_${name}`,
+        ),
+      ),
+    );
+
     await inductor.close();
   });
 

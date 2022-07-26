@@ -18,12 +18,22 @@ describe('Unique Constraint', () => {
     await Promise.all(
       testTables.map(name =>
         inductor.driver.connection.schema.dropTableIfExists(
-          `alter_unique_${name}`,
+          `unique_test_${name}`,
         ),
       ),
     );
   });
+
   afterAll(async () => {
+    // Drop test tables from previous tests
+    await Promise.all(
+      testTables.map(name =>
+        inductor.driver.connection.schema.dropTableIfExists(
+          `unique_test_${name}`,
+        ),
+      ),
+    );
+
     await inductor.close();
   });
 

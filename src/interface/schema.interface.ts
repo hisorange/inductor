@@ -1,6 +1,6 @@
 import { IColumn } from './column.interface';
 
-export interface ISchema {
+export interface ISchema<SchemaMeta = unknown, ColumnMeta = unknown> {
   /**
    * Can define view or table.
    */
@@ -15,7 +15,7 @@ export interface ISchema {
    * Columns of the table.
    */
   columns: {
-    [columnName: string]: IColumn;
+    [columnRef: string]: IColumn<ColumnMeta>;
   };
 
   /**
@@ -31,4 +31,9 @@ export interface ISchema {
   indexes: {
     [indexName: string]: string[];
   };
+
+  /**
+   * Associated metadata with the schema
+   */
+  meta?: SchemaMeta;
 }

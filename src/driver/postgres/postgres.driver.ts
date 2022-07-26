@@ -1,8 +1,8 @@
-import { Knex } from 'knex';
-import memoize from 'lodash.memoize';
+import knex, { Knex } from 'knex';
 import { Model, ModelClass, Pojo } from 'objection';
 import { Logger } from 'pino';
 import { ColumnTools } from '../../column-tools';
+import { IDatabase } from '../../interface/database.interface';
 import { IDriver } from '../../interface/driver.interface';
 import { ISchema } from '../../interface/schema.interface';
 import { PostgresInspector } from './postgres.inspector';
@@ -12,40 +12,31 @@ import { postgresValidateSchema } from './postgres.schema-validator';
 export class PostgresDriver implements IDriver {
   readonly migrator: PostgresMigrator;
   readonly inspector: PostgresInspector;
+  readonly connection: Knex;
 
-  protected dbNameReader;
-
-  constructor(logger: Logger, readonly connection: Knex) {
-    this.inspector = new PostgresInspector(this.connection);
+  constructor(logger: Logger, readonly database: IDatabase) {
+    (this.connection = knex({
+      client: 'pg',
+      connection: {
+        application_name: 'Inductor',
+        ...this.database.connection,
+      },
+      pool: {
+        max: 50,
+        min: 0,
+        idleTimeoutMillis: 5_000,
+      },
+    })),
+      (this.inspector = new PostgresInspector(this.connection));
     this.migrator = new PostgresMigrator(
       logger,
       this.inspector,
       this.connection,
     );
-
-    this.dbNameReader = memoize(
-      async () =>
-        (
-          await this.connection
-            .queryBuilder()
-            .select<{ current_database: string }>(
-              this.connection.raw('current_database()'),
-            )
-            .first()
-        )?.current_database!,
-    );
   }
 
   validateSchema(schema: ISchema) {
     postgresValidateSchema(schema);
-  }
-
-  async getDatabaseName(): Promise<string> {
-    if (this.connection.client.config.connection.database) {
-      return this.connection.client.config.connection.database;
-    }
-
-    return this.dbNameReader();
   }
 
   /**
@@ -112,6 +103,9 @@ export class PostgresDriver implements IDriver {
 
     // model.prototype.$beforeInsert = onCreate;
     // model.prototype.$beforeUpdate = onUpdate;
+
+    // Associate the knex instance with the newly created model class.
+    model.knex(this.connection);
 
     return model;
   }

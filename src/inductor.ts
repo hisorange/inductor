@@ -1,17 +1,12 @@
-import knex, { Knex } from 'knex';
 import { Model, ModelClass } from 'objection';
 import pino, { Logger } from 'pino';
 import { PostgresDriver } from './driver/postgres/postgres.driver';
+import { IDatabase } from './interface/database.interface';
 import { IDriver } from './interface/driver.interface';
 import { IInductor } from './interface/inductor.interface';
 import { ISchema } from './interface/schema.interface';
 
 export class Inductor implements IInductor {
-  /**
-   * Pino instance
-   */
-  readonly logger: Logger;
-
   /**
    * Associated schemas with the connection
    */
@@ -21,38 +16,17 @@ export class Inductor implements IInductor {
   >();
 
   readonly driver: IDriver;
+  readonly logger: Logger;
 
   /**
    * Create a new connection
    */
-  constructor(
-    protected config: {
-      connection: Knex.PgConnectionConfig;
-      logger?: Logger;
-    },
-  ) {
-    this.logger =
-      config.logger || this.createLogger(this.config.connection.database!);
+  constructor(database: IDatabase, logger?: Inductor['logger']) {
+    this.logger = logger || this.createLogger(database.id);
 
-    this.logger.info('Creating connection');
-
-    this.driver = new PostgresDriver(
-      this.logger,
-      knex({
-        client: 'pg',
-        connection: {
-          application_name: 'Inductor',
-          ...this.config.connection,
-        },
-        pool: {
-          max: 50,
-          min: 0,
-          idleTimeoutMillis: 5_000,
-        },
-      }),
-    );
-
-    this.logger.debug('Instance initialized');
+    this.logger.debug('Creating driver');
+    this.driver = new PostgresDriver(this.logger, database);
+    this.logger.debug('Driver is ready');
   }
 
   /**
@@ -78,14 +52,9 @@ export class Inductor implements IInductor {
     const newSchemaMap: Inductor['currentState'] = new Map();
 
     for (const schema of schemas) {
-      const model = this.driver.toModel(schema);
-
-      // Associate the knex instance with the newly created model class.
-      model.knex(this.driver.connection);
-
       newSchemaMap.set(schema.tableName, {
         schema,
-        model,
+        model: this.driver.toModel(schema),
       });
     }
 
@@ -93,7 +62,6 @@ export class Inductor implements IInductor {
 
     this.logger.info('Migrating database');
     await this.driver.migrator.setState(schemas);
-
     this.logger.info('State applied');
   }
 

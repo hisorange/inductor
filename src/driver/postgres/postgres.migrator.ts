@@ -1,5 +1,6 @@
 import { Knex } from 'knex';
 import { Logger } from 'pino';
+import { IMigrator } from '../../interface/migrator.interface';
 import { ISchema } from '../../interface/schema.interface';
 import { alterTable } from './migrator/alter.table';
 import { createTable } from './migrator/create.table';
@@ -7,7 +8,7 @@ import { reverseTable } from './migrator/reverse.table';
 import { PostgresInspector } from './postgres.inspector';
 
 // Calculates and applies the changes on the database
-export class PostgresMigrator {
+export class PostgresMigrator implements IMigrator {
   /**
    * Initialize the migrator
    */
@@ -78,5 +79,9 @@ export class PostgresMigrator {
         await query;
       }
     }
+  }
+
+  async dropSchema(schema: ISchema): Promise<void> {
+    await this.knex.schema.dropTableIfExists(schema.tableName);
   }
 }

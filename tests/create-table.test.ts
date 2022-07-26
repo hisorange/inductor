@@ -20,6 +20,13 @@ describe('Create Table from Schema', () => {
   });
 
   afterAll(async () => {
+    // Drop test tables from previous tests
+    await Promise.all(
+      testTables.map(name =>
+        inductor.driver.connection.schema.dropTableIfExists(name),
+      ),
+    );
+
     await inductor.close();
   });
 
