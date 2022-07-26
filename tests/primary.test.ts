@@ -10,30 +10,41 @@ describe('Primary Constraint', () => {
   let inductor: Inductor;
   const testTables = Object.keys(allColumn);
 
+  const cleanup = async () => {
+    // Drop test tables from previous tests
+    await Promise.all([
+      inductor.driver.connection.schema.dropTableIfExists(
+        `alter_primary_extend`,
+      ),
+    ]);
+
+    // Drop test tables from previous tests
+    await Promise.all(
+      testTables.map(name =>
+        inductor.driver.connection.schema.dropTableIfExists(
+          `create_primary_${name}`,
+        ),
+      ),
+    );
+
+    // Drop test tables from previous tests
+    await Promise.all(
+      testTables.map(name =>
+        inductor.driver.connection.schema.dropTableIfExists(
+          `alter_primary_${name}`,
+        ),
+      ),
+    );
+  };
+
   beforeAll(async () => {
     // Create the test connection
     inductor = createTestInstance();
-
-    // Drop test tables from previous tests
-    await Promise.all(
-      testTables.map(name =>
-        inductor.driver.connection.schema.dropTableIfExists(
-          `create_primary_${name}`,
-        ),
-      ),
-    );
+    await cleanup();
   });
 
   afterAll(async () => {
-    // Drop test tables from previous tests
-    await Promise.all(
-      testTables.map(name =>
-        inductor.driver.connection.schema.dropTableIfExists(
-          `create_primary_${name}`,
-        ),
-      ),
-    );
-
+    await cleanup();
     await inductor.close();
   });
 

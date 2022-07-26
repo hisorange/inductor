@@ -9,31 +9,49 @@ describe('Unique Constraint', () => {
   let inductor: Inductor;
 
   const testTables = Object.keys(allColumn);
+  const cleanup = async () => {
+    await Promise.all([
+      inductor.driver.connection.schema.dropTableIfExists(
+        `unique_test_upgrade`,
+      ),
+    ]);
+
+    // Drop test tables from previous tests
+    await Promise.all(
+      testTables.map(name =>
+        inductor.driver.connection.schema.dropTableIfExists(
+          `unique_test_${name}`,
+        ),
+      ),
+    );
+
+    // Drop test tables from previous tests
+    await Promise.all(
+      testTables.map(name =>
+        inductor.driver.connection.schema.dropTableIfExists(
+          `alter_unique_${name}`,
+        ),
+      ),
+    );
+
+    // Drop test tables from previous tests
+    await Promise.all(
+      testTables.map(name =>
+        inductor.driver.connection.schema.dropTableIfExists(
+          `unique_test_comp_${name}`,
+        ),
+      ),
+    );
+  };
 
   beforeAll(async () => {
     // Create the test connection
     inductor = createTestInstance();
-
-    // Drop test tables from previous tests
-    await Promise.all(
-      testTables.map(name =>
-        inductor.driver.connection.schema.dropTableIfExists(
-          `unique_test_${name}`,
-        ),
-      ),
-    );
+    await cleanup();
   });
 
   afterAll(async () => {
-    // Drop test tables from previous tests
-    await Promise.all(
-      testTables.map(name =>
-        inductor.driver.connection.schema.dropTableIfExists(
-          `unique_test_${name}`,
-        ),
-      ),
-    );
-
+    await cleanup();
     await inductor.close();
   });
 
