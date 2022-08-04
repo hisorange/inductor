@@ -21,7 +21,7 @@ jobs:
           POSTGRES_USER: inductor
           POSTGRES_DB: inductor
         ports:
-          - 5432:5432
+          - 9999:5432
 
 
     steps:
