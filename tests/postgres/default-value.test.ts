@@ -32,6 +32,8 @@ describe('[Postgres] Default Value', () => {
     [PostgresColumnType.TEXT, 'null', null],
     [PostgresColumnType.DATE, 'null', null],
     [PostgresColumnType.JSONB, 'null', null],
+    // TODO [PostgresColumnType.DATE, 'now', 'NOW()'],
+    // TODO [PostgresColumnType.DATE, 'CURRENT_TIMESTAMP', 'CURRENT_TIMESTAMP'],
   ])(
     'should create [%s] type column with [%s] default value',
     async (
