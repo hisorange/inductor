@@ -70,7 +70,12 @@ await connection.setState([
         },
       },
     },
-    indexes: {},
+    indexes: {
+      comp_idx: {
+        columns: ['createdAt', 'id'],
+        type: PostgresIndexType.HASH,
+      },
+    },
   },
 ]);
 ```

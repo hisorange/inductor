@@ -1,6 +1,7 @@
 import { InvalidSchema } from '../../exception/invalid-schema.exception';
 import { ISchema } from '../../interface/schema/schema.interface';
 import { PostgresColumnTools } from './postgres.column-tools';
+import { PostgresIndexType } from './postgres.index-type';
 
 export const postgresValidateSchema = (schema: ISchema): void => {
   // Validate the table name, or it's just spaces
@@ -62,6 +63,25 @@ export const postgresValidateSchema = (schema: ISchema): void => {
       if (definition.isPrimary && definition.isNullable) {
         throw new InvalidSchema(`Primary column [${name}] cannot be nullable`);
       }
+    }
+  }
+
+  // Validate compositive indexes
+  for (const [name, compositiveIndex] of Object.entries(schema.indexes)) {
+    if (compositiveIndex.columns.length < 2) {
+      throw new InvalidSchema(
+        `Compositive index [${name}] must have at least 2 columns`,
+      );
+    }
+
+    // Cannot have the type hash or spgist
+    if (
+      compositiveIndex.type === PostgresIndexType.HASH ||
+      compositiveIndex.type === PostgresIndexType.SPGIST
+    ) {
+      throw new InvalidSchema(
+        `Compositive index [${name}] cannot have either hash and spgist`,
+      );
     }
   }
 

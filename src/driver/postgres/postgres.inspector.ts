@@ -75,17 +75,26 @@ export class PostgresInspector extends BaseAdapter {
       .whereNot({
         'i.oid': 0,
       })
-      .whereNull('p.contype');
+      .whereNull('p.contype')
+      .orderBy('f.attnum', 'asc');
 
     const rows = await query;
     const indexes: IReverseIndex[] = [];
 
     rows.forEach(r => {
-      indexes.push({
-        name: r.idx_name,
-        columns: [r.column],
-        type: r.idx_type,
-      });
+      const idx = indexes.findIndex(i => i.name === r.idx_name);
+
+      // Create the index entry
+      if (idx === -1) {
+        indexes.push({
+          name: r.idx_name,
+          columns: [r.column],
+          type: r.idx_type,
+        });
+      } else {
+        // Add the column to the index
+        indexes[idx].columns.push(r.column);
+      }
     });
 
     return indexes;

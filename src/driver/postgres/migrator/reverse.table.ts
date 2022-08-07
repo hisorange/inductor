@@ -25,6 +25,14 @@ export const reverseTable = async (
   const singleColumnIndexes = indexes.filter(
     index => index.columns.length === 1,
   );
+  const compositiveIndexes = indexes.filter(index => index.columns.length > 1);
+
+  for (const compositiveIndex of compositiveIndexes) {
+    schema.indexes[compositiveIndex.name] = {
+      columns: compositiveIndex.columns,
+      type: compositiveIndex.type,
+    };
+  }
 
   // Merge compositive uniques into the schema, but remove the table prefix from the name
   for (const [name, uniques] of Object.entries(compositiveUniques)) {

@@ -22,6 +22,23 @@ export const createTable = (
       table.primary(primaries);
     }
 
+    // Apply the compositive indexes
+    for (const indexName in schema.indexes) {
+      if (Object.prototype.hasOwnProperty.call(schema.indexes, indexName)) {
+        // if (facts.uniqueConstraints.includes(indexName)) {
+        //   throw new Error(
+        //     `Index [${indexName}] for [${schema.tableName}] already exists`,
+        //   );
+        // }
+
+        table.index(
+          schema.indexes[indexName].columns,
+          indexName,
+          schema.indexes[indexName].type,
+        );
+      }
+    }
+
     // Apply the compositive unique constraints
     for (const uniqueName in schema.uniques) {
       if (Object.prototype.hasOwnProperty.call(schema.uniques, uniqueName)) {

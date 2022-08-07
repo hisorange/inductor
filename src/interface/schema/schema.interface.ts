@@ -1,10 +1,12 @@
 import { IColumn } from './column.interface';
+import { ICompositiveIndex } from './index.interface';
 import { IUnique } from './unique.interface';
 
 export interface ISchema<
   SchemaMeta = unknown,
   ColumnMeta = unknown,
   UniqueMeta = unknown,
+  IndexMeta = unknown,
 > {
   /**
    * Can define view or table.
@@ -34,7 +36,7 @@ export interface ISchema<
    * Indices of the table.
    */
   indexes: {
-    [indexName: string]: string[];
+    [indexName: string]: ICompositiveIndex<IndexMeta>;
   };
 
   /**
