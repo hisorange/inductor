@@ -1,6 +1,6 @@
 import { ColumnTools, IColumn } from '../../src';
 import { PostgresColumnType } from '../../src/driver/postgres/postgres.column-type';
-import { ISchema } from '../../src/interface/schema.interface';
+import { ISchema } from '../../src/interface/schema/schema.interface';
 
 export const createColumnWithType = (type: PostgresColumnType): IColumn => {
   const definition: IColumn = {

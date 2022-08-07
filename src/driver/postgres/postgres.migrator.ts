@@ -1,7 +1,7 @@
 import { Knex } from 'knex';
 import { Logger } from 'pino';
 import { IMigrator } from '../../interface/migrator.interface';
-import { ISchema } from '../../interface/schema.interface';
+import { ISchema } from '../../interface/schema/schema.interface';
 import { alterTable } from './migrator/alter.table';
 import { createTable } from './migrator/create.table';
 import { reverseTable } from './migrator/reverse.table';
@@ -34,7 +34,7 @@ export class PostgresMigrator implements IMigrator {
   }
 
   async cmpState(schemas: ISchema[]): Promise<Knex.SchemaBuilder[]> {
-    const tables = await this.inspector.tables();
+    const facts = await this.inspector.getFacts();
     const changes: Knex.SchemaBuilder[] = [];
 
     for (let targetState of schemas) {
@@ -42,8 +42,8 @@ export class PostgresMigrator implements IMigrator {
 
       if (targetState.kind === 'table') {
         // If the table doesn't exist, create it
-        if (!tables.includes(targetState.tableName)) {
-          changes.push(createTable(this.knex.schema, targetState));
+        if (!facts.tables.includes(targetState.tableName)) {
+          changes.push(createTable(this.knex.schema, targetState, facts));
         }
         // If the table exists, compare the state and apply the alterations
         else {

@@ -1,5 +1,5 @@
 import { PostgresColumnTools } from './driver/postgres/postgres.column-tools';
-import { ISchema } from './interface/schema.interface';
+import { ISchema } from './interface/schema/schema.interface';
 
 // Find and filter the primary column names from the schema
 export const filterPrimary = (schema: ISchema) => {

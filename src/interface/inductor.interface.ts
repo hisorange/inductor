@@ -1,6 +1,6 @@
 import { Model, ModelClass } from 'objection';
 import { IDriver } from './driver.interface';
-import { ISchema } from './schema.interface';
+import { ISchema } from './schema/schema.interface';
 
 export interface IInductor {
   /**

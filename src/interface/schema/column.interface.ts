@@ -1,6 +1,6 @@
 import { Pojo } from 'objection';
-import { PostgresColumnType } from '../driver/postgres/postgres.column-type';
-import { PostgresIndexType } from '../driver/postgres/postgres.index-type';
+import { PostgresColumnType } from '../../driver/postgres/postgres.column-type';
+import { PostgresIndexType } from '../../driver/postgres/postgres.index-type';
 
 export interface IColumn<ColumnMeta = unknown> {
   /**

@@ -1,11 +1,13 @@
 import { Knex } from 'knex';
 import { ColumnTools } from '../../../column-tools';
-import { ISchema } from '../../../interface/schema.interface';
+import { IFacts } from '../../../interface/facts.interface';
+import { ISchema } from '../../../interface/schema/schema.interface';
 import { createColumn } from './create.column';
 
 export const createTable = (
   builder: Knex.SchemaBuilder,
   schema: ISchema,
+  facts: IFacts,
 ): Knex.SchemaBuilder =>
   builder.createTable(schema.tableName, table => {
     for (const name in schema.columns) {
@@ -21,14 +23,15 @@ export const createTable = (
     }
 
     // Apply the compositive unique constraints
-    for (const name in schema.uniques) {
-      if (Object.prototype.hasOwnProperty.call(schema.uniques, name)) {
-        // Prefix the unique name with the table name if it is not already prefixed
-        const uniqueName = name.startsWith(schema.tableName)
-          ? name
-          : `${schema.tableName}_${name}`;
+    for (const uniqueName in schema.uniques) {
+      if (Object.prototype.hasOwnProperty.call(schema.uniques, uniqueName)) {
+        if (facts.uniqueConstraints.includes(uniqueName)) {
+          throw new Error(
+            `Unique constraint [${uniqueName}] for [${schema.tableName}] already exists`,
+          );
+        }
 
-        table.unique(schema.uniques[name], {
+        table.unique(schema.uniques[uniqueName].columns, {
           indexName: uniqueName,
         });
       }

@@ -1,5 +1,5 @@
 import { Inductor } from '../src/inductor';
-import { ISchema } from '../src/interface/schema.interface';
+import { ISchema } from '../src/interface/schema/schema.interface';
 import { allColumn } from './util/all-column';
 import { createTestInstance } from './util/create-connection';
 

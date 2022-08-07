@@ -4,7 +4,7 @@ import { Logger } from 'pino';
 import { ColumnTools } from '../../column-tools';
 import { IDatabase } from '../../interface/database.interface';
 import { IDriver } from '../../interface/driver.interface';
-import { ISchema } from '../../interface/schema.interface';
+import { ISchema } from '../../interface/schema/schema.interface';
 import { PostgresInspector } from './postgres.inspector';
 import { PostgresMigrator } from './postgres.migrator';
 import { postgresValidateSchema } from './postgres.schema-validator';

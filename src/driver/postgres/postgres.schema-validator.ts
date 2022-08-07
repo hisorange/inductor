@@ -1,5 +1,5 @@
 import { InvalidSchema } from '../../exception/invalid-schema.exception';
-import { ISchema } from '../../interface/schema.interface';
+import { ISchema } from '../../interface/schema/schema.interface';
 import { PostgresColumnTools } from './postgres.column-tools';
 
 export const postgresValidateSchema = (schema: ISchema): void => {
@@ -66,12 +66,12 @@ export const postgresValidateSchema = (schema: ISchema): void => {
   }
 
   // Validate the compositive unique fields for valid types
-  for (const name in schema.uniques) {
+  for (const uniqueName in schema.uniques) {
     const validColumns: string[] = [];
     const expectedColumns: string[] = [];
 
-    if (Object.prototype.hasOwnProperty.call(schema.uniques, name)) {
-      expectedColumns.push(...schema.uniques[name]);
+    if (Object.prototype.hasOwnProperty.call(schema.uniques, uniqueName)) {
+      expectedColumns.push(...schema.uniques[uniqueName].columns);
 
       for (const columnName of expectedColumns) {
         // Check if the column exists
@@ -89,7 +89,7 @@ export const postgresValidateSchema = (schema: ISchema): void => {
     // All column has to match
     if (validColumns.length !== expectedColumns.length) {
       throw new InvalidSchema(
-        `Composite unique [${name}] contains invalid columns`,
+        `Composite unique [${uniqueName}] contains invalid columns`,
       );
     }
   }

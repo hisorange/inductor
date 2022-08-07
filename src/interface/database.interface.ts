@@ -1,5 +1,5 @@
 import { Knex } from 'knex';
-import { ISchema } from './schema.interface';
+import { ISchema } from './schema/schema.interface';
 
 /**
  * Describe the database schema, and the connection associated with it.

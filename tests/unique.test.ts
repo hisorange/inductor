@@ -1,7 +1,8 @@
 import cloneDeep from 'lodash.clonedeep';
 import { PostgresColumnType } from '../src/driver/postgres/postgres.column-type';
 import { Inductor } from '../src/inductor';
-import { ISchema } from '../src/interface/schema.interface';
+import { ISchema } from '../src/interface/schema/schema.interface';
+import { IUnique } from '../src/interface/schema/unique.interface';
 import { allColumn } from './util/all-column';
 import { createTestInstance } from './util/create-connection';
 
@@ -189,6 +190,7 @@ describe('Unique Constraint', () => {
     'should create composite unique with [%s] column type',
     async (columnKey: string) => {
       const tableName = `unique_test_comp_${columnKey}`;
+      const uniqueName = `unique_pair_${columnKey}`;
 
       const schema: ISchema = {
         tableName,
@@ -214,7 +216,9 @@ describe('Unique Constraint', () => {
 
       // Create the composite unique
       schema.uniques = {
-        pair: [columnKey, 'pair_for_comp'],
+        [uniqueName]: {
+          columns: [columnKey, 'pair_for_comp'],
+        },
       };
 
       try {
@@ -226,15 +230,13 @@ describe('Unique Constraint', () => {
       // Apply the statement
       await inductor.setState([schema]);
 
-      const reversedUniqueName = `${tableName}_pair`;
-
       // Verify if the column is not unique
       const uniques =
         await inductor.driver.migrator.inspector.getCompositeUniques(tableName);
 
-      if (schema.uniques.pair.length === 2) {
+      if (schema.uniques[uniqueName].columns.length === 2) {
         expect(uniques).toStrictEqual({
-          [reversedUniqueName]: schema.uniques.pair,
+          [uniqueName]: schema.uniques[uniqueName],
         });
       } else {
         expect(uniques).toStrictEqual({});
@@ -285,7 +287,9 @@ describe('Unique Constraint', () => {
 
     // Set the second column as unique to convert the index into a compositive one
     schema.columns.col_1.isUnique = false;
-    schema.uniques.test_cmp_1 = ['col_1', 'col_2'];
+    schema.uniques.test_cmp_1 = {
+      columns: ['col_1', 'col_2'],
+    };
 
     // Apply the statement
     await inductor.setState([schema]);
@@ -314,7 +318,9 @@ describe('Unique Constraint', () => {
         'unique_test_upgrade',
       );
     expect(uniques).toStrictEqual({
-      unique_test_upgrade_test_cmp_1: ['col_1', 'col_2'],
+      test_cmp_1: {
+        columns: ['col_1', 'col_2'],
+      } as IUnique,
     });
 
     // Create a new column and add it to the composite unique
@@ -328,7 +334,7 @@ describe('Unique Constraint', () => {
       defaultValue: undefined,
     };
 
-    schema.uniques.test_cmp_1.push('col_3');
+    schema.uniques.test_cmp_1.columns.push('col_3');
 
     // Apply the statement
     await inductor.setState([schema]);
@@ -339,7 +345,9 @@ describe('Unique Constraint', () => {
         'unique_test_upgrade',
       );
     expect(uniques2).toStrictEqual({
-      unique_test_upgrade_test_cmp_1: ['col_1', 'col_2', 'col_3'],
+      test_cmp_1: {
+        columns: ['col_1', 'col_2', 'col_3'],
+      } as IUnique,
     });
 
     // Remove the composite unique

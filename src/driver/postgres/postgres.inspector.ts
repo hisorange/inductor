@@ -1,16 +1,41 @@
 import BaseAdapter from 'knex-schema-inspector/dist/dialects/postgres';
-import { IIndex } from '../../interface/index.interface';
-import { ISchema } from '../../interface/schema.interface';
-import { IUnique } from '../../interface/unique.interface';
+import { IFacts } from '../../interface/facts.interface';
+import { IReverseIndex } from '../../interface/reverse/reverse-index.interface';
+import { IReverseUnique } from '../../interface/reverse/reverse-unique.interface';
+import { ISchema } from '../../interface/schema/schema.interface';
 
 /**
  * Reads the connection's database into a set of structure
  */
 export class PostgresInspector extends BaseAdapter {
+  async getFacts(): Promise<IFacts> {
+    return {
+      tables: await this.tables(),
+      uniqueConstraints: await this.getUniqueConstraints(),
+    };
+  }
+
+  async getUniqueConstraints(): Promise<string[]> {
+    const query = this.knex({
+      tc: 'information_schema.table_constraints',
+    })
+      .select({
+        uniqueName: 'tc.constraint_name',
+      })
+      .where({
+        'tc.constraint_type': 'UNIQUE',
+        'tc.table_schema': this.knex.raw('current_schema()'),
+      });
+
+    const rows = await query;
+
+    return rows.map(r => r.uniqueName);
+  }
+
   /**
    * Read the database table definition for indexes.
    */
-  async getIndexes(tableName: string): Promise<IIndex[]> {
+  async getIndexes(tableName: string): Promise<IReverseIndex[]> {
     const query = this.knex({
       f: 'pg_attribute',
     })
@@ -53,7 +78,7 @@ export class PostgresInspector extends BaseAdapter {
       .whereNull('p.contype');
 
     const rows = await query;
-    const indexes: IIndex[] = [];
+    const indexes: IReverseIndex[] = [];
 
     rows.forEach(r => {
       indexes.push({
@@ -69,7 +94,7 @@ export class PostgresInspector extends BaseAdapter {
   /**
    * Read the defined uniques for the given table name
    */
-  async getUniques(tableName: string): Promise<IUnique[]> {
+  async getUniques(tableName: string): Promise<IReverseUnique[]> {
     const query = this.knex({
       tc: 'information_schema.table_constraints',
     })
@@ -92,7 +117,7 @@ export class PostgresInspector extends BaseAdapter {
       });
 
     const rows = await query;
-    const uniques: IUnique[] = [];
+    const uniques: IReverseUnique[] = [];
 
     rows.forEach(r => {
       // Create an empty unique if it doesn't exist
@@ -119,7 +144,9 @@ export class PostgresInspector extends BaseAdapter {
 
     for (const entry of entries) {
       if (entry.columns.length > 1) {
-        unique[entry.name] = entry.columns;
+        unique[entry.name] = {
+          columns: entry.columns,
+        };
       }
     }
 

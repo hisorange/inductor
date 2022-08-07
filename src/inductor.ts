@@ -4,7 +4,7 @@ import { PostgresDriver } from './driver/postgres/postgres.driver';
 import { IDatabase } from './interface/database.interface';
 import { IDriver } from './interface/driver.interface';
 import { IInductor } from './interface/inductor.interface';
-import { ISchema } from './interface/schema.interface';
+import { ISchema } from './interface/schema/schema.interface';
 
 export class Inductor implements IInductor {
   /**

@@ -3,7 +3,7 @@ import { Model, ModelClass } from 'objection';
 import { PostgresInspector } from '../driver/postgres/postgres.inspector';
 import { PostgresMigrator } from '../driver/postgres/postgres.migrator';
 import { IDatabase } from './database.interface';
-import { ISchema } from './schema.interface';
+import { ISchema } from './schema/schema.interface';
 
 export interface IDriver {
   /**

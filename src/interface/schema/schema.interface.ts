@@ -1,6 +1,11 @@
 import { IColumn } from './column.interface';
+import { IUnique } from './unique.interface';
 
-export interface ISchema<SchemaMeta = unknown, ColumnMeta = unknown> {
+export interface ISchema<
+  SchemaMeta = unknown,
+  ColumnMeta = unknown,
+  UniqueMeta = unknown,
+> {
   /**
    * Can define view or table.
    */
@@ -22,7 +27,7 @@ export interface ISchema<SchemaMeta = unknown, ColumnMeta = unknown> {
    * Unique constraints of the table.
    */
   uniques: {
-    [constraintName: string]: string[];
+    [uniqueName: string]: IUnique<UniqueMeta>;
   };
 
   /**

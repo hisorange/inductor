@@ -1,4 +1,4 @@
-import { IColumn } from '../../interface/column.interface';
+import { IColumn } from '../../interface/schema/column.interface';
 import { PostgresColumnType } from './postgres.column-type';
 import { PostgresIndexType } from './postgres.index-type';
 

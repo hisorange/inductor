@@ -2,7 +2,7 @@ import cloneDeep from 'lodash.clonedeep';
 import { PostgresColumnType } from '../src/driver/postgres/postgres.column-type';
 import { PostgresIndexType } from '../src/driver/postgres/postgres.index-type';
 import { Inductor } from '../src/inductor';
-import { ISchema } from '../src/interface/schema.interface';
+import { ISchema } from '../src/interface/schema/schema.interface';
 import { createTestInstance } from './util/create-connection';
 
 describe('Drop Column', () => {

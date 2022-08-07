@@ -51,6 +51,7 @@ await connection.setState([
         isNullable: false,
         isUnique: false,
         isPrimary: false,
+        isIndexed: PostgresIndexType.BTREE,
       },
       createdAt: {
         kind: 'column',
@@ -58,10 +59,16 @@ await connection.setState([
         isNullable: true,
         isUnique: false,
         isPrimary: false,
+        isIndexed: true,
       },
     },
     uniques: {
-      id_and_smth: ['id', 'smth'],
+      id_and_smth: {
+        columns: ['id', 'smth'],
+        meta: {
+          note: 'Some note on why we need this',
+        },
+      },
     },
     indexes: {},
   },

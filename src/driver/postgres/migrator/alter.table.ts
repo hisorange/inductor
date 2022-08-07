@@ -1,7 +1,7 @@
 import { diff } from 'just-diff';
 import { Knex } from 'knex';
 import { ColumnTools } from '../../../column-tools';
-import { ISchema } from '../../../interface/schema.interface';
+import { ISchema } from '../../../interface/schema/schema.interface';
 import { alterNullable, alterUnique } from './alter.column';
 import { createColumn } from './create.column';
 
@@ -96,29 +96,31 @@ export const alterTable = (
       }
       // Change is affecting the unique set
       else if (path[0] === 'uniques') {
-        const name = path[1] as string;
-        // Prefix the unique name with the table name if it is not already prefixed
-        const indexName = name.startsWith(expectedSchema.tableName)
-          ? name
-          : `${expectedSchema.tableName}_${name}`;
+        const uniqueName = path[1] as string;
 
         switch (op) {
           // New unique added
           case 'add':
             // We have to check if the unique existed before
             // because the add is only applied to the columns
-            if (currentSchema.uniques[name]) {
-              builder.dropUnique(currentSchema.uniques[name], indexName);
+            if (currentSchema.uniques[uniqueName]) {
+              builder.dropUnique(
+                currentSchema.uniques[uniqueName].columns,
+                uniqueName,
+              );
             }
 
-            builder.unique(expectedSchema.uniques[name], {
-              indexName,
+            builder.unique(expectedSchema.uniques[uniqueName].columns, {
+              indexName: uniqueName,
             });
             break;
 
           // Unique removed
           case 'remove':
-            builder.dropUnique(currentSchema.uniques[name], indexName);
+            builder.dropUnique(
+              currentSchema.uniques[uniqueName].columns,
+              uniqueName,
+            );
             break;
         }
       }

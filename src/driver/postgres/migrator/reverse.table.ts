@@ -1,6 +1,6 @@
 import { ColumnTools } from '../../../column-tools';
-import { IColumn } from '../../../interface/column.interface';
-import { ISchema } from '../../../interface/schema.interface';
+import { IColumn } from '../../../interface/schema/column.interface';
+import { ISchema } from '../../../interface/schema/schema.interface';
 import { PostgresColumnType } from '../postgres.column-type';
 import { PostgresInspector } from '../postgres.inspector';
 import { postgresValidateSchema } from '../postgres.schema-validator';
@@ -28,8 +28,7 @@ export const reverseTable = async (
 
   // Merge compositive uniques into the schema, but remove the table prefix from the name
   for (const [name, uniques] of Object.entries(compositiveUniques)) {
-    const unprefixedName = name.replace(`${table}_`, '');
-    schema.uniques[unprefixedName] = uniques;
+    schema.uniques[name] = uniques;
   }
 
   for (const column of columns) {
