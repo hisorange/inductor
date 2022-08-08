@@ -2,7 +2,9 @@ import BaseAdapter from 'knex-schema-inspector/dist/dialects/postgres';
 import { IFacts } from '../../interface/facts.interface';
 import { IReverseIndex } from '../../interface/reverse/reverse-index.interface';
 import { IReverseUnique } from '../../interface/reverse/reverse-unique.interface';
+import { IRelation } from '../../interface/schema/relation.interface';
 import { ISchema } from '../../interface/schema/schema.interface';
+import { PostgresForeignAction } from './postgres.foreign-action';
 
 /**
  * Reads the connection's database into a set of structure
@@ -13,6 +15,113 @@ export class PostgresInspector extends BaseAdapter {
       tables: await this.tables(),
       uniqueConstraints: await this.getUniqueConstraints(),
     };
+  }
+
+  async getForeignKeys(tableName: string): Promise<[string, IRelation][]> {
+    const relations = new Map<string, IRelation>();
+
+    const query = this.knex({
+      fks: 'information_schema.table_constraints',
+    })
+      .select({
+        // Table where the foreign key is defined
+        localTableName: 'fks.table_name',
+        // Foreign constrain's name
+        relationName: 'fks.constraint_name',
+        // Foreign key's column
+        localColumnName: 'kcu_foreign.column_name',
+        // Remote primary key's constraint name
+        remotePrimaryKeyConstraint: 'rc.unique_constraint_name',
+        // Remote table
+        remoteTableName: 'pks.table_name',
+        // Target column's name
+        remoteColumnName: 'kcu_primary.column_name',
+        updateRule: 'rc.update_rule',
+        deleteRule: 'rc.delete_rule',
+        // Important for compositive remote keys, where the order matters
+        ordinalPosition: 'kcu_foreign.ordinal_position',
+      })
+      .innerJoin(
+        { kcu_foreign: 'information_schema.key_column_usage' },
+        {
+          'fks.table_catalog': 'kcu_foreign.table_catalog',
+          'fks.table_schema': 'kcu_foreign.table_schema',
+          'fks.table_name': 'kcu_foreign.table_name',
+          'fks.constraint_name': 'kcu_foreign.constraint_name',
+        },
+      )
+      .innerJoin(
+        { rc: 'information_schema.referential_constraints' },
+        {
+          'rc.constraint_catalog': 'fks.table_catalog',
+          'rc.constraint_schema': 'fks.constraint_schema',
+          'rc.constraint_name': 'fks.constraint_name',
+        },
+      )
+      .innerJoin(
+        { pks: 'information_schema.table_constraints' },
+        {
+          'rc.unique_constraint_catalog': 'pks.constraint_catalog',
+          'rc.unique_constraint_schema': 'pks.constraint_schema',
+          'rc.unique_constraint_name': 'pks.constraint_name',
+        },
+      )
+      .innerJoin(
+        {
+          kcu_primary: 'information_schema.key_column_usage',
+        },
+        {
+          'pks.table_catalog': 'kcu_primary.table_catalog',
+          'pks.table_schema': 'kcu_primary.table_schema',
+          'pks.table_name': 'kcu_primary.table_name',
+          'pks.constraint_name': 'kcu_primary.constraint_name',
+          'kcu_foreign.ordinal_position': 'kcu_primary.ordinal_position',
+        },
+      )
+      .where({
+        'fks.constraint_type': 'FOREIGN KEY',
+        'pks.constraint_type': 'PRIMARY KEY',
+        'fks.table_schema': this.knex.raw('current_schema()'),
+        'fks.table_name': tableName,
+      })
+      .orderBy('fks.constraint_name')
+      .orderBy('kcu_foreign.ordinal_position');
+
+    // console.log(query.toString());
+
+    const rows: {
+      localTableName: string;
+      relationName: string;
+      localColumnName: string;
+      remotePrimaryKeyConstraint: string;
+      remoteTableName: string;
+      remoteColumnName: string;
+      updateRule: PostgresForeignAction;
+      deleteRule: PostgresForeignAction;
+      ordinalPosition: number;
+    }[] = await query;
+
+    for (const row of rows) {
+      // Check if the relation already exists
+      if (!relations.has(row.relationName)) {
+        relations.set(row.relationName, {
+          columns: [row.localColumnName],
+          references: {
+            table: row.remoteTableName,
+            columns: [row.remoteColumnName],
+          },
+          isLocalUnique: false,
+          onDelete: row.deleteRule.toLowerCase() as PostgresForeignAction,
+          onUpdate: row.updateRule.toLowerCase() as PostgresForeignAction,
+        });
+      } else {
+        const relation = relations.get(row.relationName)!;
+        relation.columns.push(row.localColumnName);
+        relation.references.columns.push(row.remoteColumnName);
+      }
+    }
+
+    return Array.from(relations.entries());
   }
 
   async getUniqueConstraints(): Promise<string[]> {

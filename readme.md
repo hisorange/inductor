@@ -20,9 +20,9 @@ yarn add @hisorange/inductor
 ### Create the connection
 
 ```javascript
-import { Connection, ColumnType } from '@hisorange/inductor';
+import { Inductor } from '@hisorange/inductor';
 
-const connection = new Connection({
+const connection = new Inductor({
   connection: {
     host: 'localhost',
     port: 5432,
@@ -35,7 +35,7 @@ const connection = new Connection({
 // Apply the desired state, and the library will create or modify the databse to match the given schema
 await connection.setState([
   {
-    name: 'test_table',
+    name: 'my_table',
     kind: 'table',
     columns: {
       id: {
@@ -76,6 +76,19 @@ await connection.setState([
         type: PostgresIndexType.HASH,
       },
     },
+    relations: {
+      fk_my_table_user: {
+        propertyName: 'user',
+        columns: ['id'],
+        references: {
+          table: 'users',
+          columns: ['user_id'],
+        },
+        isLocalUnique: true,
+        onDelete: PostgresForeignAction.SET_NULL,
+        onUpdate: PostgresForeignAction.CASCADE,
+      },
+    },
   },
 ]);
 ```
@@ -95,6 +108,24 @@ Of course this is not a trivial deal, sometime there is a lot of analysis has to
 ### Database Support
 
 At this moment only the PostgreSQL database is supported, over time I may add more adapters because we can simply abstract the functionalities with the ORM layer and ensure that even features which does not exists in one database, can be achieved with pre computation. But first the PG has to be covered to the maximum.
+
+### PostgreSQL Implementation
+
+---
+
+Gonna track the implemented and missing features with all the generic capabilities.
+
+- Create: Can create the feature from the schema
+- Read: Can read the state from the database into a schema
+- Update: Can modify the state
+- Delete: Can remove the feature from the database
+
+| Feature                       | Create | Read | Update | Delete |
+| :---------------------------- | :----: | :--: | :----: | :----: |
+| Columns                       |   Y    |  Y   |   Y    |   Y    |
+| Single Unique Constraint      |   Y    |  Y   |   Y    |   Y    |
+| Compositive Unique Constraint |   Y    |  Y   |   ?    |   ?    |
+| Compositive Foreign Key       |   Y    |  Y   |   N    |   N    |
 
 ### License
 

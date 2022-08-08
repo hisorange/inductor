@@ -84,6 +84,7 @@ describe('Drop Column', () => {
         columns,
         uniques: {},
         indexes: {},
+        relations: {},
       };
       // Apply the state
       await inductor.setState([schemaRV1]);

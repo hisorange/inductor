@@ -48,6 +48,7 @@ describe('[Postgres] Default Value', () => {
         kind: 'table',
         uniques: {},
         indexes: {},
+        relations: {},
         columns: {
           test_column: {
             ...createColumnWithType(columnType),

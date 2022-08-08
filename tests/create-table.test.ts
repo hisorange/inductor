@@ -39,6 +39,7 @@ describe('Create Table from Schema', () => {
         columns: allColumn,
         uniques: {},
         indexes: {},
+        relations: {},
       };
 
       try {

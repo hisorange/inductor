@@ -9,17 +9,17 @@ export const createTable = (
   schema: ISchema,
   facts: IFacts,
 ): Knex.SchemaBuilder =>
-  builder.createTable(schema.tableName, table => {
+  builder.createTable(schema.tableName, tableBuilder => {
     for (const name in schema.columns) {
       if (Object.prototype.hasOwnProperty.call(schema.columns, name)) {
-        createColumn(table, name, schema.columns[name], schema);
+        createColumn(tableBuilder, name, schema.columns[name], schema);
       }
     }
 
     const primaries = ColumnTools.filterPrimary(schema);
 
     if (primaries.length > 1) {
-      table.primary(primaries);
+      tableBuilder.primary(primaries);
     }
 
     // Apply the compositive indexes
@@ -31,7 +31,7 @@ export const createTable = (
         //   );
         // }
 
-        table.index(
+        tableBuilder.index(
           schema.indexes[indexName].columns,
           indexName,
           schema.indexes[indexName].type,
@@ -48,9 +48,27 @@ export const createTable = (
           );
         }
 
-        table.unique(schema.uniques[uniqueName].columns, {
+        tableBuilder.unique(schema.uniques[uniqueName].columns, {
           indexName: uniqueName,
         });
+      }
+    }
+
+    // Add foreign keys
+    for (const foreignKeyName in schema.relations) {
+      if (
+        Object.prototype.hasOwnProperty.call(schema.relations, foreignKeyName)
+      ) {
+        const relation = schema.relations[foreignKeyName];
+        const { table, columns } = relation.references;
+        const { onDelete, onUpdate } = relation;
+
+        tableBuilder
+          .foreign(relation.columns, foreignKeyName)
+          .references(columns)
+          .inTable(table)
+          .onDelete(onDelete)
+          .onUpdate(onUpdate);
       }
     }
   });

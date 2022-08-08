@@ -37,6 +37,7 @@ describe('[Postgres] Alter Nullable', () => {
         kind: 'table',
         uniques: {},
         indexes: {},
+        relations: {},
         columns: {
           primary_column: {
             ...createColumnWithType(PostgresColumnType.SERIAL),

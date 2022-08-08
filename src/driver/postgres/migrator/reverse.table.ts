@@ -15,6 +15,7 @@ export const reverseTable = async (
     columns: {},
     uniques: {},
     indexes: {},
+    relations: {},
   };
   const columns = await inspector.columnInfo(table);
   const compositivePrimaryKeys = await inspector.getCompositePrimaryKeys(table);
@@ -134,6 +135,28 @@ export const reverseTable = async (
 
     columnDef.defaultValue = defaultValue;
     schema.columns[column.name] = columnDef;
+  }
+
+  // Process foreign keys
+  const foreignKeys = await inspector.getForeignKeys(table);
+
+  // TODO process for 1 unique on local, or compositive unique with the same order
+  for (const [relationName, relationDefinition] of foreignKeys) {
+    schema.relations[relationName] = relationDefinition;
+
+    // Check if the local column is a primary key or has unique on it
+    if (
+      schema.relations[relationName].columns.every(cName => {
+        const column = schema.columns[cName];
+
+        // Simple unique
+        if (column.isPrimary || column.isUnique) {
+          return true;
+        }
+      })
+    ) {
+      schema.relations[relationName].isLocalUnique = true;
+    }
   }
 
   postgresValidateSchema(schema);

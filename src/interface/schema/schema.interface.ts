@@ -1,5 +1,6 @@
 import { IColumn } from './column.interface';
 import { ICompositiveIndex } from './index.interface';
+import { IRelation } from './relation.interface';
 import { IUnique } from './unique.interface';
 
 export interface ISchema<
@@ -37,6 +38,13 @@ export interface ISchema<
    */
   indexes: {
     [indexName: string]: ICompositiveIndex<IndexMeta>;
+  };
+
+  /**
+   * Foreign keys of the table.
+   */
+  relations: {
+    [foreignKeyName: string]: IRelation;
   };
 
   /**

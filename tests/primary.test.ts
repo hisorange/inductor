@@ -62,6 +62,7 @@ describe('Primary Constraint', () => {
         },
         uniques: {},
         indexes: {},
+        relations: {},
       };
       // Set primary to false
       schemaRV1.columns[colName].isPrimary = true;
@@ -96,6 +97,7 @@ describe('Primary Constraint', () => {
       const schemaRV1: ISchema = {
         tableName,
         kind: 'table',
+        relations: {},
         columns: {
           prefix: {
             kind: 'column',
@@ -187,6 +189,7 @@ describe('Primary Constraint', () => {
     const schema: ISchema = {
       tableName: 'alter_primary_extend',
       kind: 'table',
+      relations: {},
       columns: {
         first: {
           kind: 'column',

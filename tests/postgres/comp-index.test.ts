@@ -35,6 +35,7 @@ describe('[Postgres] Compositive Indexing', () => {
         tableName,
         kind: 'table',
         uniques: {},
+        relations: {},
         indexes: {
           [indexName]: {
             type: indexType,

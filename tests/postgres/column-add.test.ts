@@ -34,6 +34,7 @@ describe('[Postgres] Column Adding', () => {
         kind: 'table',
         uniques: {},
         indexes: {},
+        relations: {},
         columns: {
           primary_column: {
             ...createColumnWithType(PostgresColumnType.SERIAL),

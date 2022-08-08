@@ -66,6 +66,7 @@ describe('Unique Constraint', () => {
         kind: 'table',
         uniques: {},
         indexes: {},
+        relations: {},
         columns: {
           [columnKey]: allColumn[columnKey],
         },
@@ -107,6 +108,7 @@ describe('Unique Constraint', () => {
         kind: 'table',
         uniques: {},
         indexes: {},
+        relations: {},
         columns: {
           id: {
             kind: 'column',
@@ -197,6 +199,7 @@ describe('Unique Constraint', () => {
         kind: 'table',
         uniques: {},
         indexes: {},
+        relations: {},
         columns: {
           [columnKey]: allColumn[columnKey],
           pair_for_comp: {
@@ -250,6 +253,7 @@ describe('Unique Constraint', () => {
       kind: 'table',
       uniques: {},
       indexes: {},
+      relations: {},
       columns: {
         col_1: {
           kind: 'column',

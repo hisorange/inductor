@@ -36,6 +36,7 @@ describe('[Postgres] Column Indexing', () => {
         kind: 'table',
         uniques: {},
         indexes: {},
+        relations: {},
         columns: {
           primary_column: {
             ...createColumnWithType(PostgresColumnType.SERIAL),
