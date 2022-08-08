@@ -1,6 +1,8 @@
 import { InvalidSchema } from '../../exception/invalid-schema.exception';
+import { IEnumeratedColumn } from '../../interface/schema/column.interface';
 import { ISchema } from '../../interface/schema/schema.interface';
 import { PostgresColumnTools } from './postgres.column-tools';
+import { PostgresColumnType } from './postgres.column-type';
 import { PostgresIndexType } from './postgres.index-type';
 
 export const postgresValidateSchema = (schema: ISchema): void => {
@@ -62,6 +64,18 @@ export const postgresValidateSchema = (schema: ISchema): void => {
       // Primary keys cannot be nullable
       if (definition.isPrimary && definition.isNullable) {
         throw new InvalidSchema(`Primary column [${name}] cannot be nullable`);
+      }
+
+      // Enumertaors only support text values
+      if (
+        definition.type === PostgresColumnType.ENUM &&
+        (definition as IEnumeratedColumn).values.some(
+          value => typeof value !== 'string',
+        )
+      ) {
+        throw new InvalidSchema(
+          `Enumerated column [${name}] cannot have non string value`,
+        );
       }
     }
   }

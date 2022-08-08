@@ -1,6 +1,9 @@
 import { Knex } from 'knex';
 import { ColumnTools } from '../../../column-tools';
-import { IColumn } from '../../../interface/schema/column.interface';
+import {
+  IColumn,
+  IEnumeratedColumn,
+} from '../../../interface/schema/column.interface';
 import { ISchema } from '../../../interface/schema/schema.interface';
 import { PostgresColumnType } from '../postgres.column-type';
 
@@ -146,9 +149,15 @@ export const createColumn = (
     case PostgresColumnType.XML:
       columnBuilder = table.specificType(name, 'xml');
       break;
+    case PostgresColumnType.ENUM:
+      columnBuilder = table.enum(name, (column as IEnumeratedColumn).values, {
+        useNative: true,
+        enumName: `${schema.tableName}_${name}_enum`,
+      });
+      break;
 
     default:
-      throw new Error(`Unsupported column type: ${column.type}`);
+      throw new Error(`Unsupported column type: ${(column as IColumn).type}`);
   }
 
   // Add nullable constraint

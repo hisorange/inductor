@@ -42,4 +42,6 @@ export enum PostgresColumnType {
   TXID_SNAPSHOT = 'txid_snapshot',
   UUID = 'uuid',
   XML = 'xml',
+
+  ENUM = 'enumerated',
 }

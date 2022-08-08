@@ -1,5 +1,8 @@
 import { ColumnTools } from '../../../column-tools';
-import { IColumn } from '../../../interface/schema/column.interface';
+import {
+  IColumn,
+  IEnumeratedColumn,
+} from '../../../interface/schema/column.interface';
 import { ISchema } from '../../../interface/schema/schema.interface';
 import { PostgresColumnType } from '../postgres.column-type';
 import { PostgresInspector } from '../postgres.inspector';
@@ -7,21 +10,23 @@ import { postgresValidateSchema } from '../postgres.schema-validator';
 
 export const reverseTable = async (
   inspector: PostgresInspector,
-  table: string,
+  tableName: string,
 ) => {
   const schema: ISchema = {
-    tableName: table,
+    tableName: tableName,
     kind: 'table',
     columns: {},
     uniques: {},
     indexes: {},
     relations: {},
   };
-  const columns = await inspector.columnInfo(table);
-  const compositivePrimaryKeys = await inspector.getCompositePrimaryKeys(table);
-  const compositiveUniques = await inspector.getCompositeUniques(table);
-  const indexes = await inspector.getIndexes(table);
-  const defaultValues = await inspector.getDefaultValues(table);
+  const columns = await inspector.columnInfo(tableName);
+  const compositivePrimaryKeys = await inspector.getCompositePrimaryKeys(
+    tableName,
+  );
+  const compositiveUniques = await inspector.getCompositeUniques(tableName);
+  const indexes = await inspector.getIndexes(tableName);
+  const defaultValues = await inspector.getDefaultValues(tableName);
 
   const singleColumnIndexes = indexes.filter(
     index => index.columns.length === 1,
@@ -39,6 +44,8 @@ export const reverseTable = async (
   for (const [name, uniques] of Object.entries(compositiveUniques)) {
     schema.uniques[name] = uniques;
   }
+
+  const enumColumns = await inspector.findEnumeratorColumns(tableName, columns);
 
   for (const column of columns) {
     let type = column.data_type as PostgresColumnType;
@@ -134,11 +141,20 @@ export const reverseTable = async (
     }
 
     columnDef.defaultValue = defaultValue;
+
+    const enumColDef = enumColumns.find(e => e.column == column.name);
+
+    // Enum column check
+    if (enumColDef) {
+      columnDef.type = PostgresColumnType.ENUM;
+      (columnDef as IEnumeratedColumn).values = enumColDef.values;
+    }
+
     schema.columns[column.name] = columnDef;
   }
 
   // Process foreign keys
-  const foreignKeys = await inspector.getForeignKeys(table);
+  const foreignKeys = await inspector.getForeignKeys(tableName);
 
   // TODO process for 1 unique on local, or compositive unique with the same order
   for (const [relationName, relationDefinition] of foreignKeys) {

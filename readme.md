@@ -53,6 +53,14 @@ await connection.setState([
         isPrimary: false,
         isIndexed: PostgresIndexType.BTREE,
       },
+      decision: {
+        kind: 'column',
+        type: ColumnType.ENUM,
+        values: ['Yes', 'No', 'Maybe'],
+        isNullable: false,
+        isUnique: false,
+        isPrimary: false,
+      },
       createdAt: {
         kind: 'column',
         type: ColumnType.DATE,
@@ -123,6 +131,8 @@ Gonna track the implemented and missing features with all the generic capabiliti
 | Feature                       | Create | Read | Update | Delete |
 | :---------------------------- | :----: | :--: | :----: | :----: |
 | Columns                       |   Y    |  Y   |   Y    |   Y    |
+| Nullable Columns              |   Y    |  Y   |   Y    |   Y    |
+| Enumerated Columns            |   Y    |  Y   |   N    |   N    |
 | Single Unique Constraint      |   Y    |  Y   |   Y    |   Y    |
 | Compositive Unique Constraint |   Y    |  Y   |   ?    |   ?    |
 | Compositive Foreign Key       |   Y    |  Y   |   N    |   N    |

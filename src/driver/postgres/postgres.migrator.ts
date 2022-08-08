@@ -73,7 +73,7 @@ export class PostgresMigrator implements IMigrator {
         const sql = query.toQuery();
 
         if (sql.length) {
-          // console.log(sql);
+          console.log(query.toString());
           this.logger.debug(sql);
         }
 

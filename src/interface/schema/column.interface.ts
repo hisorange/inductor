@@ -2,7 +2,7 @@ import { Pojo } from 'objection';
 import { PostgresColumnType } from '../../driver/postgres/postgres.column-type';
 import { PostgresIndexType } from '../../driver/postgres/postgres.index-type';
 
-export interface IColumn<ColumnMeta = unknown> {
+interface IBaseColumn<ColumnMeta> {
   /**
    * Columns can be defined as a traditional column,
    * but also as virtual / stored / computed columns.
@@ -13,11 +13,6 @@ export interface IColumn<ColumnMeta = unknown> {
    * Property alias on the model.
    */
   propertyName?: string;
-
-  /**
-   * Mapping to the PostgreSQL 14's data type
-   */
-  type: PostgresColumnType;
 
   /**
    * Nullable constraint.
@@ -56,3 +51,17 @@ export interface IColumn<ColumnMeta = unknown> {
    */
   meta?: ColumnMeta;
 }
+
+interface ICommonColumn<ColumnMeta = unknown> extends IBaseColumn<ColumnMeta> {
+  type: PostgresColumnType;
+}
+
+export interface IEnumeratedColumn<ColumnMeta = unknown>
+  extends IBaseColumn<ColumnMeta> {
+  type: PostgresColumnType.ENUM; // TODO refactor into type object with values and native type name
+  values: string[];
+}
+
+export type IColumn<ColumnMeta = unknown> =
+  | ICommonColumn<ColumnMeta>
+  | IEnumeratedColumn<ColumnMeta>;
