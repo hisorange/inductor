@@ -66,16 +66,36 @@ export const postgresValidateSchema = (schema: ISchema): void => {
         throw new InvalidSchema(`Primary column [${name}] cannot be nullable`);
       }
 
-      // Enumertaors only support text values
-      if (
-        definition.type === PostgresColumnType.ENUM &&
-        (definition as IEnumeratedColumn).values.some(
-          value => typeof value !== 'string',
-        )
-      ) {
-        throw new InvalidSchema(
-          `Enumerated column [${name}] cannot have non string value`,
-        );
+      if (definition.type === PostgresColumnType.ENUM) {
+        // Enumerators only support text values
+        if (
+          (definition as IEnumeratedColumn).values.some(
+            value => typeof value !== 'string',
+          )
+        ) {
+          throw new InvalidSchema(
+            `Enumerated column [${name}] cannot have non string value`,
+          );
+        }
+
+        // Enumerators have at least one value
+        if ((definition as IEnumeratedColumn).values?.length === 0) {
+          throw new InvalidSchema(
+            `Enumerated column [${name}] has to define at least one value`,
+          );
+        }
+
+        // Enumerators cannot have duplicate values
+        if (
+          (definition as IEnumeratedColumn).values.some(
+            (value, index) =>
+              (definition as IEnumeratedColumn).values.indexOf(value) !== index,
+          )
+        ) {
+          throw new InvalidSchema(
+            `Enumerated column [${name}] cannot have duplicate values`,
+          );
+        }
       }
     }
   }

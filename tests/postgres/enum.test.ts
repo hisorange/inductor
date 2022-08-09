@@ -14,6 +14,7 @@ describe('[Postgres] Enumerated Column', () => {
   });
 
   test.each([
+    ['single', ['one']],
     ['text', ['a', 'b', 'c']],
     ['vary', ['1', 'b', 'c']],
   ])(
