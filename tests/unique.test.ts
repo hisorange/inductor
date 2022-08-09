@@ -112,7 +112,9 @@ describe('Unique Constraint', () => {
         columns: {
           id: {
             kind: 'column',
-            type: PostgresColumnType.INTEGER,
+            type: {
+              name: PostgresColumnType.INTEGER,
+            },
             isNullable: false,
             isUnique: false,
             isPrimary: true,
@@ -122,7 +124,9 @@ describe('Unique Constraint', () => {
           [colName]: allColumn[colName],
           createdAt: {
             kind: 'column',
-            type: PostgresColumnType.DATE,
+            type: {
+              name: PostgresColumnType.DATE,
+            },
             isNullable: false,
             isUnique: false,
             isPrimary: false,
@@ -203,7 +207,9 @@ describe('Unique Constraint', () => {
         columns: {
           [columnKey]: allColumn[columnKey],
           pair_for_comp: {
-            type: PostgresColumnType.BIGINT,
+            type: {
+              name: PostgresColumnType.BIGINT,
+            },
             kind: 'column',
             isUnique: false,
             isPrimary: false,
@@ -257,7 +263,9 @@ describe('Unique Constraint', () => {
       columns: {
         col_1: {
           kind: 'column',
-          type: PostgresColumnType.INTEGER,
+          type: {
+            name: PostgresColumnType.INTEGER,
+          },
           isNullable: false,
           isUnique: true,
           isPrimary: false,
@@ -266,7 +274,9 @@ describe('Unique Constraint', () => {
         },
         col_2: {
           kind: 'column',
-          type: PostgresColumnType.INTEGER,
+          type: {
+            name: PostgresColumnType.INTEGER,
+          },
           isNullable: false,
           isUnique: false,
           isPrimary: false,
@@ -330,7 +340,9 @@ describe('Unique Constraint', () => {
     // Create a new column and add it to the composite unique
     schema.columns.col_3 = {
       kind: 'column',
-      type: PostgresColumnType.INTEGER,
+      type: {
+        name: PostgresColumnType.INTEGER,
+      },
       isNullable: false,
       isUnique: false,
       isPrimary: false,

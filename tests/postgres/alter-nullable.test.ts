@@ -15,7 +15,10 @@ describe('[Postgres] Alter Nullable', () => {
     ColumnTools.postgres.listColumnTypes() as PostgresColumnType[]
   )
     .map(type => [type, createColumnWithType(type)] as [string, IColumn])
-    .filter(([type, col]) => !ColumnTools.postgres.isSerialType(col));
+    .filter(([type, col]) => !ColumnTools.postgres.isSerialType(col))
+    .filter(
+      ([type, col]) => ![PostgresColumnType.BIT_VARYING].includes(type as any),
+    );
 
   beforeAll(async () => {
     inductor = createTestInstance(['alter_nullable_.+']);

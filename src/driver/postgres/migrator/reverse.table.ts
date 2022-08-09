@@ -1,8 +1,5 @@
 import { ColumnTools } from '../../../column-tools';
-import {
-  IColumn,
-  IEnumeratedColumn,
-} from '../../../interface/schema/column.interface';
+import { IColumn } from '../../../interface/schema/column.interface';
 import { ISchema } from '../../../interface/schema/schema.interface';
 import { PostgresColumnType } from '../postgres.column-type';
 import { PostgresInspector } from '../postgres.inspector';
@@ -94,7 +91,9 @@ export const reverseTable = async (
     }
 
     const columnDef: IColumn = {
-      type,
+      type: {
+        name: type,
+      } as IColumn['type'],
       kind: 'column',
       isNullable: column.is_nullable,
       isUnique: column.is_unique,
@@ -102,6 +101,32 @@ export const reverseTable = async (
       isIndexed,
       defaultValue: undefined,
     };
+
+    // Check for precision
+    if (ColumnTools.postgres.isTypeRequiresPrecision(type)) {
+      (columnDef.type as any).precision = column.numeric_precision;
+    }
+    // Check for scale
+    if (ColumnTools.postgres.isTypeRequiresScale(type)) {
+      (columnDef.type as any).scale = column.numeric_scale;
+    }
+    // Check for length
+    if (ColumnTools.postgres.isTypeRequiresLength(type)) {
+      (columnDef.type as any).length = column.max_length;
+    }
+
+    // Numeric can have precision and scale
+    if (PostgresColumnType.NUMERIC === type) {
+      // Check if the precision is set
+      if (column.numeric_precision !== null) {
+        (columnDef.type as any).precision = column.numeric_precision;
+      }
+
+      // Check if the scale is set
+      if (column.numeric_scale !== null) {
+        (columnDef.type as any).scale = column.numeric_scale;
+      }
+    }
 
     let defaultValue: IColumn['defaultValue'] = defaultValues.find(
       r => r.column === column.name,
@@ -146,8 +171,11 @@ export const reverseTable = async (
 
     // Enum column check
     if (enumColDef) {
-      columnDef.type = PostgresColumnType.ENUM;
-      (columnDef as IEnumeratedColumn).values = enumColDef.values;
+      columnDef.type = {
+        name: PostgresColumnType.ENUM,
+        values: enumColDef.values,
+        nativeName: column.data_type,
+      };
     }
 
     schema.columns[column.name] = columnDef;

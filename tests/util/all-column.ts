@@ -1,10 +1,44 @@
 import { ColumnTools, IColumn } from '../../src';
+import { getEnumName } from '../../src/driver/postgres/migrator/get-enum-name';
 import { PostgresColumnType } from '../../src/driver/postgres/postgres.column-type';
 import { ISchema } from '../../src/interface/schema/schema.interface';
 
-export const createColumnWithType = (type: PostgresColumnType): IColumn => {
+type typeArguments = {
+  length?: number;
+  precision?: number;
+  scale?: number;
+  values?: string[];
+  nativeName?: string;
+};
+
+export const createColumnWithType = (
+  typeName: PostgresColumnType,
+  typeArgs: typeArguments = {},
+): IColumn => {
+  if (ColumnTools.postgres.isTypeRequiresLength(typeName)) {
+    typeArgs.length = typeArgs?.length ?? 8;
+  } else if (ColumnTools.postgres.isTypeRequiresPrecision(typeName)) {
+    typeArgs.precision = typeArgs?.precision ?? 8;
+  } else if (ColumnTools.postgres.isTypeRequiresScale(typeName)) {
+    typeArgs.scale = typeArgs?.scale ?? 0;
+  } else if (typeName === PostgresColumnType.ENUM) {
+    if (!typeArgs.values) {
+      typeArgs.values = ['a', 'b', 'c'];
+    }
+
+    typeArgs.nativeName = typeArgs?.nativeName ?? getEnumName(typeArgs.values);
+  }
+
+  if (typeName === PostgresColumnType.NUMERIC) {
+    typeArgs.precision = typeArgs?.precision ?? 8;
+    typeArgs.scale = typeArgs?.scale ?? 8;
+  }
+
   const definition: IColumn = {
-    type,
+    type: {
+      name: typeName,
+      ...typeArgs,
+    } as IColumn['type'],
     kind: 'column',
     isNullable: false,
     isUnique: false,

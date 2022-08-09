@@ -12,8 +12,9 @@ describe('[Postgres] Column Adding', () => {
   let inductor: Inductor;
   const cases: [string, IColumn][] = (
     ColumnTools.postgres.listColumnTypes() as PostgresColumnType[]
-  ).map(type => [type, createColumnWithType(type)]);
-
+  )
+    .filter(type => type !== PostgresColumnType.BIT_VARYING)
+    .map(type => [type, createColumnWithType(type)]);
   beforeAll(async () => {
     inductor = createTestInstance(['column_add_.+']);
   });

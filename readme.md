@@ -40,14 +40,18 @@ await connection.setState([
     columns: {
       id: {
         kind: 'column',
-        type: ColumnType.INTEGER,
+        type: {
+          name: ColumnType.INTEGER,
+        },
         isNullable: false,
         isUnique: false,
         isPrimary: true,
       },
       smth: {
         kind: 'column',
-        type: ColumnType.TEXT,
+        type: {
+          name: ColumnType.TEXT,
+        },
         isNullable: false,
         isUnique: false,
         isPrimary: false,
@@ -55,15 +59,20 @@ await connection.setState([
       },
       decision: {
         kind: 'column',
-        type: ColumnType.ENUM,
-        values: ['Yes', 'No', 'Maybe'],
+        type: {
+          name: ColumnType.ENUM,
+          values: ['Yes', 'No', 'Maybe'],
+          nativeName: 'enum_ind_51d6e671dcb9db93bb8de6c453e975f8089d6535',
+        },
         isNullable: false,
         isUnique: false,
         isPrimary: false,
       },
       createdAt: {
         kind: 'column',
-        type: ColumnType.DATE,
+        type: {
+          name: ColumnType.DATE,
+        },
         isNullable: true,
         isUnique: false,
         isPrimary: false,

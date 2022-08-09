@@ -1,5 +1,4 @@
 import { InvalidSchema } from '../../exception/invalid-schema.exception';
-import { IEnumeratedColumn } from '../../interface/schema/column.interface';
 import { ISchema } from '../../interface/schema/schema.interface';
 import { PostgresColumnTools } from './postgres.column-tools';
 import { PostgresColumnType } from './postgres.column-type';
@@ -29,7 +28,10 @@ export const postgresValidateSchema = (schema: ISchema): void => {
       }
 
       // Nullable columns are automaticaly get a default value of NULL
-      if (definition.isNullable && definition.defaultValue === undefined) {
+      if (
+        definition.isNullable &&
+        typeof definition.defaultValue === 'undefined'
+      ) {
         throw new InvalidSchema(
           `Column [${name}] is nullable but has no default value defined`,
         );
@@ -66,20 +68,16 @@ export const postgresValidateSchema = (schema: ISchema): void => {
         throw new InvalidSchema(`Primary column [${name}] cannot be nullable`);
       }
 
-      if (definition.type === PostgresColumnType.ENUM) {
+      if (definition.type.name === PostgresColumnType.ENUM) {
         // Enumerators only support text values
-        if (
-          (definition as IEnumeratedColumn).values.some(
-            value => typeof value !== 'string',
-          )
-        ) {
+        if (definition.type.values.some(value => typeof value !== 'string')) {
           throw new InvalidSchema(
             `Enumerated column [${name}] cannot have non string value`,
           );
         }
 
         // Enumerators have at least one value
-        if ((definition as IEnumeratedColumn).values?.length === 0) {
+        if (definition.type.values.length === 0) {
           throw new InvalidSchema(
             `Enumerated column [${name}] has to define at least one value`,
           );
@@ -87,10 +85,7 @@ export const postgresValidateSchema = (schema: ISchema): void => {
 
         // Enumerators cannot have duplicate values
         if (
-          (definition as IEnumeratedColumn).values.some(
-            (value, index) =>
-              (definition as IEnumeratedColumn).values.indexOf(value) !== index,
-          )
+          definition.type.values.length !== new Set(definition.type.values).size
         ) {
           throw new InvalidSchema(
             `Enumerated column [${name}] cannot have duplicate values`,

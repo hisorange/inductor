@@ -474,17 +474,24 @@ export class PostgresInspector extends BaseAdapter {
         'pc.relname': tableName,
       });
 
-    return (await query).map(r => ({
-      column: r.column,
-      defaultValue:
-        r.defaultValue === null
-          ? r.isNotNull
-            ? undefined
-            : null
-          : r.defaultValue === 'NULL::bpchar' ||
-            r.defaultValue === 'NULL::"bit"'
-          ? null
-          : r.defaultValue.replace(/^'(.+)'::.+$/, '$1'),
-    }));
+    return (await query).map(r => {
+      return {
+        column: r.column,
+        defaultValue:
+          r.defaultValue === null
+            ? r.isNotNull
+              ? undefined
+              : null
+            : [
+                'NULL::bpchar',
+                'NULL::"bit"',
+                'NULL::bit varying',
+                'NULL::character varying',
+                'NULL::numeric',
+              ].includes(r.defaultValue)
+            ? null
+            : r.defaultValue.replace(/^'(.+)'::.+$/, '$1'),
+      };
+    });
   }
 }

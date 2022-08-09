@@ -11,7 +11,9 @@ describe('Drop Column', () => {
   const columns: ISchema['columns'] = {
     col_var_1: {
       kind: 'column',
-      type: PostgresColumnType.INTEGER,
+      type: {
+        name: PostgresColumnType.INTEGER,
+      },
       isNullable: false,
       isUnique: false,
       isPrimary: true,
@@ -20,7 +22,9 @@ describe('Drop Column', () => {
     },
     col_var_2: {
       kind: 'column',
-      type: PostgresColumnType.INTEGER,
+      type: {
+        name: PostgresColumnType.INTEGER,
+      },
       isNullable: true,
       isUnique: false,
       isPrimary: false,
@@ -29,7 +33,9 @@ describe('Drop Column', () => {
     },
     col_var_3: {
       kind: 'column',
-      type: PostgresColumnType.INTEGER,
+      type: {
+        name: PostgresColumnType.INTEGER,
+      },
       isNullable: false,
       isUnique: true,
       isPrimary: false,
@@ -38,7 +44,9 @@ describe('Drop Column', () => {
     },
     col_var_4: {
       kind: 'column',
-      type: PostgresColumnType.INTEGER,
+      type: {
+        name: PostgresColumnType.INTEGER,
+      },
       isNullable: false,
       isUnique: false,
       isPrimary: false,

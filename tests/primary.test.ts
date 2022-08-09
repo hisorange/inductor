@@ -101,7 +101,9 @@ describe('Primary Constraint', () => {
         columns: {
           prefix: {
             kind: 'column',
-            type: PostgresColumnType.INTEGER,
+            type: {
+              name: PostgresColumnType.INTEGER,
+            },
             isNullable: false,
             isUnique: false,
             isPrimary: false,
@@ -111,7 +113,9 @@ describe('Primary Constraint', () => {
           [colName]: allColumn[colName],
           createdAt: {
             kind: 'column',
-            type: PostgresColumnType.DATE,
+            type: {
+              name: PostgresColumnType.DATE,
+            },
             isNullable: false,
             isUnique: false,
             isPrimary: false,
@@ -193,7 +197,9 @@ describe('Primary Constraint', () => {
       columns: {
         first: {
           kind: 'column',
-          type: PostgresColumnType.INTEGER,
+          type: {
+            name: PostgresColumnType.INTEGER,
+          },
           isNullable: false,
           isUnique: false,
           isPrimary: true,
@@ -220,7 +226,9 @@ describe('Primary Constraint', () => {
     const schemaExtend: ISchema = cloneDeep(schema);
     schemaExtend.columns.second = {
       kind: 'column',
-      type: PostgresColumnType.INTEGER,
+      type: {
+        name: PostgresColumnType.INTEGER,
+      },
       isNullable: false,
       isUnique: false,
       isPrimary: true,
@@ -249,7 +257,9 @@ describe('Primary Constraint', () => {
     const schemaExtend2: ISchema = cloneDeep(schemaExtend);
     schemaExtend2.columns.third = {
       kind: 'column',
-      type: PostgresColumnType.INTEGER,
+      type: {
+        name: PostgresColumnType.INTEGER,
+      },
       isNullable: false,
       isUnique: false,
       isPrimary: true,

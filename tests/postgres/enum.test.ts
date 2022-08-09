@@ -35,8 +35,9 @@ describe('[Postgres] Enumerated Column', () => {
             isPrimary: true,
           },
           [columnName]: {
-            ...createColumnWithType(PostgresColumnType.ENUM),
-            values: setValues,
+            ...createColumnWithType(PostgresColumnType.ENUM, {
+              values: setValues,
+            }),
           } as IColumn,
         },
       };

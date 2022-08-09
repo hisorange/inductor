@@ -55,37 +55,67 @@ const FloatTypes = [
   PostgresColumnType.NUMERIC,
 ];
 
+const LengthRequiredTypes = [
+  PostgresColumnType.BIT_VARYING,
+  PostgresColumnType.CHAR_VARYING,
+];
+
+const PrecisionRequiredTypes = [PostgresColumnType.NUMERIC];
+
+const ScaleRequiredTypes = [PostgresColumnType.NUMERIC];
+
 export const PostgresColumnTools = {
   /**
    * Check if the column is serial type
    */
   isSerialType(column: IColumn): boolean {
-    return SerialTypes.includes(column.type);
+    return SerialTypes.includes(column.type.name);
   },
 
   isFloatType(column: IColumn): boolean {
-    return FloatTypes.includes(column.type);
+    return FloatTypes.includes(column.type.name);
   },
 
   /**
    * Columns which hold an integer
    */
   isIntegerType(column: IColumn): boolean {
-    return IntegerTypes.includes(column.type) || this.isSerialType(column);
+    return IntegerTypes.includes(column.type.name) || this.isSerialType(column);
   },
 
   /**
    * Check if the column type can be a primary key
    */
   canTypeBePrimary(col: IColumn): boolean {
-    return !CannotBePrimary.includes(col.type);
+    return !CannotBePrimary.includes(col.type.name);
   },
 
   /**
    * Check if the column type can be unique
    */
   canTypeBeUnique(col: IColumn): boolean {
-    return !CannotBeUnique.includes(col.type);
+    return !CannotBeUnique.includes(col.type.name);
+  },
+
+  /**
+   * Type requires a length definition
+   */
+  isTypeRequiresLength(type: PostgresColumnType): boolean {
+    return LengthRequiredTypes.includes(type);
+  },
+
+  /**
+   * Type requires a precision definition
+   */
+  isTypeRequiresPrecision(type: PostgresColumnType): boolean {
+    return PrecisionRequiredTypes.includes(type);
+  },
+
+  /**
+   * Type requires a precision definition
+   */
+  isTypeRequiresScale(type: PostgresColumnType): boolean {
+    return ScaleRequiredTypes.includes(type);
   },
 
   /**
