@@ -2,6 +2,7 @@ import { Knex } from 'knex';
 import { Logger } from 'pino';
 import { IMigrator } from '../../interface/migrator.interface';
 import { ISchema } from '../../interface/schema/schema.interface';
+import { SchemaKind } from '../../interface/schema/schema.kind';
 import { alterTable } from './migrator/alter.table';
 import { createTable } from './migrator/create.table';
 import { reverseTable } from './migrator/reverse.table';
@@ -40,7 +41,7 @@ export class PostgresMigrator implements IMigrator {
     for (let targetState of schemas) {
       this.logger.debug('Processing schema %s', targetState.tableName);
 
-      if (targetState.kind === 'table') {
+      if (targetState.kind === SchemaKind.TABLE) {
         // If the table doesn't exist, create it
         if (!facts.tables.includes(targetState.tableName)) {
           changes.push(createTable(this.knex.schema, targetState, facts));

@@ -1,6 +1,7 @@
 import { ColumnTools, IColumn } from '../../src';
 import { getEnumName } from '../../src/driver/postgres/migrator/get-enum-name';
 import { PostgresColumnType } from '../../src/driver/postgres/postgres.column-type';
+import { ColumnKind } from '../../src/interface/schema/column.kind';
 import { ISchema } from '../../src/interface/schema/schema.interface';
 
 type typeArguments = {
@@ -39,7 +40,7 @@ export const createColumnWithType = (
       name: typeName,
       ...typeArgs,
     } as IColumn['type'],
-    kind: 'column',
+    kind: ColumnKind.COLUMN,
     isNullable: false,
     isUnique: false,
     isPrimary: false,

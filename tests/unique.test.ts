@@ -1,9 +1,9 @@
 import cloneDeep from 'lodash.clonedeep';
 import { PostgresColumnType } from '../src/driver/postgres/postgres.column-type';
 import { Inductor } from '../src/inductor';
-import { ISchema } from '../src/interface/schema/schema.interface';
 import { IUnique } from '../src/interface/schema/unique.interface';
-import { allColumn } from './util/all-column';
+import { createSchema } from '../src/util/create-schema';
+import { allColumn, createColumnWithType } from './util/all-column';
 import { createTestInstance } from './util/create-connection';
 
 describe('Unique Constraint', () => {
@@ -61,15 +61,9 @@ describe('Unique Constraint', () => {
     async (columnKey: string) => {
       const tableName = `unique_test_${columnKey}`;
 
-      const schema: ISchema = {
-        tableName,
-        kind: 'table',
-        uniques: {},
-        indexes: {},
-        relations: {},
-        columns: {
-          [columnKey]: allColumn[columnKey],
-        },
+      const schema = createSchema(tableName);
+      schema.columns = {
+        [columnKey]: allColumn[columnKey],
       };
       // Set the column to unique
       schema.columns[columnKey].isUnique = true;
@@ -103,37 +97,14 @@ describe('Unique Constraint', () => {
       const tableName = `alter_unique_${colName}`;
 
       // Create the table
-      const schemaRV1: ISchema = {
-        tableName,
-        kind: 'table',
-        uniques: {},
-        indexes: {},
-        relations: {},
-        columns: {
-          id: {
-            kind: 'column',
-            type: {
-              name: PostgresColumnType.INTEGER,
-            },
-            isNullable: false,
-            isUnique: false,
-            isPrimary: true,
-            isIndexed: false,
-            defaultValue: undefined,
-          },
-          [colName]: allColumn[colName],
-          createdAt: {
-            kind: 'column',
-            type: {
-              name: PostgresColumnType.DATE,
-            },
-            isNullable: false,
-            isUnique: false,
-            isPrimary: false,
-            isIndexed: false,
-            defaultValue: undefined,
-          },
+      const schemaRV1 = createSchema(tableName);
+      schemaRV1.columns = {
+        id: {
+          ...createColumnWithType(PostgresColumnType.INTEGER),
+          isPrimary: true,
         },
+        [colName]: allColumn[colName],
+        createdAt: createColumnWithType(PostgresColumnType.DATE),
       };
       // Set nullable to false
       schemaRV1.columns[colName].isUnique = false;
@@ -198,25 +169,11 @@ describe('Unique Constraint', () => {
       const tableName = `unique_test_comp_${columnKey}`;
       const uniqueName = `unique_pair_${columnKey}`;
 
-      const schema: ISchema = {
-        tableName,
-        kind: 'table',
-        uniques: {},
-        indexes: {},
-        relations: {},
-        columns: {
-          [columnKey]: allColumn[columnKey],
-          pair_for_comp: {
-            type: {
-              name: PostgresColumnType.BIGINT,
-            },
-            kind: 'column',
-            isUnique: false,
-            isPrimary: false,
-            isNullable: false,
-            isIndexed: false,
-            defaultValue: undefined,
-          },
+      const schema = createSchema(tableName);
+      schema.columns = {
+        [columnKey]: allColumn[columnKey],
+        pair_for_comp: {
+          ...createColumnWithType(PostgresColumnType.BIGINT),
         },
       };
 
@@ -254,36 +211,14 @@ describe('Unique Constraint', () => {
   );
 
   test('should alter between compound unique states', async () => {
-    const schema: ISchema = {
-      tableName: 'unique_test_upgrade',
-      kind: 'table',
-      uniques: {},
-      indexes: {},
-      relations: {},
-      columns: {
-        col_1: {
-          kind: 'column',
-          type: {
-            name: PostgresColumnType.INTEGER,
-          },
-          isNullable: false,
-          isUnique: true,
-          isPrimary: false,
-          isIndexed: false,
-          defaultValue: undefined,
-        },
-        col_2: {
-          kind: 'column',
-          type: {
-            name: PostgresColumnType.INTEGER,
-          },
-          isNullable: false,
-          isUnique: false,
-          isPrimary: false,
-          isIndexed: false,
-          defaultValue: undefined,
-        },
+    const tableName = 'unique_test_upgrade';
+    const schema = createSchema(tableName);
+    schema.columns = {
+      col_1: {
+        ...createColumnWithType(PostgresColumnType.INTEGER),
+        isUnique: true,
       },
+      col_2: createColumnWithType(PostgresColumnType.INTEGER),
     };
 
     // Create the table with a single unique
@@ -338,17 +273,7 @@ describe('Unique Constraint', () => {
     });
 
     // Create a new column and add it to the composite unique
-    schema.columns.col_3 = {
-      kind: 'column',
-      type: {
-        name: PostgresColumnType.INTEGER,
-      },
-      isNullable: false,
-      isUnique: false,
-      isPrimary: false,
-      isIndexed: false,
-      defaultValue: undefined,
-    };
+    schema.columns.col_3 = createColumnWithType(PostgresColumnType.INTEGER);
 
     schema.uniques.test_cmp_1.columns.push('col_3');
 

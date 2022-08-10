@@ -3,6 +3,8 @@ import { PostgresColumnType } from '../src/driver/postgres/postgres.column-type'
 import { PostgresIndexType } from '../src/driver/postgres/postgres.index-type';
 import { Inductor } from '../src/inductor';
 import { ISchema } from '../src/interface/schema/schema.interface';
+import { createSchema } from '../src/util/create-schema';
+import { createColumnWithType } from './util/all-column';
 import { createTestInstance } from './util/create-connection';
 
 describe('Drop Column', () => {
@@ -10,48 +12,21 @@ describe('Drop Column', () => {
 
   const columns: ISchema['columns'] = {
     col_var_1: {
-      kind: 'column',
-      type: {
-        name: PostgresColumnType.INTEGER,
-      },
-      isNullable: false,
-      isUnique: false,
+      ...createColumnWithType(PostgresColumnType.INTEGER),
       isPrimary: true,
-      isIndexed: false,
-      defaultValue: undefined,
     },
     col_var_2: {
-      kind: 'column',
-      type: {
-        name: PostgresColumnType.INTEGER,
-      },
+      ...createColumnWithType(PostgresColumnType.INTEGER),
       isNullable: true,
-      isUnique: false,
-      isPrimary: false,
-      isIndexed: false,
       defaultValue: null,
     },
     col_var_3: {
-      kind: 'column',
-      type: {
-        name: PostgresColumnType.INTEGER,
-      },
-      isNullable: false,
+      ...createColumnWithType(PostgresColumnType.INTEGER),
       isUnique: true,
-      isPrimary: false,
-      isIndexed: false,
-      defaultValue: undefined,
     },
     col_var_4: {
-      kind: 'column',
-      type: {
-        name: PostgresColumnType.INTEGER,
-      },
-      isNullable: false,
-      isUnique: false,
-      isPrimary: false,
+      ...createColumnWithType(PostgresColumnType.INTEGER),
       isIndexed: PostgresIndexType.BTREE,
-      defaultValue: undefined,
     },
   };
 
@@ -86,14 +61,9 @@ describe('Drop Column', () => {
       const tableName = `drop_column_${col}`;
 
       // Create the table
-      const schemaRV1: ISchema = {
-        tableName,
-        kind: 'table',
-        columns,
-        uniques: {},
-        indexes: {},
-        relations: {},
-      };
+      const schemaRV1 = createSchema(tableName);
+      schemaRV1.columns = columns;
+
       // Apply the state
       await inductor.setState([schemaRV1]);
 

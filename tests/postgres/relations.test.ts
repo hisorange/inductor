@@ -1,5 +1,6 @@
-import { Inductor, ISchema, PostgresColumnType } from '../../src';
+import { Inductor, PostgresColumnType } from '../../src';
 import { PostgresForeignAction } from '../../src/driver/postgres/postgres.foreign-action';
+import { createSchema } from '../../src/util/create-schema';
 import { createColumnWithType } from '../util/all-column';
 import { createTestInstance } from '../util/create-connection';
 
@@ -18,50 +19,40 @@ describe('[Postgres] Relations', () => {
     const tableNameA = `relation_belongsto_a`;
     const tableNameB = `relation_belongsto_b`;
 
-    const testSchemaA: ISchema = {
-      tableName: tableNameA,
-      kind: 'table',
-      uniques: {},
-      indexes: {},
-      relations: {},
-      columns: {
-        a_id_1: {
-          ...createColumnWithType(PostgresColumnType.UUID),
-          isPrimary: true,
-        },
-        a_id_2: {
-          ...createColumnWithType(PostgresColumnType.TEXT),
-          isPrimary: true,
-        },
+    const testSchemaA = createSchema(tableNameA);
+    testSchemaA.columns = {
+      a_id_1: {
+        ...createColumnWithType(PostgresColumnType.UUID),
+        isPrimary: true,
+      },
+      a_id_2: {
+        ...createColumnWithType(PostgresColumnType.TEXT),
+        isPrimary: true,
       },
     };
 
-    const testSchemaB: ISchema = {
-      tableName: tableNameB,
-      kind: 'table',
-      uniques: {},
-      indexes: {},
-      relations: {
-        belongs_to_a: {
-          columns: ['b_id_1', 'b_id_2'],
-          references: {
-            table: tableNameA,
-            columns: ['a_id_1', 'a_id_2'],
-          },
-          isLocalUnique: true,
-          onDelete: PostgresForeignAction.SET_NULL,
-          onUpdate: PostgresForeignAction.CASCADE,
+    const testSchemaB = createSchema(tableNameB);
+    testSchemaB.relations = {
+      belongs_to_a: {
+        columns: ['b_id_1', 'b_id_2'],
+        references: {
+          table: tableNameA,
+          columns: ['a_id_1', 'a_id_2'],
         },
+        isLocalUnique: true,
+        onDelete: PostgresForeignAction.SET_NULL,
+        onUpdate: PostgresForeignAction.CASCADE,
       },
-      columns: {
-        b_id_1: {
-          ...createColumnWithType(PostgresColumnType.UUID),
-          isPrimary: true,
-        },
-        b_id_2: {
-          ...createColumnWithType(PostgresColumnType.TEXT),
-          isPrimary: true,
-        },
+    };
+
+    testSchemaB.columns = {
+      b_id_1: {
+        ...createColumnWithType(PostgresColumnType.UUID),
+        isPrimary: true,
+      },
+      b_id_2: {
+        ...createColumnWithType(PostgresColumnType.TEXT),
+        isPrimary: true,
       },
     };
 

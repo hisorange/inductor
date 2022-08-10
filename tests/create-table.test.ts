@@ -1,5 +1,5 @@
 import { Inductor } from '../src/inductor';
-import { ISchema } from '../src/interface/schema/schema.interface';
+import { createSchema } from '../src/util/create-schema';
 import { allColumn } from './util/all-column';
 import { createTestInstance } from './util/create-connection';
 
@@ -33,14 +33,8 @@ describe('Create Table from Schema', () => {
   test.each(testTables)(
     'should create the [%s] table from schema',
     async (tableName: string) => {
-      const schema: ISchema = {
-        tableName,
-        kind: 'table',
-        columns: allColumn,
-        uniques: {},
-        indexes: {},
-        relations: {},
-      };
+      const schema = createSchema(tableName);
+      schema.columns = allColumn;
 
       try {
         inductor.driver.validateSchema(schema);

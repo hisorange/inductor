@@ -1,4 +1,5 @@
-import { IColumn, Inductor, ISchema, PostgresColumnType } from '../../src';
+import { IColumn, Inductor, PostgresColumnType } from '../../src';
+import { createSchema } from '../../src/util/create-schema';
 import { createColumnWithType } from '../util/all-column';
 import { createTestInstance } from '../util/create-connection';
 
@@ -23,23 +24,17 @@ describe('[Postgres] Enumerated Column', () => {
       const columnName = `enum_${setType}`;
       const tableName = `enum_col_${setType}`;
 
-      const testSchema: ISchema = {
-        tableName,
-        kind: 'table',
-        uniques: {},
-        indexes: {},
-        relations: {},
-        columns: {
-          primary_column: {
-            ...createColumnWithType(PostgresColumnType.SERIAL),
-            isPrimary: true,
-          },
-          [columnName]: {
-            ...createColumnWithType(PostgresColumnType.ENUM, {
-              values: setValues,
-            }),
-          } as IColumn,
+      const testSchema = createSchema(tableName);
+      testSchema.columns = {
+        primary_column: {
+          ...createColumnWithType(PostgresColumnType.SERIAL),
+          isPrimary: true,
         },
+        [columnName]: {
+          ...createColumnWithType(PostgresColumnType.ENUM, {
+            values: setValues,
+          }),
+        } as IColumn,
       };
 
       // Remove schema if exists from a previous test

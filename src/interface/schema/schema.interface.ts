@@ -1,6 +1,7 @@
 import { IColumn } from './column.interface';
 import { ICompositiveIndex } from './index.interface';
 import { IRelation } from './relation.interface';
+import { SchemaKind } from './schema.kind';
 import { IUnique } from './unique.interface';
 
 export interface ISchema<
@@ -8,11 +9,12 @@ export interface ISchema<
   ColumnMeta = unknown,
   UniqueMeta = unknown,
   IndexMeta = unknown,
+  RelationMeta = unknown,
 > {
   /**
    * Can define view or table.
    */
-  kind: 'table';
+  kind: SchemaKind;
 
   /**
    * Programatical identified. (applied as the table's name)
@@ -44,7 +46,7 @@ export interface ISchema<
    * Foreign keys of the table.
    */
   relations: {
-    [foreignKeyName: string]: IRelation;
+    [foreignKeyName: string]: IRelation<RelationMeta>;
   };
 
   /**

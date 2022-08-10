@@ -1,6 +1,6 @@
 import { PostgresForeignAction } from '../../driver/postgres/postgres.foreign-action';
 
-export interface IRelation {
+export interface IRelation<RelationMeta = unknown> {
   /**
    * Name used to define the relation on the model.
    */
@@ -31,4 +31,9 @@ export interface IRelation {
   onDelete: PostgresForeignAction;
   // Action executed on foreign update
   onUpdate: PostgresForeignAction;
+
+  /**
+   * Associated metadata with the schema
+   */
+  meta?: RelationMeta;
 }

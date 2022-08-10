@@ -1,6 +1,7 @@
 import { ColumnTools } from '../../../column-tools';
 import { IColumn } from '../../../interface/schema/column.interface';
-import { ISchema } from '../../../interface/schema/schema.interface';
+import { ColumnKind } from '../../../interface/schema/column.kind';
+import { createSchema } from '../../../util/create-schema';
 import { PostgresColumnType } from '../postgres.column-type';
 import { PostgresInspector } from '../postgres.inspector';
 import { postgresValidateSchema } from '../postgres.schema-validator';
@@ -9,14 +10,7 @@ export const reverseTable = async (
   inspector: PostgresInspector,
   tableName: string,
 ) => {
-  const schema: ISchema = {
-    tableName: tableName,
-    kind: 'table',
-    columns: {},
-    uniques: {},
-    indexes: {},
-    relations: {},
-  };
+  const schema = createSchema(tableName);
   const columns = await inspector.columnInfo(tableName);
   const compositivePrimaryKeys = await inspector.getCompositePrimaryKeys(
     tableName,
@@ -94,7 +88,7 @@ export const reverseTable = async (
       type: {
         name: type,
       } as IColumn['type'],
-      kind: 'column',
+      kind: ColumnKind.COLUMN,
       isNullable: column.is_nullable,
       isUnique: column.is_unique,
       isPrimary,

@@ -1,10 +1,5 @@
-import {
-  ColumnTools,
-  IColumn,
-  Inductor,
-  ISchema,
-  PostgresColumnType,
-} from '../../src';
+import { ColumnTools, IColumn, Inductor, PostgresColumnType } from '../../src';
+import { createSchema } from '../../src/util/create-schema';
 import { createColumnWithType } from '../util/all-column';
 import { createTestInstance } from '../util/create-connection';
 
@@ -35,19 +30,13 @@ describe('[Postgres] Alter Nullable', () => {
       const columnName = `column_${columnSlug}`;
       const tableName = `alter_nullable_${columnSlug}`;
 
-      const testSchema: ISchema = {
-        tableName,
-        kind: 'table',
-        uniques: {},
-        indexes: {},
-        relations: {},
-        columns: {
-          primary_column: {
-            ...createColumnWithType(PostgresColumnType.SERIAL),
-            isPrimary: true,
-          },
-          [columnName]: columnDef,
+      const testSchema = createSchema(tableName);
+      testSchema.columns = {
+        primary_column: {
+          ...createColumnWithType(PostgresColumnType.SERIAL),
+          isPrimary: true,
         },
+        [columnName]: columnDef,
       };
 
       // Remove schema if exists from a previous test

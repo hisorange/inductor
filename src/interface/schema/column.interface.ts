@@ -1,6 +1,7 @@
 import { Pojo } from 'objection';
 import { PostgresColumnType } from '../../driver/postgres/postgres.column-type';
 import { PostgresIndexType } from '../../driver/postgres/postgres.index-type';
+import { ColumnKind } from './column.kind';
 
 type EnumColumnType = {
   name: PostgresColumnType.ENUM;
@@ -74,7 +75,7 @@ export interface IColumn<ColumnMeta = unknown> {
    * Columns can be defined as a traditional column,
    * but also as virtual / stored / computed columns.
    */
-  kind: 'column';
+  kind: ColumnKind;
 
   /**
    * Property alias on the model.

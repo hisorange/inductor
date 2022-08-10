@@ -1,5 +1,6 @@
-import { Inductor, ISchema, PostgresColumnType } from '../../src';
+import { Inductor, PostgresColumnType } from '../../src';
 import { PostgresIndexType } from '../../src/driver/postgres/postgres.index-type';
+import { createSchema } from '../../src/util/create-schema';
 import { createColumnWithType } from '../util/all-column';
 import { createTestInstance } from '../util/create-connection';
 
@@ -31,25 +32,19 @@ describe('[Postgres] Column Indexing', () => {
     ) => {
       const tableName = `column_index_${tableSuffix}`;
 
-      const testSchema: ISchema = {
-        tableName,
-        kind: 'table',
-        uniques: {},
-        indexes: {},
-        relations: {},
-        columns: {
-          primary_column: {
-            ...createColumnWithType(PostgresColumnType.SERIAL),
-            isPrimary: true,
-          },
-          unique_column: {
-            ...createColumnWithType(PostgresColumnType.TEXT),
-            isUnique: true,
-          },
-          index_column: {
-            ...createColumnWithType(columnType),
-            isIndexed: indexType,
-          },
+      const testSchema = createSchema(tableName);
+      testSchema.columns = {
+        primary_column: {
+          ...createColumnWithType(PostgresColumnType.SERIAL),
+          isPrimary: true,
+        },
+        unique_column: {
+          ...createColumnWithType(PostgresColumnType.TEXT),
+          isUnique: true,
+        },
+        index_column: {
+          ...createColumnWithType(columnType),
+          isIndexed: indexType,
         },
       };
 

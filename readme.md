@@ -19,10 +19,11 @@ yarn add @hisorange/inductor
 
 ### Create the connection
 
-```javascript
+```typescript
 import { Inductor } from '@hisorange/inductor';
 
-const connection = new Inductor({
+const inductor = new Inductor({
+  id: 'test_database',
   connection: {
     host: 'localhost',
     port: 5432,
@@ -30,16 +31,20 @@ const connection = new Inductor({
     user: 'inductor',
     password: 'inductor',
   },
+  provider: 'postgres',
+  isReadOnly: false,
+  schemas: {},
+  schemaFilters: ['my_.+', 'wp_.+'],
 });
 
 // Apply the desired state, and the library will create or modify the databse to match the given schema
-await connection.setState([
+await inductor.setState([
   {
     name: 'my_table',
-    kind: 'table',
+    kind: SchemaKind.TABLE,
     columns: {
       id: {
-        kind: 'column',
+        kind: ColumnKind.COLUMN,
         type: {
           name: ColumnType.INTEGER,
         },
@@ -48,7 +53,7 @@ await connection.setState([
         isPrimary: true,
       },
       smth: {
-        kind: 'column',
+        kind: ColumnKind.COLUMN,
         type: {
           name: ColumnType.TEXT,
         },
@@ -58,7 +63,7 @@ await connection.setState([
         isIndexed: PostgresIndexType.BTREE,
       },
       decision: {
-        kind: 'column',
+        kind: ColumnKind.COLUMN,
         type: {
           name: ColumnType.ENUM,
           values: ['Yes', 'No', 'Maybe'],
@@ -69,7 +74,7 @@ await connection.setState([
         isPrimary: false,
       },
       createdAt: {
-        kind: 'column',
+        kind: ColumnKind.COLUMN,
         type: {
           name: ColumnType.DATE,
         },

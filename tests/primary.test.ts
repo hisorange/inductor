@@ -2,8 +2,10 @@ import cloneDeep from 'lodash.clonedeep';
 import { PostgresColumnType } from '../src/driver/postgres/postgres.column-type';
 import { PostgresIndexType } from '../src/driver/postgres/postgres.index-type';
 import { Inductor } from '../src/inductor';
+import { ColumnKind } from '../src/interface/schema/column.kind';
 import { ISchema } from '../src/interface/schema/schema.interface';
-import { allColumn } from './util/all-column';
+import { createSchema } from '../src/util/create-schema';
+import { allColumn, createColumnWithType } from './util/all-column';
 import { createTestInstance } from './util/create-connection';
 
 describe('Primary Constraint', () => {
@@ -54,16 +56,11 @@ describe('Primary Constraint', () => {
       const tableName = `create_primary_${colName}`;
 
       // Create the table
-      const schemaRV1: ISchema = {
-        tableName,
-        kind: 'table',
-        columns: {
-          [colName]: allColumn[colName],
-        },
-        uniques: {},
-        indexes: {},
-        relations: {},
+      const schemaRV1 = createSchema(tableName);
+      schemaRV1.columns = {
+        [colName]: allColumn[colName],
       };
+
       // Set primary to false
       schemaRV1.columns[colName].isPrimary = true;
 
@@ -94,38 +91,18 @@ describe('Primary Constraint', () => {
       const tableName = `alter_primary_${colName}`;
 
       // Create the table
-      const schemaRV1: ISchema = {
-        tableName,
-        kind: 'table',
-        relations: {},
-        columns: {
-          prefix: {
-            kind: 'column',
-            type: {
-              name: PostgresColumnType.INTEGER,
-            },
-            isNullable: false,
-            isUnique: false,
-            isPrimary: false,
-            isIndexed: false,
-            defaultValue: undefined,
-          },
-          [colName]: allColumn[colName],
-          createdAt: {
-            kind: 'column',
-            type: {
-              name: PostgresColumnType.DATE,
-            },
-            isNullable: false,
-            isUnique: false,
-            isPrimary: false,
-            isIndexed: PostgresIndexType.BRIN,
-            defaultValue: undefined,
-          },
+      const schemaRV1 = createSchema(tableName);
+      schemaRV1.columns = {
+        prefix: {
+          ...createColumnWithType(PostgresColumnType.INTEGER),
         },
-        uniques: {},
-        indexes: {},
+        [colName]: allColumn[colName],
+        createdAt: {
+          ...createColumnWithType(PostgresColumnType.DATE),
+          isIndexed: PostgresIndexType.BRIN,
+        },
       };
+
       // Set primary to false
       schemaRV1.columns[colName].isPrimary = false;
 
@@ -190,25 +167,13 @@ describe('Primary Constraint', () => {
   );
 
   test('should add/remove the primary keys', async () => {
-    const schema: ISchema = {
-      tableName: 'alter_primary_extend',
-      kind: 'table',
-      relations: {},
-      columns: {
-        first: {
-          kind: 'column',
-          type: {
-            name: PostgresColumnType.INTEGER,
-          },
-          isNullable: false,
-          isUnique: false,
-          isPrimary: true,
-          isIndexed: false,
-          defaultValue: undefined,
-        },
+    const tableName = 'alter_primary_extend';
+    const schema = createSchema(tableName);
+    schema.columns = {
+      first: {
+        ...createColumnWithType(PostgresColumnType.INTEGER),
+        isPrimary: true,
       },
-      uniques: {},
-      indexes: {},
     };
 
     // Create with one primary
@@ -225,7 +190,7 @@ describe('Primary Constraint', () => {
     // Extend the primary
     const schemaExtend: ISchema = cloneDeep(schema);
     schemaExtend.columns.second = {
-      kind: 'column',
+      kind: ColumnKind.COLUMN,
       type: {
         name: PostgresColumnType.INTEGER,
       },
@@ -256,15 +221,8 @@ describe('Primary Constraint', () => {
     // Add the third primary column
     const schemaExtend2: ISchema = cloneDeep(schemaExtend);
     schemaExtend2.columns.third = {
-      kind: 'column',
-      type: {
-        name: PostgresColumnType.INTEGER,
-      },
-      isNullable: false,
-      isUnique: false,
+      ...createColumnWithType(PostgresColumnType.INTEGER),
       isPrimary: true,
-      isIndexed: false,
-      defaultValue: undefined,
     };
 
     // Update the state to extend the primary to three

@@ -1,4 +1,5 @@
-import { Inductor, ISchema, PostgresColumnType } from '../../src';
+import { Inductor, PostgresColumnType } from '../../src';
+import { createSchema } from '../../src/util/create-schema';
 import { createColumnWithType } from '../util/all-column';
 import { createTestInstance } from '../util/create-connection';
 
@@ -43,18 +44,12 @@ describe('[Postgres] Default Value', () => {
     ) => {
       const tableName = `create_def_value_${columnType}_${valueType}`;
 
-      const testSchema: ISchema = {
-        tableName,
-        kind: 'table',
-        uniques: {},
-        indexes: {},
-        relations: {},
-        columns: {
-          test_column: {
-            ...createColumnWithType(columnType),
-            defaultValue,
-            isNullable: defaultValue === null,
-          },
+      const testSchema = createSchema(tableName);
+      testSchema.columns = {
+        test_column: {
+          ...createColumnWithType(columnType),
+          defaultValue,
+          isNullable: defaultValue === null,
         },
       };
 

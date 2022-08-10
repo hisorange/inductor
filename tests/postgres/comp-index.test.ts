@@ -1,5 +1,6 @@
-import { Inductor, ISchema, PostgresColumnType } from '../../src';
+import { Inductor, PostgresColumnType } from '../../src';
 import { PostgresIndexType } from '../../src/driver/postgres/postgres.index-type';
+import { createSchema } from '../../src/util/create-schema';
 import { createColumnWithType } from '../util/all-column';
 import { createTestInstance } from '../util/create-connection';
 
@@ -31,36 +32,32 @@ describe('[Postgres] Compositive Indexing', () => {
       const columnSafeType = columnType.replace(/\s/g, '_');
       const indexName = `${tableName}_${columnSafeType}_${indexType}`;
 
-      const testSchema: ISchema = {
-        tableName,
-        kind: 'table',
-        uniques: {},
-        relations: {},
-        indexes: {
-          [indexName]: {
-            type: indexType,
-            columns: ['pair_column', `${columnSafeType}_column`],
-          },
+      const testSchema = createSchema(tableName);
+      testSchema.indexes = {
+        [indexName]: {
+          type: indexType,
+          columns: ['pair_column', `${columnSafeType}_column`],
         },
-        columns: {
-          primary_column: {
-            ...createColumnWithType(PostgresColumnType.SERIAL),
-            isPrimary: true,
-          },
-          unique_column: {
-            ...createColumnWithType(PostgresColumnType.TEXT),
-            isUnique: true,
-          },
-          idx2_column: {
-            ...createColumnWithType(PostgresColumnType.TEXT),
-            isIndexed: PostgresIndexType.BTREE,
-          },
-          pair_column: {
-            ...createColumnWithType(columnType),
-          },
-          [`${columnSafeType}_column`]: {
-            ...createColumnWithType(columnType),
-          },
+      };
+
+      testSchema.columns = {
+        primary_column: {
+          ...createColumnWithType(PostgresColumnType.SERIAL),
+          isPrimary: true,
+        },
+        unique_column: {
+          ...createColumnWithType(PostgresColumnType.TEXT),
+          isUnique: true,
+        },
+        idx2_column: {
+          ...createColumnWithType(PostgresColumnType.TEXT),
+          isIndexed: PostgresIndexType.BTREE,
+        },
+        pair_column: {
+          ...createColumnWithType(columnType),
+        },
+        [`${columnSafeType}_column`]: {
+          ...createColumnWithType(columnType),
         },
       };
 
