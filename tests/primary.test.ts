@@ -1,26 +1,31 @@
 import cloneDeep from 'lodash.clonedeep';
-import { PostgresColumnType } from '../src/driver/postgres/postgres.column-type';
-import { PostgresIndexType } from '../src/driver/postgres/postgres.index-type';
-import { Inductor } from '../src/inductor';
-import { ColumnKind } from '../src/interface/schema/column.kind';
-import { ISchema } from '../src/interface/schema/schema.interface';
+import { ColumnTools } from '../src';
+import { PostgresColumnType } from '../src/interface/schema/postgres/postgres.column-type';
+import { PostgresIndexType } from '../src/interface/schema/postgres/postgres.index-type';
 import { createSchema } from '../src/util/create-schema';
 import { allColumn, createColumnWithType } from './util/all-column';
 import { createTestInstance } from './util/create-connection';
 
 describe('Primary Constraint', () => {
-  let inductor: Inductor;
-  const testTables = Object.keys(allColumn);
+  const inductor = createTestInstance();
+  const primaryColumns = cloneDeep(allColumn);
 
-  const cleanup = async () => {
-    // Drop test tables from previous tests
-    await Promise.all([
-      inductor.driver.connection.schema.dropTableIfExists(
-        `alter_primary_extend`,
-      ),
-    ]);
+  // Remove the non primary able columns
+  for (const col in primaryColumns) {
+    if (Object.prototype.hasOwnProperty.call(primaryColumns, col)) {
+      if (!ColumnTools.postgres.canTypeBePrimary(primaryColumns[col])) {
+        delete primaryColumns[col];
+      }
+    }
+  }
 
-    // Drop test tables from previous tests
+  const testTables = Object.keys(primaryColumns);
+
+  const clearTables = async () => {
+    await inductor.driver.connection.schema.dropTableIfExists(
+      `alter_primary_extend`,
+    );
+
     await Promise.all(
       testTables.map(name =>
         inductor.driver.connection.schema.dropTableIfExists(
@@ -29,7 +34,6 @@ describe('Primary Constraint', () => {
       ),
     );
 
-    // Drop test tables from previous tests
     await Promise.all(
       testTables.map(name =>
         inductor.driver.connection.schema.dropTableIfExists(
@@ -39,14 +43,10 @@ describe('Primary Constraint', () => {
     );
   };
 
-  beforeAll(async () => {
-    // Create the test connection
-    inductor = createTestInstance();
-    await cleanup();
-  });
+  beforeAll(() => clearTables());
 
   afterAll(async () => {
-    await cleanup();
+    await clearTables();
     await inductor.close();
   });
 
@@ -54,43 +54,25 @@ describe('Primary Constraint', () => {
     'should create the PRIMARY flag for [%s] column',
     async colName => {
       const tableName = `create_primary_${colName}`;
-
-      // Create the table
-      const schemaRV1 = createSchema(tableName);
-      schemaRV1.columns = {
-        [colName]: allColumn[colName],
+      const testSchema = createSchema(tableName);
+      testSchema.columns = {
+        [colName]: {
+          ...primaryColumns[colName],
+          isPrimary: true,
+        },
       };
+      await inductor.setState([testSchema]);
 
-      // Set primary to false
-      schemaRV1.columns[colName].isPrimary = true;
-
-      // Validate the schema
-      try {
-        inductor.driver.validateSchema(schemaRV1);
-      } catch (error) {
-        return;
-      }
-
-      // Apply the state
-      await inductor.setState([schemaRV1]);
-
-      const columnRV1 = await inductor.driver.inspector.columnInfo(
-        tableName,
-        colName,
-      );
-      expect(columnRV1.is_primary_key).toBe(
-        schemaRV1.columns[colName].isPrimary,
+      expect(testSchema).toStrictEqual(
+        (await inductor.readState([tableName]))[0],
       );
     },
-    5_000,
   );
 
-  test.each(testTables)(
+  test.each(testTables.filter(t => !t.match(/serial/)))(
     'should alter the PRIMARY flag for [%s] column',
     async colName => {
       const tableName = `alter_primary_${colName}`;
-
-      // Create the table
       const schemaRV1 = createSchema(tableName);
       schemaRV1.columns = {
         prefix: {
@@ -103,48 +85,19 @@ describe('Primary Constraint', () => {
         },
       };
 
-      // Set primary to false
       schemaRV1.columns[colName].isPrimary = false;
-
-      // Validate the schema
-      try {
-        inductor.driver.validateSchema(schemaRV1);
-      } catch (error) {
-        return;
-      }
-
-      // Apply the state
       await inductor.setState([schemaRV1]);
 
-      const columnRV1 = await inductor.driver.inspector.columnInfo(
-        tableName,
-        colName,
+      expect(schemaRV1).toStrictEqual(
+        (await inductor.readState([tableName]))[0],
       );
-      expect(columnRV1.is_primary_key).toBeFalsy();
 
       const schemaRV2 = cloneDeep(schemaRV1);
-      // Change the primary flag
       schemaRV2.columns[colName].isPrimary = true;
-
-      // Validate the schema
-      try {
-        inductor.driver.validateSchema(schemaRV2);
-      } catch (error) {
-        return;
-      }
-
-      // Apply the changes
       await inductor.setState([schemaRV2]);
 
-      // Verify the changes
-      const columnRV2 = await inductor.driver.inspector.columnInfo(
-        tableName,
-        colName,
-      );
-
-      // We are reading the isPrimary because the sanity checker may change it for the given column type
-      expect(columnRV2.is_primary_key).toBe(
-        schemaRV2.columns[colName].isPrimary,
+      expect(schemaRV2).toStrictEqual(
+        (await inductor.readState([tableName]))[0],
       );
 
       const schemaRV3 = cloneDeep(schemaRV2);
@@ -153,14 +106,8 @@ describe('Primary Constraint', () => {
 
       await inductor.setState([schemaRV3]);
 
-      const columnRV3 = await inductor.driver.inspector.columnInfo(
-        tableName,
-        colName,
-      );
-
-      // We are reading the isPrimary because the sanity checker may change it for the given column type
-      expect(columnRV3.is_primary_key).toBe(
-        schemaRV3.columns[colName].isPrimary,
+      expect(schemaRV3).toStrictEqual(
+        (await inductor.readState([tableName]))[0],
       );
     },
     5_000,
@@ -168,110 +115,49 @@ describe('Primary Constraint', () => {
 
   test('should add/remove the primary keys', async () => {
     const tableName = 'alter_primary_extend';
-    const schema = createSchema(tableName);
-    schema.columns = {
+    const schemaRV1 = createSchema(tableName);
+    schemaRV1.columns = {
       first: {
         ...createColumnWithType(PostgresColumnType.INTEGER),
         isPrimary: true,
       },
     };
+    await inductor.setState([schemaRV1]);
 
-    // Create with one primary
-    await inductor.setState([schema]);
-
-    expect(
-      (
-        await inductor.driver.inspector.columnInfo('alter_primary_extend')
-      ).filter(c => c.is_primary_key).length,
-    ).toEqual(1);
+    expect(schemaRV1).toStrictEqual((await inductor.readState([tableName]))[0]);
 
     // Extend the primary
-    const schemaExtend: ISchema = cloneDeep(schema);
-    schemaExtend.columns.second = {
-      kind: ColumnKind.COLUMN,
-      type: {
-        name: PostgresColumnType.INTEGER,
-      },
-      isNullable: false,
-      isUnique: false,
-      isPrimary: true,
-      isIndexed: false,
-      defaultValue: undefined,
-    };
-
-    // Update the state to extend the primary to two
-    await inductor.setState([schemaExtend]);
-
-    expect(
-      (
-        await inductor.driver.inspector.columnInfo('alter_primary_extend')
-      ).filter(c => c.is_primary_key).length,
-    ).toEqual(0);
-
-    expect(
-      await inductor.driver.inspector.getCompositePrimaryKeys(
-        'alter_primary_extend',
-      ),
-    ).toStrictEqual(['first', 'second']);
-
-    // Add the third primary column
-    const schemaExtend2: ISchema = cloneDeep(schemaExtend);
-    schemaExtend2.columns.third = {
+    const schemaRV2 = cloneDeep(schemaRV1);
+    schemaRV2.columns.second = {
       ...createColumnWithType(PostgresColumnType.INTEGER),
       isPrimary: true,
     };
+    await inductor.setState([schemaRV2]);
 
-    // Update the state to extend the primary to three
-    await inductor.setState([schemaExtend2]);
+    expect(schemaRV2).toStrictEqual((await inductor.readState([tableName]))[0]);
 
-    expect(
-      (
-        await inductor.driver.inspector.columnInfo('alter_primary_extend')
-      ).filter(c => c.is_primary_key).length,
-    ).toEqual(0);
+    // Add the third primary column
+    const schemaRV3 = cloneDeep(schemaRV2);
+    schemaRV3.columns.third = {
+      ...createColumnWithType(PostgresColumnType.INTEGER),
+      isPrimary: true,
+    };
+    await inductor.setState([schemaRV3]);
 
-    expect(
-      await inductor.driver.inspector.getCompositePrimaryKeys(
-        'alter_primary_extend',
-      ),
-    ).toStrictEqual(['first', 'second', 'third']);
+    expect(schemaRV3).toStrictEqual((await inductor.readState([tableName]))[0]);
 
     // Remove the third primary column
-    const schemaExtend3: ISchema = cloneDeep(schemaExtend2);
-    schemaExtend3.columns.third.isPrimary = false;
+    const schemaRV4 = cloneDeep(schemaRV3);
+    schemaRV4.columns.third.isPrimary = false;
+    await inductor.setState([schemaRV4]);
 
-    // Update the state to remove the third primary
-    await inductor.setState([schemaExtend3]);
-
-    expect(
-      (
-        await inductor.driver.inspector.columnInfo('alter_primary_extend')
-      ).filter(c => c.is_primary_key).length,
-    ).toEqual(0);
-
-    expect(
-      await inductor.driver.inspector.getCompositePrimaryKeys(
-        'alter_primary_extend',
-      ),
-    ).toStrictEqual(['first', 'second']);
+    expect(schemaRV4).toStrictEqual((await inductor.readState([tableName]))[0]);
 
     // Remove the second primary column
-    const schemaExtend4: ISchema = cloneDeep(schemaExtend3);
-    schemaExtend4.columns.second.isPrimary = false;
+    const schemaRV5 = cloneDeep(schemaRV4);
+    schemaRV5.columns.second.isPrimary = false;
+    await inductor.setState([schemaRV5]);
 
-    // Update the state to remove the second primary
-    await inductor.setState([schemaExtend4]);
-
-    expect(
-      (
-        await inductor.driver.inspector.columnInfo('alter_primary_extend')
-      ).filter(c => c.is_primary_key).length,
-    ).toEqual(1);
-
-    expect(
-      await inductor.driver.inspector.getCompositePrimaryKeys(
-        'alter_primary_extend',
-      ),
-    ).toStrictEqual(['first']);
+    expect(schemaRV5).toStrictEqual((await inductor.readState([tableName]))[0]);
   });
 });

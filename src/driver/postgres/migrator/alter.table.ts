@@ -1,8 +1,8 @@
 import { diff } from 'just-diff';
 import { Knex } from 'knex';
 import { ColumnTools } from '../../../column-tools';
+import { PostgresColumnType } from '../../../interface/schema/postgres/postgres.column-type';
 import { ISchema } from '../../../interface/schema/schema.interface';
-import { PostgresColumnType } from '../postgres.column-type';
 import { alterNullable, alterUnique } from './alter.column';
 import { createColumn } from './create.column';
 import { getTypeName } from './get-type-name';

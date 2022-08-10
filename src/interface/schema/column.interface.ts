@@ -1,7 +1,7 @@
 import { Pojo } from 'objection';
-import { PostgresColumnType } from '../../driver/postgres/postgres.column-type';
-import { PostgresIndexType } from '../../driver/postgres/postgres.index-type';
 import { ColumnKind } from './column.kind';
+import { PostgresColumnType } from './postgres/postgres.column-type';
+import { PostgresIndexType } from './postgres/postgres.index-type';
 
 type EnumColumnType = {
   name: PostgresColumnType.ENUM;

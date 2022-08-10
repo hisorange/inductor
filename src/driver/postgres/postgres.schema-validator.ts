@@ -1,8 +1,8 @@
 import { InvalidSchema } from '../../exception/invalid-schema.exception';
+import { PostgresColumnType } from '../../interface/schema/postgres/postgres.column-type';
+import { PostgresIndexType } from '../../interface/schema/postgres/postgres.index-type';
 import { ISchema } from '../../interface/schema/schema.interface';
 import { PostgresColumnTools } from './postgres.column-tools';
-import { PostgresColumnType } from './postgres.column-type';
-import { PostgresIndexType } from './postgres.index-type';
 
 export const postgresValidateSchema = (schema: ISchema): void => {
   // Validate the table name, or it's just spaces

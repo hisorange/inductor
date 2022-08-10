@@ -1,8 +1,8 @@
 import { Knex } from 'knex';
 import { ColumnTools } from '../../../column-tools';
 import { IColumn } from '../../../interface/schema/column.interface';
+import { PostgresColumnType } from '../../../interface/schema/postgres/postgres.column-type';
 import { ISchema } from '../../../interface/schema/schema.interface';
-import { PostgresColumnType } from '../postgres.column-type';
 import { getTypeName } from './get-type-name';
 
 export const createColumn = (

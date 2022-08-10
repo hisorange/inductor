@@ -1,10 +1,10 @@
-import { ColumnTools, IColumn, Inductor, PostgresColumnType } from '../../src';
+import { ColumnTools, IColumn, PostgresColumnType } from '../../src';
 import { createSchema } from '../../src/util/create-schema';
 import { createColumnWithType } from '../util/all-column';
 import { createTestInstance } from '../util/create-connection';
 
 describe('[Postgres] Alter Nullable', () => {
-  let inductor: Inductor;
+  const inductor = createTestInstance();
 
   const cases: [string, IColumn][] = (
     ColumnTools.postgres.listColumnTypes() as PostgresColumnType[]
@@ -15,13 +15,7 @@ describe('[Postgres] Alter Nullable', () => {
       ([type, col]) => ![PostgresColumnType.BIT_VARYING].includes(type as any),
     );
 
-  beforeAll(async () => {
-    inductor = createTestInstance(['alter_nullable_.+']);
-  });
-
-  afterAll(async () => {
-    await inductor.close();
-  });
+  afterAll(() => inductor.close());
 
   test.each(cases)(
     'should alter nullable flag for [%s] type column',
@@ -40,48 +34,30 @@ describe('[Postgres] Alter Nullable', () => {
       };
 
       // Remove schema if exists from a previous test
-      await inductor.driver.migrator.dropSchema(testSchema);
-      // Apply the new state
+      await inductor.driver.migrator.dropTable(tableName);
       await inductor.setState([testSchema]);
 
-      // Read the state and compare the results
-      const baseState = await inductor.readState();
-      const baseReverseSchema = baseState.find(
-        t => t.tableName === testSchema.tableName,
+      expect((await inductor.readState([tableName]))[0]).toStrictEqual(
+        testSchema,
       );
-
-      expect(baseReverseSchema).toBeDefined();
-      expect(baseReverseSchema).toStrictEqual(testSchema);
 
       // Continue with a true state
       testSchema.columns[columnName].isNullable = true;
       testSchema.columns[columnName].defaultValue = null;
-      // Apply the new state
       await inductor.setState([testSchema]);
 
-      // Read the state and compare the results
-      const trueState = await inductor.readState();
-      const trueReverseSchema = trueState.find(
-        t => t.tableName === testSchema.tableName,
+      expect((await inductor.readState([tableName]))[0]).toStrictEqual(
+        testSchema,
       );
-
-      expect(trueReverseSchema).toBeDefined();
-      expect(trueReverseSchema).toStrictEqual(testSchema);
 
       // Continue with a false state
       testSchema.columns[columnName].isNullable = false;
       testSchema.columns[columnName].defaultValue = undefined;
-      // Apply the new state
       await inductor.setState([testSchema]);
 
-      // Read the state and compare the results
-      const falseState = await inductor.readState();
-      const falseReverseSchema = falseState.find(
-        t => t.tableName === testSchema.tableName,
+      expect((await inductor.readState([tableName]))[0]).toStrictEqual(
+        testSchema,
       );
-
-      expect(falseReverseSchema).toBeDefined();
-      expect(falseReverseSchema).toStrictEqual(testSchema);
 
       // Cleanup
       await inductor.driver.migrator.dropSchema(testSchema);

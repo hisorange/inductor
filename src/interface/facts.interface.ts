@@ -7,7 +7,7 @@ export interface IFacts {
   isTableExists(tableName: string): boolean;
   isUniqueConstraintExists(constraintName: string): boolean;
 
-  getListOfTables(): string[];
+  getListOfTables(filters: string[]): string[];
 
   // Table oriented methods
   getColumns(tableName: string): Promise<Column[]>;

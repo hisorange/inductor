@@ -1,4 +1,4 @@
-import { PostgresIndexType } from '../../driver/postgres/postgres.index-type';
+import { PostgresIndexType } from '../schema/postgres/postgres.index-type';
 
 export interface IReverseIndex {
   name: string;

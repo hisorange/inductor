@@ -1,22 +1,17 @@
-import { ColumnTools, IColumn, Inductor, PostgresColumnType } from '../../src';
+import { ColumnTools, IColumn, PostgresColumnType } from '../../src';
 import { createSchema } from '../../src/util/create-schema';
 import { createColumnWithType } from '../util/all-column';
 import { createTestInstance } from '../util/create-connection';
 
 describe('[Postgres] Column Adding', () => {
-  let inductor: Inductor;
+  const inductor = createTestInstance();
   const cases: [string, IColumn][] = (
     ColumnTools.postgres.listColumnTypes() as PostgresColumnType[]
   )
     .filter(type => type !== PostgresColumnType.BIT_VARYING)
     .map(type => [type, createColumnWithType(type)]);
-  beforeAll(async () => {
-    inductor = createTestInstance(['column_add_.+']);
-  });
 
-  afterAll(async () => {
-    await inductor.close();
-  });
+  afterAll(() => inductor.close());
 
   test.each(cases)(
     'should add [%s] type column',
@@ -35,21 +30,15 @@ describe('[Postgres] Column Adding', () => {
       };
 
       // Remove schema if exists from a previous test
-      await inductor.driver.migrator.dropSchema(testSchema);
-      // Apply the new state
+      await inductor.driver.migrator.dropTable(tableName);
       await inductor.setState([testSchema]);
 
-      // Read the state and compare the results
-      const currentState = await inductor.readState();
-      const reverseSchema = currentState.find(
-        t => t.tableName === testSchema.tableName,
+      expect((await inductor.readState([tableName]))[0]).toStrictEqual(
+        testSchema,
       );
 
-      expect(reverseSchema).toBeDefined();
-      expect(reverseSchema).toStrictEqual(testSchema);
-
       // Cleanup
-      await inductor.driver.migrator.dropSchema(testSchema);
+      await inductor.driver.migrator.dropTable(tableName);
     },
   );
 });

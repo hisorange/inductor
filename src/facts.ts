@@ -16,8 +16,22 @@ export class Facts implements IFacts {
     this.uniqueConstraints = await this.inspector.getUniqueConstraints();
   }
 
-  getListOfTables(): string[] {
-    return this.tables;
+  getListOfTables(filters: string[] = []): string[] {
+    return this.tables.filter(table => {
+      // Empty filter
+      if (filters.length === 0) {
+        return true;
+      }
+
+      // Simple match filter
+      for (const filter of filters) {
+        if (new RegExp(filter).test(table)) {
+          return true;
+        }
+      }
+
+      return false;
+    });
   }
 
   async getCompositePrimaryKeys(tableName: string): Promise<string[]> {

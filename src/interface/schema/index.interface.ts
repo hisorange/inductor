@@ -1,4 +1,4 @@
-import { PostgresIndexType } from '../../driver/postgres/postgres.index-type';
+import { PostgresIndexType } from './postgres/postgres.index-type';
 
 export interface ICompositiveIndex<IndexMeta = unknown> {
   type: PostgresIndexType;

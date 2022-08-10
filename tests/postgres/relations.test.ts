@@ -1,19 +1,13 @@
-import { Inductor, PostgresColumnType } from '../../src';
-import { PostgresForeignAction } from '../../src/driver/postgres/postgres.foreign-action';
+import { PostgresColumnType } from '../../src';
+import { PostgresForeignAction } from '../../src/interface/schema/postgres/postgres.foreign-action';
 import { createSchema } from '../../src/util/create-schema';
 import { createColumnWithType } from '../util/all-column';
 import { createTestInstance } from '../util/create-connection';
 
 describe('[Postgres] Relations', () => {
-  let inductor: Inductor;
+  const inductor = createTestInstance();
 
-  beforeAll(async () => {
-    inductor = createTestInstance(['relation_.+']);
-  });
-
-  afterAll(async () => {
-    await inductor.close();
-  });
+  afterAll(() => inductor.close());
 
   test('should create a belongs to relation', async () => {
     const tableNameA = `relation_belongsto_a`;
@@ -63,21 +57,12 @@ describe('[Postgres] Relations', () => {
     // Apply the new state
     await inductor.setState([testSchemaA, testSchemaB]);
 
-    // Read the state and compare the results
-    const currentState = await inductor.readState();
-    const reverseSchemaA = currentState.find(
-      t => t.tableName === testSchemaA.tableName,
+    expect((await inductor.readState([tableNameA]))[0]).toStrictEqual(
+      testSchemaA,
     );
-
-    expect(reverseSchemaA).toBeDefined();
-    expect(reverseSchemaA).toStrictEqual(testSchemaA);
-
-    const reverseSchemaB = currentState.find(
-      t => t.tableName === testSchemaB.tableName,
+    expect((await inductor.readState([tableNameB]))[0]).toStrictEqual(
+      testSchemaB,
     );
-
-    expect(reverseSchemaB).toBeDefined();
-    expect(reverseSchemaB).toStrictEqual(testSchemaB);
 
     // Cleanup
     await inductor.driver.migrator.dropSchema(testSchemaB);

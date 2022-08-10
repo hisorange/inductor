@@ -1,32 +1,19 @@
-import { Inductor } from '../src/inductor';
 import { createSchema } from '../src/util/create-schema';
 import { allColumn } from './util/all-column';
 import { createTestInstance } from './util/create-connection';
 
 describe('Create Table from Schema', () => {
-  let inductor: Inductor;
+  const inductor = createTestInstance();
   const testTables = ['create_test1', 'create_Test2', 'create_test_3_____'];
-
-  beforeAll(async () => {
-    // Create the test connection
-    inductor = createTestInstance();
-
-    // Drop test tables from previous tests
-    await Promise.all(
-      testTables.map(name =>
-        inductor.driver.connection.schema.dropTableIfExists(name),
-      ),
+  const clearTables = () =>
+    Promise.all(
+      testTables.map(name => inductor.driver.migrator.dropTable(name)),
     );
-  });
+
+  beforeAll(() => clearTables());
 
   afterAll(async () => {
-    // Drop test tables from previous tests
-    await Promise.all(
-      testTables.map(name =>
-        inductor.driver.connection.schema.dropTableIfExists(name),
-      ),
-    );
-
+    await clearTables();
     await inductor.close();
   });
 
@@ -36,18 +23,10 @@ describe('Create Table from Schema', () => {
       const schema = createSchema(tableName);
       schema.columns = allColumn;
 
-      try {
-        inductor.driver.validateSchema(schema);
-      } catch (error) {
-        return;
-      }
-
       await inductor.setState([schema]);
+      await inductor.driver.facts.refresh();
 
-      expect(
-        await inductor.driver.connection.schema.hasTable(tableName),
-      ).toBeTruthy();
+      expect(inductor.driver.facts.isTableExists(tableName)).toBeTruthy();
     },
-    5_000,
   );
 });

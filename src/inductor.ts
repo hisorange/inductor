@@ -74,8 +74,8 @@ export class Inductor implements IInductor {
     return association.model as ModelClass<T>;
   }
 
-  async readState(): Promise<ISchema[]> {
-    return this.driver.migrator.readState();
+  async readState(filters: string[] = []): Promise<ISchema[]> {
+    return this.driver.migrator.readState(filters);
   }
 
   close() {

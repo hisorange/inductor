@@ -3,6 +3,7 @@ import { Model, ModelClass } from 'objection';
 import { PostgresInspector } from '../driver/postgres/postgres.inspector';
 import { PostgresMigrator } from '../driver/postgres/postgres.migrator';
 import { IDatabase } from './database.interface';
+import { IFacts } from './facts.interface';
 import { ISchema } from './schema/schema.interface';
 
 export interface IDriver {
@@ -20,6 +21,8 @@ export interface IDriver {
    * Migration planner / executer instance
    */
   readonly migrator: PostgresMigrator;
+
+  readonly facts: IFacts;
 
   /**
    * Database connection

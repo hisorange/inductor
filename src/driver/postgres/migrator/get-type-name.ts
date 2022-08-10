@@ -1,5 +1,5 @@
 import { IColumn } from '../../../interface/schema/column.interface';
-import { PostgresColumnType } from '../postgres.column-type';
+import { PostgresColumnType } from '../../../interface/schema/postgres/postgres.column-type';
 
 export const getTypeName = (column: IColumn): string => {
   let typeName: string = '';
@@ -18,7 +18,7 @@ export const getTypeName = (column: IColumn): string => {
       typeName = 'bit';
       break;
     case PostgresColumnType.BIT_VARYING:
-      isLengthDefined = typeof column.type.length !== 'number';
+      isLengthDefined = typeof column.type.length === 'number';
       typeName =
         'bit varying' + (isLengthDefined ? `(${column.type.length})` : '');
       break;
@@ -35,7 +35,7 @@ export const getTypeName = (column: IColumn): string => {
       typeName = 'character';
       break;
     case PostgresColumnType.CHAR_VARYING:
-      isLengthDefined = typeof column.type.length !== 'undefined';
+      isLengthDefined = typeof column.type.length === 'number';
       typeName =
         'character varying' +
         (isLengthDefined ? `(${column.type.length})` : '');
@@ -83,8 +83,8 @@ export const getTypeName = (column: IColumn): string => {
       typeName = 'money';
       break;
     case PostgresColumnType.NUMERIC:
-      isPrecisionDefined = typeof column.type.precision !== 'undefined';
-      isScaleDefined = typeof column.type.scale !== 'undefined';
+      isPrecisionDefined = typeof column.type.precision === 'number';
+      isScaleDefined = typeof column.type.scale === 'number';
 
       // Cannot define scale without precision
       if (!isPrecisionDefined) {

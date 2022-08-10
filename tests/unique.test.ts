@@ -1,15 +1,25 @@
 import cloneDeep from 'lodash.clonedeep';
-import { PostgresColumnType } from '../src/driver/postgres/postgres.column-type';
-import { Inductor } from '../src/inductor';
-import { IUnique } from '../src/interface/schema/unique.interface';
+import { ColumnTools } from '../src';
+import { PostgresColumnType } from '../src/interface/schema/postgres/postgres.column-type';
 import { createSchema } from '../src/util/create-schema';
 import { allColumn, createColumnWithType } from './util/all-column';
 import { createTestInstance } from './util/create-connection';
 
 describe('Unique Constraint', () => {
-  let inductor: Inductor;
+  const inductor = createTestInstance();
 
-  const testTables = Object.keys(allColumn);
+  const uniqueCols = cloneDeep(allColumn);
+
+  // Remove the non primary able columns
+  for (const col in uniqueCols) {
+    if (Object.prototype.hasOwnProperty.call(uniqueCols, col)) {
+      if (!ColumnTools.postgres.canTypeBeUnique(uniqueCols[col])) {
+        delete uniqueCols[col];
+      }
+    }
+  }
+
+  const testTables = Object.keys(uniqueCols);
   const cleanup = async () => {
     await Promise.all([
       inductor.driver.connection.schema.dropTableIfExists(
@@ -45,45 +55,29 @@ describe('Unique Constraint', () => {
     );
   };
 
-  beforeAll(async () => {
-    // Create the test connection
-    inductor = createTestInstance();
-    await cleanup();
-  });
+  beforeAll(() => cleanup());
 
   afterAll(async () => {
     await cleanup();
     await inductor.close();
   });
 
-  test.each(Object.keys(allColumn))(
+  test.each(Object.keys(uniqueCols))(
     'should create simple unique on [%s] column type',
     async (columnKey: string) => {
       const tableName = `unique_test_${columnKey}`;
 
       const schema = createSchema(tableName);
       schema.columns = {
-        [columnKey]: allColumn[columnKey],
+        [columnKey]: uniqueCols[columnKey],
       };
       // Set the column to unique
       schema.columns[columnKey].isUnique = true;
 
-      try {
-        inductor.driver.validateSchema(schema);
-      } catch (error) {
-        return;
-      }
-
       // Apply the statement
       await inductor.setState([schema]);
 
-      expect(
-        await inductor.driver.connection.schema.hasTable(tableName),
-      ).toBeTruthy();
-      expect(
-        (await inductor.driver.inspector.columnInfo(tableName, columnKey))
-          .is_unique,
-      ).toBe(schema.columns[columnKey].isUnique);
+      expect(schema).toStrictEqual((await inductor.readState([tableName]))[0]);
     },
   );
 
@@ -91,56 +85,31 @@ describe('Unique Constraint', () => {
     'should alter the UNIQUE flag for [%s] column',
     async colName => {
       const tableName = `alter_unique_${colName}`;
-
-      // Create the table
       const schemaRV1 = createSchema(tableName);
       schemaRV1.columns = {
         id: {
           ...createColumnWithType(PostgresColumnType.INTEGER),
           isPrimary: true,
         },
-        [colName]: allColumn[colName],
+        [colName]: uniqueCols[colName],
         createdAt: createColumnWithType(PostgresColumnType.DATE),
       };
       // Set nullable to false
       schemaRV1.columns[colName].isUnique = false;
-
-      try {
-        inductor.driver.validateSchema(schemaRV1);
-      } catch (error) {
-        return;
-      }
-
-      // Apply the state
       await inductor.setState([schemaRV1]);
 
-      const columnRV1 = await inductor.driver.inspector.columnInfo(
-        tableName,
-        colName,
+      expect(schemaRV1).toStrictEqual(
+        (await inductor.readState([tableName]))[0],
       );
-      expect(columnRV1.is_unique).toBeFalsy();
 
       const schemaRV2 = cloneDeep(schemaRV1);
       // Change the nullable
       schemaRV2.columns[colName].isUnique = true;
-
-      try {
-        inductor.driver.validateSchema(schemaRV2);
-      } catch (error) {
-        return;
-      }
-
-      // Apply the changes
       await inductor.setState([schemaRV2]);
 
-      // Verify the changes
-      const columnRV2 = await inductor.driver.inspector.columnInfo(
-        tableName,
-        colName,
+      expect(schemaRV2).toStrictEqual(
+        (await inductor.readState([tableName]))[0],
       );
-
-      // We are reading the isUnique because the sanity checker may change it for the given column type
-      expect(columnRV2.is_unique).toBe(schemaRV2.columns[colName].isUnique);
 
       const schemaRV3 = cloneDeep(schemaRV2);
       // Revert the nullable
@@ -148,18 +117,13 @@ describe('Unique Constraint', () => {
 
       await inductor.setState([schemaRV3]);
 
-      const columnRV3 = await inductor.driver.inspector.columnInfo(
-        tableName,
-        colName,
+      expect(schemaRV3).toStrictEqual(
+        (await inductor.readState([tableName]))[0],
       );
-
-      // We are reading the isUnique because the sanity checker may change it for the given column type
-      expect(columnRV3.is_unique).toBe(schemaRV3.columns[colName].isUnique);
     },
-    5_000,
   );
 
-  test.each(Object.keys(allColumn))(
+  test.each(Object.keys(uniqueCols))(
     'should create composite unique with [%s] column type',
     async (columnKey: string) => {
       const tableName = `unique_test_comp_${columnKey}`;
@@ -167,7 +131,7 @@ describe('Unique Constraint', () => {
 
       const schema = createSchema(tableName);
       schema.columns = {
-        [columnKey]: allColumn[columnKey],
+        [columnKey]: uniqueCols[columnKey],
         pair_for_comp: {
           ...createColumnWithType(PostgresColumnType.BIGINT),
         },
@@ -182,28 +146,9 @@ describe('Unique Constraint', () => {
           columns: [columnKey, 'pair_for_comp'],
         },
       };
-
-      try {
-        inductor.driver.validateSchema(schema);
-      } catch (error) {
-        return;
-      }
-
-      // Apply the statement
       await inductor.setState([schema]);
 
-      // Verify if the column is not unique
-      const uniques = await inductor.driver.inspector.getCompositeUniques(
-        tableName,
-      );
-
-      if (schema.uniques[uniqueName].columns.length === 2) {
-        expect(uniques).toStrictEqual({
-          [uniqueName]: schema.uniques[uniqueName],
-        });
-      } else {
-        expect(uniques).toStrictEqual({});
-      }
+      expect(schema).toStrictEqual((await inductor.readState([tableName]))[0]);
     },
   );
 
@@ -217,85 +162,30 @@ describe('Unique Constraint', () => {
       },
       col_2: createColumnWithType(PostgresColumnType.INTEGER),
     };
-
-    // Create the table with a single unique
     await inductor.setState([schema]);
 
-    // Verify the single unique column
-    expect(
-      (
-        await inductor.driver.inspector.columnInfo(
-          'unique_test_upgrade',
-          'col_1',
-        )
-      ).is_unique,
-    ).toBeTruthy();
+    expect(schema).toStrictEqual((await inductor.readState([tableName]))[0]);
 
     // Set the second column as unique to convert the index into a compositive one
     schema.columns.col_1.isUnique = false;
     schema.uniques.test_cmp_1 = {
       columns: ['col_1', 'col_2'],
     };
-
-    // Apply the statement
     await inductor.setState([schema]);
 
-    // Verify the composite unique column
-    expect(
-      (
-        await inductor.driver.inspector.columnInfo(
-          'unique_test_upgrade',
-          'col_1',
-        )
-      ).is_unique,
-    ).toBeFalsy();
-    expect(
-      (
-        await inductor.driver.inspector.columnInfo(
-          'unique_test_upgrade',
-          'col_2',
-        )
-      ).is_unique,
-    ).toBeFalsy();
-
-    // Verify the composite unique
-    const uniques = await inductor.driver.inspector.getCompositeUniques(
-      'unique_test_upgrade',
-    );
-    expect(uniques).toStrictEqual({
-      test_cmp_1: {
-        columns: ['col_1', 'col_2'],
-      } as IUnique,
-    });
+    expect(schema).toStrictEqual((await inductor.readState([tableName]))[0]);
 
     // Create a new column and add it to the composite unique
     schema.columns.col_3 = createColumnWithType(PostgresColumnType.INTEGER);
-
     schema.uniques.test_cmp_1.columns.push('col_3');
-
-    // Apply the statement
     await inductor.setState([schema]);
 
-    // Verify the composite unique
-    const uniques2 = await inductor.driver.inspector.getCompositeUniques(
-      'unique_test_upgrade',
-    );
-    expect(uniques2).toStrictEqual({
-      test_cmp_1: {
-        columns: ['col_1', 'col_2', 'col_3'],
-      } as IUnique,
-    });
+    expect(schema).toStrictEqual((await inductor.readState([tableName]))[0]);
 
     // Remove the composite unique
     delete schema.uniques.test_cmp_1;
-
-    // Apply the statement
     await inductor.setState([schema]);
 
-    // Verify the composite unique
-    const uniques3 = await inductor.driver.inspector.getCompositeUniques(
-      'unique_test_upgrade',
-    );
-    expect(uniques3).toStrictEqual({});
+    expect(schema).toStrictEqual((await inductor.readState([tableName]))[0]);
   });
 });

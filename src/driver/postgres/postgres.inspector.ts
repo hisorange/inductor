@@ -2,9 +2,9 @@ import BaseAdapter from 'knex-schema-inspector/dist/dialects/postgres';
 import { Column } from 'knex-schema-inspector/dist/types/column';
 import { IReverseIndex } from '../../interface/reverse/reverse-index.interface';
 import { IReverseUnique } from '../../interface/reverse/reverse-unique.interface';
+import { PostgresForeignAction } from '../../interface/schema/postgres/postgres.foreign-action';
 import { IRelation } from '../../interface/schema/relation.interface';
 import { ISchema } from '../../interface/schema/schema.interface';
-import { PostgresForeignAction } from './postgres.foreign-action';
 
 export type IEnumeratorStructure = { column: string; values: string[] };
 

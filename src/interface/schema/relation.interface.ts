@@ -1,4 +1,4 @@
-import { PostgresForeignAction } from '../../driver/postgres/postgres.foreign-action';
+import { PostgresForeignAction } from './postgres/postgres.foreign-action';
 
 export interface IRelation<RelationMeta = unknown> {
   /**

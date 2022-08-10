@@ -12,7 +12,7 @@ export interface IInductor {
   /**
    * Read the database state and return it as a list of schemas.
    */
-  readState(): Promise<ISchema[]>;
+  readState(schemaFilters?: string[]): Promise<ISchema[]>;
 
   /**
    * Calculate the changes needed to migrate the database to the target state.

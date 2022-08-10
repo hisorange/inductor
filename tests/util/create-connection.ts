@@ -1,7 +1,7 @@
 import { Inductor } from '../../src/inductor';
 import { IDatabase } from '../../src/interface/database.interface';
 
-export const createTestInstance = (schemaFilters: string[] = []) => {
+export const createTestInstance = (filters: string[] = []) => {
   const database: IDatabase = {
     id: 'test_database',
     connection: {
@@ -14,7 +14,7 @@ export const createTestInstance = (schemaFilters: string[] = []) => {
     provider: 'postgres',
     isReadOnly: false,
     schemas: {},
-    schemaFilters,
+    schemaFilters: filters,
   };
 
   return new Inductor(database);

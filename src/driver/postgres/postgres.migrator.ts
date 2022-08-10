@@ -23,12 +23,12 @@ export class PostgresMigrator implements IMigrator {
   /**
    * Read the database state and return it as a list of schemas.
    */
-  async readState(): Promise<ISchema[]> {
+  async readState(filters: string[] = []): Promise<ISchema[]> {
     const schemas = [];
 
     await this.facts.refresh();
 
-    for (const table of this.facts.getListOfTables()) {
+    for (const table of this.facts.getListOfTables(filters)) {
       const schema = await reverseTable(this.facts, table);
 
       schemas.push(schema);
@@ -82,7 +82,7 @@ export class PostgresMigrator implements IMigrator {
         const sql = step.toQuery();
 
         if (sql.length) {
-          // console.log(step.toString());
+          //console.log(step.toString());
           this.logger.debug(sql);
         }
 
@@ -92,6 +92,10 @@ export class PostgresMigrator implements IMigrator {
   }
 
   async dropSchema(schema: ISchema): Promise<void> {
-    await this.knex.schema.dropTableIfExists(schema.tableName);
+    await this.dropTable(schema.tableName);
+  }
+
+  async dropTable(tableName: string): Promise<void> {
+    await this.knex.schema.dropTableIfExists(tableName);
   }
 }

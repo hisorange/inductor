@@ -2,8 +2,8 @@ import { ColumnTools } from '../../../column-tools';
 import { IFacts } from '../../../interface/facts.interface';
 import { IColumn } from '../../../interface/schema/column.interface';
 import { ColumnKind } from '../../../interface/schema/column.kind';
+import { PostgresColumnType } from '../../../interface/schema/postgres/postgres.column-type';
 import { createSchema } from '../../../util/create-schema';
-import { PostgresColumnType } from '../postgres.column-type';
 import { postgresValidateSchema } from '../postgres.schema-validator';
 
 export const reverseTable = async (facts: IFacts, tableName: string) => {

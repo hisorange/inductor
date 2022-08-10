@@ -1,18 +1,12 @@
-import { IColumn, Inductor, PostgresColumnType } from '../../src';
+import { IColumn, PostgresColumnType } from '../../src';
 import { createSchema } from '../../src/util/create-schema';
 import { createColumnWithType } from '../util/all-column';
 import { createTestInstance } from '../util/create-connection';
 
 describe('[Postgres] Enumerated Column', () => {
-  let inductor: Inductor;
+  const inductor = createTestInstance();
 
-  beforeAll(async () => {
-    inductor = createTestInstance(['enum_col_.+']);
-  });
-
-  afterAll(async () => {
-    await inductor.close();
-  });
+  afterAll(() => inductor.close());
 
   test.each([
     ['single', ['one']],
@@ -39,17 +33,11 @@ describe('[Postgres] Enumerated Column', () => {
 
       // Remove schema if exists from a previous test
       await inductor.driver.migrator.dropSchema(testSchema);
-      // Apply the new state
       await inductor.setState([testSchema]);
 
-      // Read the state and compare the results
-      const currentState = await inductor.readState();
-      const reverseSchema = currentState.find(
-        t => t.tableName === testSchema.tableName,
+      expect((await inductor.readState([tableName]))[0]).toStrictEqual(
+        testSchema,
       );
-
-      expect(reverseSchema).toBeDefined();
-      expect(reverseSchema).toStrictEqual(testSchema);
 
       // Cleanup
       await inductor.driver.migrator.dropSchema(testSchema);

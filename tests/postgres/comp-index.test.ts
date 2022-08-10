@@ -1,19 +1,13 @@
-import { Inductor, PostgresColumnType } from '../../src';
-import { PostgresIndexType } from '../../src/driver/postgres/postgres.index-type';
+import { PostgresColumnType } from '../../src';
+import { PostgresIndexType } from '../../src/interface/schema/postgres/postgres.index-type';
 import { createSchema } from '../../src/util/create-schema';
 import { createColumnWithType } from '../util/all-column';
 import { createTestInstance } from '../util/create-connection';
 
 describe('[Postgres] Compositive Indexing', () => {
-  let inductor: Inductor;
+  const inductor = createTestInstance();
 
-  beforeAll(async () => {
-    inductor = createTestInstance(['comp_index.+']);
-  });
-
-  afterAll(async () => {
-    await inductor.close();
-  });
+  afterAll(() => inductor.close());
 
   test.each([
     ['btree', PostgresColumnType.TEXT, PostgresIndexType.BTREE],
@@ -63,17 +57,11 @@ describe('[Postgres] Compositive Indexing', () => {
 
       // Remove schema if exists from a previous test
       await inductor.driver.migrator.dropSchema(testSchema);
-      // Apply the new state
       await inductor.setState([testSchema]);
 
-      // Read the state and compare the results
-      const currentState = await inductor.readState();
-      const reverseSchema = currentState.find(
-        t => t.tableName === testSchema.tableName,
+      expect((await inductor.readState([tableName]))[0]).toStrictEqual(
+        testSchema,
       );
-
-      expect(reverseSchema).toBeDefined();
-      expect(reverseSchema).toStrictEqual(testSchema);
 
       // Cleanup
       await inductor.driver.migrator.dropSchema(testSchema);

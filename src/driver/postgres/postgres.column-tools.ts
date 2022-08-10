@@ -1,6 +1,6 @@
 import { IColumn } from '../../interface/schema/column.interface';
-import { PostgresColumnType } from './postgres.column-type';
-import { PostgresIndexType } from './postgres.index-type';
+import { PostgresColumnType } from '../../interface/schema/postgres/postgres.column-type';
+import { PostgresIndexType } from '../../interface/schema/postgres/postgres.index-type';
 
 const CannotBePrimary = [
   PostgresColumnType.BOX,
