@@ -1,23 +1,18 @@
 import { ColumnTools } from '../../../column-tools';
+import { IFacts } from '../../../interface/facts.interface';
 import { IColumn } from '../../../interface/schema/column.interface';
 import { ColumnKind } from '../../../interface/schema/column.kind';
 import { createSchema } from '../../../util/create-schema';
 import { PostgresColumnType } from '../postgres.column-type';
-import { PostgresInspector } from '../postgres.inspector';
 import { postgresValidateSchema } from '../postgres.schema-validator';
 
-export const reverseTable = async (
-  inspector: PostgresInspector,
-  tableName: string,
-) => {
+export const reverseTable = async (facts: IFacts, tableName: string) => {
   const schema = createSchema(tableName);
-  const columns = await inspector.columnInfo(tableName);
-  const compositivePrimaryKeys = await inspector.getCompositePrimaryKeys(
-    tableName,
-  );
-  const compositiveUniques = await inspector.getCompositeUniques(tableName);
-  const indexes = await inspector.getIndexes(tableName);
-  const defaultValues = await inspector.getDefaultValues(tableName);
+  const columns = await facts.getColumns(tableName);
+  const compositivePrimaryKeys = await facts.getCompositePrimaryKeys(tableName);
+  const compositiveUniques = await facts.getCompositeUniques(tableName);
+  const indexes = await facts.getIndexes(tableName);
+  const defaultValues = await facts.getDefaultValues(tableName);
 
   const singleColumnIndexes = indexes.filter(
     index => index.columns.length === 1,
@@ -36,7 +31,7 @@ export const reverseTable = async (
     schema.uniques[name] = uniques;
   }
 
-  const enumColumns = await inspector.findEnumeratorColumns(tableName, columns);
+  const enumColumns = await facts.findEnumeratorColumns(tableName, columns);
 
   for (const column of columns) {
     let type = column.data_type as PostgresColumnType;
@@ -176,7 +171,7 @@ export const reverseTable = async (
   }
 
   // Process foreign keys
-  const foreignKeys = await inspector.getForeignKeys(tableName);
+  const foreignKeys = await facts.getForeignKeys(tableName);
 
   // TODO process for 1 unique on local, or compositive unique with the same order
   for (const [relationName, relationDefinition] of foreignKeys) {

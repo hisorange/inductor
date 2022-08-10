@@ -42,7 +42,7 @@ export const createTable = (
     // Apply the compositive unique constraints
     for (const uniqueName in schema.uniques) {
       if (Object.prototype.hasOwnProperty.call(schema.uniques, uniqueName)) {
-        if (facts.uniqueConstraints.includes(uniqueName)) {
+        if (facts.isUniqueConstraintExists(uniqueName)) {
           throw new Error(
             `Unique constraint [${uniqueName}] for [${schema.tableName}] already exists`,
           );

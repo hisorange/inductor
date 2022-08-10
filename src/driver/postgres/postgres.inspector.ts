@@ -1,25 +1,17 @@
 import BaseAdapter from 'knex-schema-inspector/dist/dialects/postgres';
 import { Column } from 'knex-schema-inspector/dist/types/column';
-import { IFacts } from '../../interface/facts.interface';
 import { IReverseIndex } from '../../interface/reverse/reverse-index.interface';
 import { IReverseUnique } from '../../interface/reverse/reverse-unique.interface';
 import { IRelation } from '../../interface/schema/relation.interface';
 import { ISchema } from '../../interface/schema/schema.interface';
 import { PostgresForeignAction } from './postgres.foreign-action';
 
-type IEnumeratorStructure = { column: string; values: string[] };
+export type IEnumeratorStructure = { column: string; values: string[] };
 
 /**
  * Reads the connection's database into a set of structure
  */
 export class PostgresInspector extends BaseAdapter {
-  async getFacts(): Promise<IFacts> {
-    return {
-      tables: await this.tables(),
-      uniqueConstraints: await this.getUniqueConstraints(),
-    };
-  }
-
   async isTypeExists(typeName: string): Promise<boolean> {
     const query = this.knex('pg_type').where({ typname: typeName }).count();
     const result = await query;
@@ -90,7 +82,7 @@ export class PostgresInspector extends BaseAdapter {
   async findEnumeratorColumns(
     tableName: string,
     columns: Column[],
-  ): Promise<IEnumeratorStructure[]> {
+  ): Promise<{ column: string; values: string[] }[]> {
     const enumColumns = columns
       .filter(col => !this.genericTypes().some(p => p.test(col.data_type)))
       .map(c => c.name);

@@ -1,4 +1,5 @@
 import { Model, ModelClass } from 'objection';
+import { IChangePlan } from './change-plan.interface';
 import { IDriver } from './driver.interface';
 import { ISchema } from './schema/schema.interface';
 
@@ -16,7 +17,7 @@ export interface IInductor {
   /**
    * Calculate the changes needed to migrate the database to the target state.
    */
-  cmpState(schemas: ISchema[]): Promise<string[]>;
+  cmpState(schemas: ISchema[]): Promise<IChangePlan>;
 
   /**
    * Get the associated model by it's name.

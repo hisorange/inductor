@@ -1,6 +1,7 @@
 import { Model, ModelClass } from 'objection';
 import pino, { Logger } from 'pino';
 import { PostgresDriver } from './driver/postgres/postgres.driver';
+import { IChangePlan } from './interface/change-plan.interface';
 import { IDatabase } from './interface/database.interface';
 import { IDriver } from './interface/driver.interface';
 import { IInductor } from './interface/inductor.interface';
@@ -40,10 +41,8 @@ export class Inductor implements IInductor {
     });
   }
 
-  async cmpState(schemas: ISchema[]): Promise<string[]> {
-    return await this.driver.migrator
-      .cmpState(schemas)
-      .then(changes => changes.map(change => change.toQuery()));
+  async cmpState(schemas: ISchema[]): Promise<IChangePlan> {
+    return await this.driver.migrator.cmpState(schemas);
   }
 
   async setState(schemas: ISchema[]) {

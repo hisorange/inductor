@@ -1,12 +1,13 @@
 import { Knex } from 'knex';
 import { Logger } from 'pino';
+import { IChangePlan } from '../../interface/change-plan.interface';
+import { IFacts } from '../../interface/facts.interface';
 import { IMigrator } from '../../interface/migrator.interface';
 import { ISchema } from '../../interface/schema/schema.interface';
 import { SchemaKind } from '../../interface/schema/schema.kind';
 import { alterTable } from './migrator/alter.table';
 import { createTable } from './migrator/create.table';
 import { reverseTable } from './migrator/reverse.table';
-import { PostgresInspector } from './postgres.inspector';
 
 // Calculates and applies the changes on the database
 export class PostgresMigrator implements IMigrator {
@@ -15,8 +16,8 @@ export class PostgresMigrator implements IMigrator {
    */
   constructor(
     readonly logger: Logger,
-    readonly inspector: PostgresInspector,
     protected knex: Knex,
+    protected facts: IFacts,
   ) {}
 
   /**
@@ -25,8 +26,10 @@ export class PostgresMigrator implements IMigrator {
   async readState(): Promise<ISchema[]> {
     const schemas = [];
 
-    for (const table of await this.inspector.tables()) {
-      const schema = await reverseTable(this.inspector, table);
+    await this.facts.refresh();
+
+    for (const table of this.facts.getListOfTables()) {
+      const schema = await reverseTable(this.facts, table);
 
       schemas.push(schema);
     }
@@ -34,51 +37,56 @@ export class PostgresMigrator implements IMigrator {
     return schemas;
   }
 
-  async cmpState(schemas: ISchema[]): Promise<Knex.SchemaBuilder[]> {
-    const facts = await this.inspector.getFacts();
-    const changes: Knex.SchemaBuilder[] = [];
+  async cmpState(schemas: ISchema[]): Promise<IChangePlan> {
+    const changePlan: IChangePlan = { steps: [] };
+
+    await this.facts.refresh();
 
     for (let targetState of schemas) {
       this.logger.debug('Processing schema %s', targetState.tableName);
 
       if (targetState.kind === SchemaKind.TABLE) {
         // If the table doesn't exist, create it
-        if (!facts.tables.includes(targetState.tableName)) {
-          changes.push(createTable(this.knex.schema, targetState, facts));
+        if (!this.facts.isTableExists(targetState.tableName)) {
+          changePlan.steps.push(
+            createTable(this.knex.schema, targetState, this.facts),
+          );
         }
         // If the table exists, compare the state and apply the alterations
         else {
           const currentState = await reverseTable(
-            this.inspector,
+            this.facts,
             targetState.tableName,
           );
 
-          changes.push(alterTable(this.knex.schema, currentState, targetState));
+          changePlan.steps.push(
+            alterTable(this.knex.schema, currentState, targetState),
+          );
         }
       }
     }
 
-    return changes;
+    return changePlan;
   }
 
   /**
    * Reads the connection's database into a set of structure, and update it to match the schemas
    */
   async setState(schemas: ISchema[]): Promise<void> {
-    const changes = await this.cmpState(schemas);
+    const changePlan = await this.cmpState(schemas);
 
-    if (changes.length) {
-      this.logger.info('Applying [%d] changes', changes.length);
+    if (changePlan.steps.length) {
+      this.logger.info('Applying [%d] changes', changePlan.steps.length);
 
-      for (const query of changes) {
-        const sql = query.toQuery();
+      for (const step of changePlan.steps) {
+        const sql = step.toQuery();
 
         if (sql.length) {
-          console.log(query.toString());
+          // console.log(step.toString());
           this.logger.debug(sql);
         }
 
-        await query;
+        await step;
       }
     }
   }

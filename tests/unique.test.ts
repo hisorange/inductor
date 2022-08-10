@@ -81,12 +81,8 @@ describe('Unique Constraint', () => {
         await inductor.driver.connection.schema.hasTable(tableName),
       ).toBeTruthy();
       expect(
-        (
-          await inductor.driver.migrator.inspector.columnInfo(
-            tableName,
-            columnKey,
-          )
-        ).is_unique,
+        (await inductor.driver.inspector.columnInfo(tableName, columnKey))
+          .is_unique,
       ).toBe(schema.columns[columnKey].isUnique);
     },
   );
@@ -118,7 +114,7 @@ describe('Unique Constraint', () => {
       // Apply the state
       await inductor.setState([schemaRV1]);
 
-      const columnRV1 = await inductor.driver.migrator.inspector.columnInfo(
+      const columnRV1 = await inductor.driver.inspector.columnInfo(
         tableName,
         colName,
       );
@@ -138,7 +134,7 @@ describe('Unique Constraint', () => {
       await inductor.setState([schemaRV2]);
 
       // Verify the changes
-      const columnRV2 = await inductor.driver.migrator.inspector.columnInfo(
+      const columnRV2 = await inductor.driver.inspector.columnInfo(
         tableName,
         colName,
       );
@@ -152,7 +148,7 @@ describe('Unique Constraint', () => {
 
       await inductor.setState([schemaRV3]);
 
-      const columnRV3 = await inductor.driver.migrator.inspector.columnInfo(
+      const columnRV3 = await inductor.driver.inspector.columnInfo(
         tableName,
         colName,
       );
@@ -197,8 +193,9 @@ describe('Unique Constraint', () => {
       await inductor.setState([schema]);
 
       // Verify if the column is not unique
-      const uniques =
-        await inductor.driver.migrator.inspector.getCompositeUniques(tableName);
+      const uniques = await inductor.driver.inspector.getCompositeUniques(
+        tableName,
+      );
 
       if (schema.uniques[uniqueName].columns.length === 2) {
         expect(uniques).toStrictEqual({
@@ -227,7 +224,7 @@ describe('Unique Constraint', () => {
     // Verify the single unique column
     expect(
       (
-        await inductor.driver.migrator.inspector.columnInfo(
+        await inductor.driver.inspector.columnInfo(
           'unique_test_upgrade',
           'col_1',
         )
@@ -246,7 +243,7 @@ describe('Unique Constraint', () => {
     // Verify the composite unique column
     expect(
       (
-        await inductor.driver.migrator.inspector.columnInfo(
+        await inductor.driver.inspector.columnInfo(
           'unique_test_upgrade',
           'col_1',
         )
@@ -254,7 +251,7 @@ describe('Unique Constraint', () => {
     ).toBeFalsy();
     expect(
       (
-        await inductor.driver.migrator.inspector.columnInfo(
+        await inductor.driver.inspector.columnInfo(
           'unique_test_upgrade',
           'col_2',
         )
@@ -262,10 +259,9 @@ describe('Unique Constraint', () => {
     ).toBeFalsy();
 
     // Verify the composite unique
-    const uniques =
-      await inductor.driver.migrator.inspector.getCompositeUniques(
-        'unique_test_upgrade',
-      );
+    const uniques = await inductor.driver.inspector.getCompositeUniques(
+      'unique_test_upgrade',
+    );
     expect(uniques).toStrictEqual({
       test_cmp_1: {
         columns: ['col_1', 'col_2'],
@@ -281,10 +277,9 @@ describe('Unique Constraint', () => {
     await inductor.setState([schema]);
 
     // Verify the composite unique
-    const uniques2 =
-      await inductor.driver.migrator.inspector.getCompositeUniques(
-        'unique_test_upgrade',
-      );
+    const uniques2 = await inductor.driver.inspector.getCompositeUniques(
+      'unique_test_upgrade',
+    );
     expect(uniques2).toStrictEqual({
       test_cmp_1: {
         columns: ['col_1', 'col_2', 'col_3'],
@@ -298,10 +293,9 @@ describe('Unique Constraint', () => {
     await inductor.setState([schema]);
 
     // Verify the composite unique
-    const uniques3 =
-      await inductor.driver.migrator.inspector.getCompositeUniques(
-        'unique_test_upgrade',
-      );
+    const uniques3 = await inductor.driver.inspector.getCompositeUniques(
+      'unique_test_upgrade',
+    );
     expect(uniques3).toStrictEqual({});
   });
 });

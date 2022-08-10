@@ -2,8 +2,10 @@ import knex, { Knex } from 'knex';
 import { Model, ModelClass, Pojo } from 'objection';
 import { Logger } from 'pino';
 import { ColumnTools } from '../../column-tools';
+import { Facts } from '../../facts';
 import { IDatabase } from '../../interface/database.interface';
 import { IDriver } from '../../interface/driver.interface';
+import { IFacts } from '../../interface/facts.interface';
 import { ISchema } from '../../interface/schema/schema.interface';
 import { PostgresInspector } from './postgres.inspector';
 import { PostgresMigrator } from './postgres.migrator';
@@ -13,6 +15,7 @@ export class PostgresDriver implements IDriver {
   readonly migrator: PostgresMigrator;
   readonly inspector: PostgresInspector;
   readonly connection: Knex;
+  readonly facts: IFacts;
 
   constructor(logger: Logger, readonly database: IDatabase) {
     (this.connection = knex({
@@ -28,11 +31,9 @@ export class PostgresDriver implements IDriver {
       },
     })),
       (this.inspector = new PostgresInspector(this.connection));
-    this.migrator = new PostgresMigrator(
-      logger,
-      this.inspector,
-      this.connection,
-    );
+
+    this.facts = new Facts(this.inspector);
+    this.migrator = new PostgresMigrator(logger, this.connection, this.facts);
   }
 
   validateSchema(schema: ISchema) {
