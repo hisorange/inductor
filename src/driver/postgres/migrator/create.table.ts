@@ -1,15 +1,18 @@
 import { Knex } from 'knex';
 import { ColumnTools } from '../../../column-tools';
 import { IFacts } from '../../../interface/facts.interface';
+import { IMigrationPlan } from '../../../interface/migration/migration-plan.interface';
+import { MigrationRisk } from '../../../interface/migration/migration.risk';
 import { ISchema } from '../../../interface/schema/schema.interface';
 import { createColumn } from './create.column';
 
-export const createTable = (
+export const createTable = async (
   builder: Knex.SchemaBuilder,
   schema: ISchema,
   facts: IFacts,
-): Knex.SchemaBuilder =>
-  builder.createTable(schema.tableName, tableBuilder => {
+  changePlan: IMigrationPlan,
+): Promise<void> => {
+  const query = builder.createTable(schema.tableName, tableBuilder => {
     for (const name in schema.columns) {
       if (Object.prototype.hasOwnProperty.call(schema.columns, name)) {
         createColumn(tableBuilder, name, schema.columns[name], schema);
@@ -72,3 +75,10 @@ export const createTable = (
       }
     }
   });
+
+  changePlan.steps.push({
+    query,
+    risk: MigrationRisk.NONE,
+    description: 'Table does not exists, creating it',
+  });
+};

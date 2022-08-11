@@ -1,10 +1,10 @@
 import { Model, ModelClass } from 'objection';
 import pino, { Logger } from 'pino';
 import { PostgresDriver } from './driver/postgres/postgres.driver';
-import { IChangePlan } from './interface/change-plan.interface';
 import { IDatabase } from './interface/database.interface';
 import { IDriver } from './interface/driver.interface';
 import { IInductor } from './interface/inductor.interface';
+import { IMigrationPlan } from './interface/migration/migration-plan.interface';
 import { ISchema } from './interface/schema/schema.interface';
 
 export class Inductor implements IInductor {
@@ -41,27 +41,24 @@ export class Inductor implements IInductor {
     });
   }
 
-  async cmpState(schemas: ISchema[]): Promise<IChangePlan> {
-    return await this.driver.migrator.cmpState(schemas);
+  cmpState(schemas: ISchema[]): Promise<IMigrationPlan> {
+    return this.driver.migrator.cmpState(schemas);
   }
 
-  async setState(schemas: ISchema[]) {
+  async setState(schemas: ISchema[]): Promise<void> {
     this.logger.info('Applying new state');
 
-    const newSchemaMap: Inductor['currentState'] = new Map();
+    const plan = await this.driver.migrator.cmpState(schemas);
+    this.currentState = new Map();
 
-    for (const schema of schemas) {
-      newSchemaMap.set(schema.tableName, {
-        schema,
-        model: this.driver.toModel(schema),
-      });
-    }
-
-    this.currentState = newSchemaMap;
-
-    this.logger.info('Migrating database');
-    await this.driver.migrator.setState(schemas);
-    this.logger.info('State applied');
+    await plan.apply().then(() => {
+      for (const schema of schemas) {
+        this.currentState.set(schema.tableName, {
+          schema,
+          model: this.driver.toModel(schema),
+        });
+      }
+    });
   }
 
   getModel<T extends Model = Model>(name: string): ModelClass<T> {

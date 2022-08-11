@@ -1,18 +1,21 @@
 import { diff } from 'just-diff';
 import { Knex } from 'knex';
 import { ColumnTools } from '../../../column-tools';
+import { IMigrationPlan } from '../../../interface/migration/migration-plan.interface';
+import { MigrationRisk } from '../../../interface/migration/migration.risk';
 import { PostgresColumnType } from '../../../interface/schema/postgres/postgres.column-type';
 import { ISchema } from '../../../interface/schema/schema.interface';
 import { alterNullable, alterUnique } from './alter.column';
 import { createColumn } from './create.column';
 import { getTypeName } from './get-type-name';
 
-export const alterTable = (
+export const alterTable = async (
   schemaBuilder: Knex.SchemaBuilder,
   currentSchema: ISchema,
   expectedSchema: ISchema,
-): Knex.SchemaBuilder => {
-  return schemaBuilder.alterTable(
+  changePlan: IMigrationPlan,
+): Promise<void> => {
+  const query = schemaBuilder.alterTable(
     expectedSchema.tableName,
     async tableBuilder => {
       const difference = diff(currentSchema, expectedSchema);
@@ -200,4 +203,10 @@ export const alterTable = (
       }
     },
   );
+
+  changePlan.steps.push({
+    query,
+    risk: MigrationRisk.MEDIUM,
+    description: 'Table state differs from the expected state',
+  });
 };

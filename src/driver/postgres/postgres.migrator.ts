@@ -1,10 +1,11 @@
 import { Knex } from 'knex';
 import { Logger } from 'pino';
-import { IChangePlan } from '../../interface/change-plan.interface';
 import { IFacts } from '../../interface/facts.interface';
+import { IMigrationPlan } from '../../interface/migration/migration-plan.interface';
 import { IMigrator } from '../../interface/migrator.interface';
 import { ISchema } from '../../interface/schema/schema.interface';
 import { SchemaKind } from '../../interface/schema/schema.kind';
+import { MigrationPlan } from '../../migration.plan';
 import { alterTable } from './migrator/alter.table';
 import { createTable } from './migrator/create.table';
 import { reverseTable } from './migrator/reverse.table';
@@ -37,8 +38,8 @@ export class PostgresMigrator implements IMigrator {
     return schemas;
   }
 
-  async cmpState(schemas: ISchema[]): Promise<IChangePlan> {
-    const changePlan: IChangePlan = { steps: [] };
+  async cmpState(schemas: ISchema[]): Promise<IMigrationPlan> {
+    const changePlan = new MigrationPlan(this.logger);
 
     await this.facts.refresh();
 
@@ -48,8 +49,11 @@ export class PostgresMigrator implements IMigrator {
       if (targetState.kind === SchemaKind.TABLE) {
         // If the table doesn't exist, create it
         if (!this.facts.isTableExists(targetState.tableName)) {
-          changePlan.steps.push(
-            createTable(this.knex.schema, targetState, this.facts),
+          await createTable(
+            this.knex.schema,
+            targetState,
+            this.facts,
+            changePlan,
           );
         }
         // If the table exists, compare the state and apply the alterations
@@ -59,8 +63,11 @@ export class PostgresMigrator implements IMigrator {
             targetState.tableName,
           );
 
-          changePlan.steps.push(
-            alterTable(this.knex.schema, currentState, targetState),
+          await alterTable(
+            this.knex.schema,
+            currentState,
+            targetState,
+            changePlan,
           );
         }
       }
@@ -74,21 +81,7 @@ export class PostgresMigrator implements IMigrator {
    */
   async setState(schemas: ISchema[]): Promise<void> {
     const changePlan = await this.cmpState(schemas);
-
-    if (changePlan.steps.length) {
-      this.logger.info('Applying [%d] changes', changePlan.steps.length);
-
-      for (const step of changePlan.steps) {
-        const sql = step.toQuery();
-
-        if (sql.length) {
-          //console.log(step.toString());
-          this.logger.debug(sql);
-        }
-
-        await step;
-      }
-    }
+    await changePlan.apply();
   }
 
   async dropSchema(schema: ISchema): Promise<void> {
