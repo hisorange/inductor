@@ -4,17 +4,20 @@ import { IRelation } from './schema/relation.interface';
 import { ISchema } from './schema/schema.interface';
 
 export interface IFacts {
+  // Altering
+  addNewTable: (tableName: string) => void;
+
   isTableExists(tableName: string): boolean;
   isUniqueConstraintExists(constraintName: string): boolean;
 
   getListOfTables(filters: string[]): string[];
 
   // Table oriented methods
-  getColumns(tableName: string): Promise<Column[]>;
-  getCompositePrimaryKeys(tableName: string): Promise<string[]>;
-  getCompositeUniques(tableName: string): Promise<ISchema['uniques']>;
-  getIndexes(tableName: string): Promise<IReverseIndex[]>;
-  getDefaultValues(
+  getTableColumns(tableName: string): Promise<Column[]>;
+  getTablePrimaryKeys(tableName: string): Promise<string[]>;
+  getTableUniques(tableName: string): Promise<ISchema['uniques']>;
+  getTableIndexes(tableName: string): Promise<IReverseIndex[]>;
+  getTableDefaultValues(
     tableName: string,
   ): Promise<{ column: string; defaultValue: string }[]>;
   findEnumeratorColumns(
@@ -22,7 +25,7 @@ export interface IFacts {
     columns: Column[],
   ): Promise<{ column: string; values: string[] }[]>;
 
-  getForeignKeys(tableName: string): Promise<[string, IRelation][]>;
+  getTableForeignKeys(tableName: string): Promise<[string, IRelation][]>;
 
   refresh(): Promise<void>;
 }

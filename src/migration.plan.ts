@@ -33,11 +33,17 @@ export class MigrationPlan implements IMigrationPlan {
     if (this.steps.length) {
       this.logger.info('Applying [%d] changes', this.steps.length);
 
-      for (const step of this.steps) {
+      for (const [idx, step] of this.steps.entries()) {
         const sql = step.query.toQuery();
 
         if (sql.length) {
-          //console.log(step.toString());
+          console.log(
+            `[${idx + 1}/${this.steps.length}]`,
+            `[${step.risk.toUpperCase()}]`,
+            step.description,
+            '\n ---- \t',
+            step.query.toString(),
+          );
           this.logger.debug(sql);
         }
 

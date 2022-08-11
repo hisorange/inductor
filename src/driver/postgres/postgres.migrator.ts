@@ -1,6 +1,7 @@
 import { Knex } from 'knex';
 import { Logger } from 'pino';
 import { IFacts } from '../../interface/facts.interface';
+import { IMigrationContext } from '../../interface/migration/migration-ctx.interface';
 import { IMigrationPlan } from '../../interface/migration/migration-plan.interface';
 import { IMigrator } from '../../interface/migrator.interface';
 import { ISchema } from '../../interface/schema/schema.interface';
@@ -39,9 +40,14 @@ export class PostgresMigrator implements IMigrator {
   }
 
   async cmpState(schemas: ISchema[]): Promise<IMigrationPlan> {
-    const changePlan = new MigrationPlan(this.logger);
-
+    const plan = new MigrationPlan(this.logger);
     await this.facts.refresh();
+
+    const ctx: IMigrationContext = {
+      knex: this.knex,
+      facts: this.facts,
+      plan: plan,
+    };
 
     for (let targetState of schemas) {
       this.logger.debug('Processing schema %s', targetState.tableName);
@@ -49,12 +55,7 @@ export class PostgresMigrator implements IMigrator {
       if (targetState.kind === SchemaKind.TABLE) {
         // If the table doesn't exist, create it
         if (!this.facts.isTableExists(targetState.tableName)) {
-          await createTable(
-            this.knex.schema,
-            targetState,
-            this.facts,
-            changePlan,
-          );
+          await createTable(targetState, ctx);
         }
         // If the table exists, compare the state and apply the alterations
         else {
@@ -63,17 +64,12 @@ export class PostgresMigrator implements IMigrator {
             targetState.tableName,
           );
 
-          await alterTable(
-            this.knex.schema,
-            currentState,
-            targetState,
-            changePlan,
-          );
+          await alterTable(this.knex.schema, currentState, targetState, plan);
         }
       }
     }
 
-    return changePlan;
+    return plan;
   }
 
   /**

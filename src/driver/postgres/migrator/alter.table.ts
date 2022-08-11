@@ -5,9 +5,8 @@ import { IMigrationPlan } from '../../../interface/migration/migration-plan.inte
 import { MigrationRisk } from '../../../interface/migration/migration.risk';
 import { PostgresColumnType } from '../../../interface/schema/postgres/postgres.column-type';
 import { ISchema } from '../../../interface/schema/schema.interface';
-import { alterNullable, alterUnique } from './alter.column';
 import { createColumn } from './create.column';
-import { getTypeName } from './get-type-name';
+import { getTypeName } from './util/get-type-name';
 
 export const alterTable = async (
   schemaBuilder: Knex.SchemaBuilder,
@@ -68,10 +67,18 @@ export const alterTable = async (
                 // Route the alteration based on the change
                 switch (path[2]) {
                   case 'isNullable':
-                    alterNullable(tableBuilder, name, column.isNullable);
+                    if (column.isNullable) {
+                      tableBuilder.setNullable(name);
+                    } else {
+                      tableBuilder.dropNullable(name);
+                    }
                     break;
                   case 'isUnique':
-                    alterUnique(tableBuilder, name, column.isUnique);
+                    if (column.isUnique) {
+                      tableBuilder.unique([name]);
+                    } else {
+                      tableBuilder.dropUnique([name]);
+                    }
                     break;
                   case 'isPrimary':
                     isPrimaryChanged = true;

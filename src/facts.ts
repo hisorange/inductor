@@ -11,6 +11,10 @@ export class Facts implements IFacts {
 
   constructor(protected inspector: PostgresInspector) {}
 
+  addNewTable(tableName: string) {
+    this.tables.push(tableName);
+  }
+
   async refresh(): Promise<void> {
     this.tables = await this.inspector.tables();
     this.uniqueConstraints = await this.inspector.getUniqueConstraints();
@@ -34,19 +38,19 @@ export class Facts implements IFacts {
     });
   }
 
-  async getCompositePrimaryKeys(tableName: string): Promise<string[]> {
+  async getTablePrimaryKeys(tableName: string): Promise<string[]> {
     return this.inspector.getCompositePrimaryKeys(tableName);
   }
 
-  async getCompositeUniques(tableName: string): Promise<ISchema['uniques']> {
+  async getTableUniques(tableName: string): Promise<ISchema['uniques']> {
     return this.inspector.getCompositeUniques(tableName);
   }
 
-  async getIndexes(tableName: string): Promise<IReverseIndex[]> {
+  async getTableIndexes(tableName: string): Promise<IReverseIndex[]> {
     return this.inspector.getIndexes(tableName);
   }
 
-  async getDefaultValues(
+  async getTableDefaultValues(
     tableName: string,
   ): Promise<{ column: string; defaultValue: string }[]> {
     return this.inspector.getDefaultValues(tableName);
@@ -59,11 +63,11 @@ export class Facts implements IFacts {
     return this.inspector.findEnumeratorColumns(tableName, columns);
   }
 
-  async getForeignKeys(tableName: string): Promise<[string, IRelation][]> {
+  async getTableForeignKeys(tableName: string): Promise<[string, IRelation][]> {
     return this.inspector.getForeignKeys(tableName);
   }
 
-  async getColumns(tableName: string): Promise<Column[]> {
+  async getTableColumns(tableName: string): Promise<Column[]> {
     return this.inspector.columnInfo(tableName);
   }
 

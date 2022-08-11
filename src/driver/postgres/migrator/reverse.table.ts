@@ -8,11 +8,11 @@ import { postgresValidateSchema } from '../postgres.schema-validator';
 
 export const reverseTable = async (facts: IFacts, tableName: string) => {
   const schema = createSchema(tableName);
-  const columns = await facts.getColumns(tableName);
-  const compositivePrimaryKeys = await facts.getCompositePrimaryKeys(tableName);
-  const compositiveUniques = await facts.getCompositeUniques(tableName);
-  const indexes = await facts.getIndexes(tableName);
-  const defaultValues = await facts.getDefaultValues(tableName);
+  const columns = await facts.getTableColumns(tableName);
+  const compositivePrimaryKeys = await facts.getTablePrimaryKeys(tableName);
+  const compositiveUniques = await facts.getTableUniques(tableName);
+  const indexes = await facts.getTableIndexes(tableName);
+  const defaultValues = await facts.getTableDefaultValues(tableName);
 
   const singleColumnIndexes = indexes.filter(
     index => index.columns.length === 1,
@@ -171,7 +171,7 @@ export const reverseTable = async (facts: IFacts, tableName: string) => {
   }
 
   // Process foreign keys
-  const foreignKeys = await facts.getForeignKeys(tableName);
+  const foreignKeys = await facts.getTableForeignKeys(tableName);
 
   // TODO process for 1 unique on local, or compositive unique with the same order
   for (const [relationName, relationDefinition] of foreignKeys) {

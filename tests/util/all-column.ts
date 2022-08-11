@@ -1,5 +1,5 @@
 import { ColumnTools, IColumn } from '../../src';
-import { getEnumName } from '../../src/driver/postgres/migrator/get-enum-name';
+import { getEnumName } from '../../src/driver/postgres/migrator/util/get-enum-name';
 import { ColumnKind } from '../../src/interface/schema/column.kind';
 import { PostgresColumnType } from '../../src/interface/schema/postgres/postgres.column-type';
 import { ISchema } from '../../src/interface/schema/schema.interface';

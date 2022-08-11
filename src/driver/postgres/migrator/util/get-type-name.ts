@@ -1,5 +1,5 @@
-import { IColumn } from '../../../interface/schema/column.interface';
-import { PostgresColumnType } from '../../../interface/schema/postgres/postgres.column-type';
+import { IColumn } from '../../../../interface/schema/column.interface';
+import { PostgresColumnType } from '../../../../interface/schema/postgres/postgres.column-type';
 
 export const getTypeName = (column: IColumn): string => {
   let typeName: string = '';

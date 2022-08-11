@@ -3,7 +3,7 @@ import { ColumnTools } from '../../../column-tools';
 import { IColumn } from '../../../interface/schema/column.interface';
 import { PostgresColumnType } from '../../../interface/schema/postgres/postgres.column-type';
 import { ISchema } from '../../../interface/schema/schema.interface';
-import { getTypeName } from './get-type-name';
+import { getTypeName } from './util/get-type-name';
 
 export const createColumn = (
   tableBuilder: Knex.CreateTableBuilder,
