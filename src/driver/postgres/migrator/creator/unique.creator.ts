@@ -28,6 +28,9 @@ export const uniqueCreator = async (
         risk: MigrationRisk.NONE,
         description: `Create compositive unique [${uniqueName}] for table [${schema.tableName}]`,
       });
+
+      // Track to avoid duplicates in the same migration context.
+      ctx.facts.addNewUniqueConstraint(uniqueName);
     }
   }
 };

@@ -15,6 +15,10 @@ export class Facts implements IFacts {
     this.tables.push(tableName);
   }
 
+  addNewUniqueConstraint(constraintName: string): void {
+    this.uniqueConstraints.push(constraintName);
+  }
+
   async refresh(): Promise<void> {
     this.tables = await this.inspector.tables();
     this.uniqueConstraints = await this.inspector.getUniqueConstraints();

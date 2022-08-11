@@ -1,12 +1,12 @@
-import { IMigrationContext } from '../../../interface/migration/migration-ctx.interface';
-import { MigrationRisk } from '../../../interface/migration/migration.risk';
-import { ISchema } from '../../../interface/schema/schema.interface';
-import { columnCreator } from './creator/column.creator';
-import { fkCreator } from './creator/fk.creator';
-import { indexCreator } from './creator/index.creator';
-import { uniqueCreator } from './creator/unique.creator';
+import { IMigrationContext } from '../../../../interface/migration/migration-ctx.interface';
+import { MigrationRisk } from '../../../../interface/migration/migration.risk';
+import { ISchema } from '../../../../interface/schema/schema.interface';
+import { columnCreator } from './column.creator';
+import { fkCreator } from './fk.creator';
+import { indexCreator } from './index.creator';
+import { uniqueCreator } from './unique.creator';
 
-export const createTable = async (
+export const tableCreator = async (
   schema: ISchema,
   ctx: IMigrationContext,
 ): Promise<void> => {

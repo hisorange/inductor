@@ -8,7 +8,7 @@ import { ISchema } from '../../interface/schema/schema.interface';
 import { SchemaKind } from '../../interface/schema/schema.kind';
 import { MigrationPlan } from '../../migration.plan';
 import { alterTable } from './migrator/alter.table';
-import { createTable } from './migrator/create.table';
+import { tableCreator } from './migrator/creator/table.creator';
 import { reverseTable } from './migrator/reverse.table';
 
 // Calculates and applies the changes on the database
@@ -55,7 +55,7 @@ export class PostgresMigrator implements IMigrator {
       if (targetState.kind === SchemaKind.TABLE) {
         // If the table doesn't exist, create it
         if (!this.facts.isTableExists(targetState.tableName)) {
-          await createTable(targetState, ctx);
+          await tableCreator(targetState, ctx);
         }
         // If the table exists, compare the state and apply the alterations
         else {
