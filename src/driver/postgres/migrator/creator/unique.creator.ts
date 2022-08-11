@@ -27,6 +27,7 @@ export const uniqueCreator = async (
         query: createUniqueQuery,
         risk: MigrationRisk.NONE,
         description: `Create compositive unique [${uniqueName}] for table [${schema.tableName}]`,
+        phase: 1,
       });
 
       // Track to avoid duplicates in the same migration context.

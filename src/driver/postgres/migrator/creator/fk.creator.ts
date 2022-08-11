@@ -29,6 +29,7 @@ export const fkCreator = async (schema: ISchema, ctx: IMigrationContext) => {
           ? MigrationRisk.LOW
           : MigrationRisk.HIGH, // Foreign table may not exists yet!
         description: `Create foreign key [${foreignKeyName}] for table [${schema.tableName}]`,
+        phase: 8,
       });
     }
   }

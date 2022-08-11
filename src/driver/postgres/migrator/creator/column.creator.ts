@@ -30,6 +30,7 @@ export const columnCreator = async (
       query: createColumnsQuery,
       risk: MigrationRisk.NONE,
       description: `Create columns for table [${schema.tableName}]`,
+      phase: 1,
     });
   }
 };

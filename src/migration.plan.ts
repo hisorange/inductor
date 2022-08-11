@@ -33,7 +33,9 @@ export class MigrationPlan implements IMigrationPlan {
     if (this.steps.length) {
       this.logger.info('Applying [%d] changes', this.steps.length);
 
-      for (const [idx, step] of this.steps.entries()) {
+      for (const [idx, step] of this.steps
+        .sort((a, b) => (a.phase > b.phase ? 1 : -1))
+        .entries()) {
         const sql = step.query.toQuery();
 
         if (sql.length) {

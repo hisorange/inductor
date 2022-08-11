@@ -215,5 +215,6 @@ export const alterTable = async (
     query,
     risk: MigrationRisk.MEDIUM,
     description: 'Table state differs from the expected state',
+    phase: 3,
   });
 };

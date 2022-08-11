@@ -14,6 +14,7 @@ export const tableCreator = async (
     query: ctx.knex.schema.createTable(schema.tableName, () => {}),
     risk: MigrationRisk.NONE,
     description: `Create table [${schema.tableName}]`,
+    phase: 0,
   });
 
   // Register the fact that the table exits

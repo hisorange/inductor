@@ -20,6 +20,7 @@ export const indexCreator = async (schema: ISchema, ctx: IMigrationContext) => {
         query: createIndexQuery,
         risk: MigrationRisk.LOW,
         description: `Create compositive index [${indexName}] for table [${schema.tableName}]`,
+        phase: 1,
       });
     }
   }
