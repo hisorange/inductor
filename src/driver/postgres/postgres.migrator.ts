@@ -1,11 +1,11 @@
 import { Knex } from 'knex';
 import { Logger } from 'pino';
+import { IBlueprint } from '../../interface/blueprint/blueprint.interface';
+import { BlueprintKind } from '../../interface/blueprint/blueprint.kind';
 import { IFacts } from '../../interface/facts.interface';
 import { IMigrationContext } from '../../interface/migration/migration-ctx.interface';
 import { IMigrationPlan } from '../../interface/migration/migration-plan.interface';
 import { IMigrator } from '../../interface/migrator.interface';
-import { ISchema } from '../../interface/schema/schema.interface';
-import { SchemaKind } from '../../interface/schema/schema.kind';
 import { MigrationPlan } from '../../migration.plan';
 import { alterTable } from './migrator/alter.table';
 import { tableCreator } from './migrator/creator/table.creator';
@@ -13,9 +13,6 @@ import { reverseTable } from './migrator/reverse.table';
 
 // Calculates and applies the changes on the database
 export class PostgresMigrator implements IMigrator {
-  /**
-   * Initialize the migrator
-   */
   constructor(
     readonly logger: Logger,
     protected knex: Knex,
@@ -23,23 +20,23 @@ export class PostgresMigrator implements IMigrator {
   ) {}
 
   /**
-   * Read the database state and return it as a list of schemas.
+   * Read the database state and return it as a list of blueprints.
    */
-  async readState(filters: string[] = []): Promise<ISchema[]> {
-    const schemas = [];
+  async readState(filters: string[] = []): Promise<IBlueprint[]> {
+    const blueprints = [];
 
     await this.facts.refresh();
 
     for (const table of this.facts.getListOfTables(filters)) {
-      const schema = await reverseTable(this.facts, table);
+      const blueprint = await reverseTable(this.facts, table);
 
-      schemas.push(schema);
+      blueprints.push(blueprint);
     }
 
-    return schemas;
+    return blueprints;
   }
 
-  async cmpState(schemas: ISchema[]): Promise<IMigrationPlan> {
+  async cmpState(blueprints: IBlueprint[]): Promise<IMigrationPlan> {
     const plan = new MigrationPlan(this.logger);
     await this.facts.refresh();
 
@@ -49,10 +46,10 @@ export class PostgresMigrator implements IMigrator {
       plan: plan,
     };
 
-    for (let targetState of schemas) {
-      this.logger.debug('Processing schema %s', targetState.tableName);
+    for (const targetState of blueprints) {
+      this.logger.debug('Processing blueprint %s', targetState.tableName);
 
-      if (targetState.kind === SchemaKind.TABLE) {
+      if (targetState.kind === BlueprintKind.TABLE) {
         // If the table doesn't exist, create it
         if (!this.facts.isTableExists(targetState.tableName)) {
           await tableCreator(targetState, ctx);
@@ -73,15 +70,15 @@ export class PostgresMigrator implements IMigrator {
   }
 
   /**
-   * Reads the connection's database into a set of structure, and update it to match the schemas
+   * Reads the connection's database into a set of structure, and update it to match the blueprints
    */
-  async setState(schemas: ISchema[]): Promise<void> {
-    const changePlan = await this.cmpState(schemas);
+  async setState(blueprints: IBlueprint[]): Promise<void> {
+    const changePlan = await this.cmpState(blueprints);
     await changePlan.apply();
   }
 
-  async dropSchema(schema: ISchema): Promise<void> {
-    await this.dropTable(schema.tableName);
+  async dropBlueprint(blueprint: IBlueprint): Promise<void> {
+    await this.dropTable(blueprint.tableName);
   }
 
   async dropTable(tableName: string): Promise<void> {

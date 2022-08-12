@@ -3,15 +3,15 @@ import { Model, ModelClass, Pojo } from 'objection';
 import { Logger } from 'pino';
 import { ColumnTools } from '../../column-tools';
 import { Facts } from '../../facts';
+import { IBlueprint } from '../../interface/blueprint/blueprint.interface';
 import { IDatabase } from '../../interface/database.interface';
 import { IDriver } from '../../interface/driver.interface';
 import { IFacts } from '../../interface/facts.interface';
 import { IInspector } from '../../interface/inspector.interface';
 import { IMigrator } from '../../interface/migrator.interface';
-import { ISchema } from '../../interface/schema/schema.interface';
+import { postgresValidateBlueprint } from './postgres.blueprint-validator';
 import { PostgresInspector } from './postgres.inspector';
 import { PostgresMigrator } from './postgres.migrator';
-import { postgresValidateSchema } from './postgres.schema-validator';
 
 export class PostgresDriver implements IDriver {
   readonly migrator: IMigrator;
@@ -38,15 +38,15 @@ export class PostgresDriver implements IDriver {
     this.migrator = new PostgresMigrator(logger, this.connection, this.facts);
   }
 
-  validateSchema(schema: ISchema) {
-    postgresValidateSchema(schema);
+  validateBlueprint(blueprint: IBlueprint) {
+    postgresValidateBlueprint(blueprint);
   }
 
   /**
-   * Convert the schema into a model class.
+   * Convert the blueprint into a model class.
    */
-  toModel(schema: ISchema): ModelClass<Model> {
-    this.validateSchema(schema);
+  toModel(blueprint: IBlueprint): ModelClass<Model> {
+    this.validateBlueprint(blueprint);
 
     // Prepare fast lookup maps for both propery and column name conversions.
     // Even tho this is a small amount of data, it's worth it to avoid
@@ -54,9 +54,9 @@ export class PostgresDriver implements IDriver {
     const columnMap = new Map<string, string>();
     const propertyMap = new Map<string, string>();
 
-    for (const columnName in Object.keys(schema.columns)) {
+    for (const columnName in Object.keys(blueprint.columns)) {
       const propertyName =
-        schema.columns[columnName]?.propertyName ?? columnName;
+        blueprint.columns[columnName]?.propertyName ?? columnName;
 
       // Map column names to property names
       columnMap.set(columnName, propertyName);
@@ -96,8 +96,8 @@ export class PostgresDriver implements IDriver {
 
     const model = class extends Model {};
 
-    model.tableName = schema.tableName;
-    model.idColumn = ColumnTools.filterPrimary(schema);
+    model.tableName = blueprint.tableName;
+    model.idColumn = ColumnTools.filterPrimary(blueprint);
 
     model.columnNameMappers = {
       parse: databaseToModel,

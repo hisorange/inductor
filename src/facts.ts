@@ -1,9 +1,9 @@
 import { Column } from 'knex-schema-inspector/dist/types/column';
+import { IBlueprint } from './interface/blueprint/blueprint.interface';
+import { IRelation } from './interface/blueprint/relation.interface';
 import { IFacts } from './interface/facts.interface';
 import { IInspector } from './interface/inspector.interface';
 import { IReverseIndex } from './interface/reverse/reverse-index.interface';
-import { IRelation } from './interface/schema/relation.interface';
-import { ISchema } from './interface/schema/schema.interface';
 
 export class Facts implements IFacts {
   protected tables: string[] = [];
@@ -46,7 +46,7 @@ export class Facts implements IFacts {
     return this.inspector.getCompositePrimaryKeys(tableName);
   }
 
-  async getTableUniques(tableName: string): Promise<ISchema['uniques']> {
+  async getTableUniques(tableName: string): Promise<IBlueprint['uniques']> {
     return this.inspector.getCompositeUniques(tableName);
   }
 

@@ -1,6 +1,6 @@
 import { PostgresColumnType } from '../../src';
-import { PostgresIndexType } from '../../src/interface/schema/postgres/postgres.index-type';
-import { createSchema } from '../../src/util/create-schema';
+import { PostgresIndexType } from '../../src/interface/blueprint/postgres/postgres.index-type';
+import { createBlueprint } from '../../src/util/create-blueprint';
 import { createColumnWithType } from '../util/all-column';
 import { createTestInstance } from '../util/create-connection';
 
@@ -26,15 +26,15 @@ describe('[Postgres] Compositive Indexing', () => {
       const columnSafeType = columnType.replace(/\s/g, '_');
       const indexName = `${tableName}_${columnSafeType}_${indexType}`;
 
-      const testSchema = createSchema(tableName);
-      testSchema.indexes = {
+      const blueprint = createBlueprint(tableName);
+      blueprint.indexes = {
         [indexName]: {
           type: indexType,
           columns: ['pair_column', `${columnSafeType}_column`],
         },
       };
 
-      testSchema.columns = {
+      blueprint.columns = {
         primary_column: {
           ...createColumnWithType(PostgresColumnType.SERIAL),
           isPrimary: true,
@@ -55,16 +55,16 @@ describe('[Postgres] Compositive Indexing', () => {
         },
       };
 
-      // Remove schema if exists from a previous test
-      await inductor.driver.migrator.dropSchema(testSchema);
-      await inductor.setState([testSchema]);
+      // Remove blueprint if exists from a previous test
+      await inductor.driver.migrator.dropBlueprint(blueprint);
+      await inductor.setState([blueprint]);
 
       expect((await inductor.readState([tableName]))[0]).toStrictEqual(
-        testSchema,
+        blueprint,
       );
 
       // Cleanup
-      await inductor.driver.migrator.dropSchema(testSchema);
+      await inductor.driver.migrator.dropBlueprint(blueprint);
     },
   );
 });

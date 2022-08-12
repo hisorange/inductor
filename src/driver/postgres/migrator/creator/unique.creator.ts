@@ -1,24 +1,24 @@
+import { IBlueprint } from '../../../../interface/blueprint/blueprint.interface';
 import { IMigrationContext } from '../../../../interface/migration/migration-ctx.interface';
 import { MigrationRisk } from '../../../../interface/migration/migration.risk';
-import { ISchema } from '../../../../interface/schema/schema.interface';
 
 export const uniqueCreator = async (
-  schema: ISchema,
+  blueprint: IBlueprint,
   ctx: IMigrationContext,
 ) => {
   // Apply the compositive unique constraints
-  for (const uniqueName in schema.uniques) {
-    if (Object.prototype.hasOwnProperty.call(schema.uniques, uniqueName)) {
+  for (const uniqueName in blueprint.uniques) {
+    if (Object.prototype.hasOwnProperty.call(blueprint.uniques, uniqueName)) {
       if (ctx.facts.isUniqueConstraintExists(uniqueName)) {
         throw new Error(
-          `Unique constraint [${uniqueName}] for [${schema.tableName}] already exists`,
+          `Unique constraint [${uniqueName}] for [${blueprint.tableName}] already exists`,
         );
       }
 
       const createUniqueQuery = ctx.knex.schema.alterTable(
-        schema.tableName,
+        blueprint.tableName,
         builder =>
-          builder.unique(schema.uniques[uniqueName].columns, {
+          builder.unique(blueprint.uniques[uniqueName].columns, {
             indexName: uniqueName,
           }),
       );
@@ -26,8 +26,8 @@ export const uniqueCreator = async (
       ctx.plan.steps.push({
         query: createUniqueQuery,
         risk: MigrationRisk.NONE,
-        description: `Create compositive unique [${uniqueName}] for table [${schema.tableName}]`,
-        phase: 1,
+        description: `Create compositive unique [${uniqueName}] for table [${blueprint.tableName}]`,
+        phase: 2,
       });
 
       // Track to avoid duplicates in the same migration context.

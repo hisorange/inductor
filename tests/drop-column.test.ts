@@ -1,8 +1,8 @@
 import cloneDeep from 'lodash.clonedeep';
-import { PostgresColumnType } from '../src/interface/schema/postgres/postgres.column-type';
-import { PostgresIndexType } from '../src/interface/schema/postgres/postgres.index-type';
-import { ISchema } from '../src/interface/schema/schema.interface';
-import { createSchema } from '../src/util/create-schema';
+import { IBlueprint } from '../src/interface/blueprint/blueprint.interface';
+import { PostgresColumnType } from '../src/interface/blueprint/postgres/postgres.column-type';
+import { PostgresIndexType } from '../src/interface/blueprint/postgres/postgres.index-type';
+import { createBlueprint } from '../src/util/create-blueprint';
 import { createColumnWithType } from './util/all-column';
 import { createTestInstance } from './util/create-connection';
 
@@ -13,7 +13,7 @@ describe('Drop Column', () => {
       testTables.map(name => inductor.driver.migrator.dropTable(name)),
     );
 
-  const columns: ISchema['columns'] = {
+  const columns: IBlueprint['columns'] = {
     col_var_1: {
       ...createColumnWithType(PostgresColumnType.INTEGER),
       isPrimary: true,
@@ -47,20 +47,20 @@ describe('Drop Column', () => {
     async col => {
       const tableName = `drop_column_${col}`;
 
-      const schemaRV1 = createSchema(tableName);
-      schemaRV1.columns = columns;
-      await inductor.setState([schemaRV1]);
+      const blueprintRV1 = createBlueprint(tableName);
+      blueprintRV1.columns = columns;
+      await inductor.setState([blueprintRV1]);
 
       expect((await inductor.readState([tableName]))[0]).toStrictEqual(
-        schemaRV1,
+        blueprintRV1,
       );
 
-      const schemaRV2 = cloneDeep(schemaRV1);
-      delete schemaRV2.columns[col];
-      await inductor.setState([schemaRV2]);
+      const blueprintRV2 = cloneDeep(blueprintRV1);
+      delete blueprintRV2.columns[col];
+      await inductor.setState([blueprintRV2]);
 
       expect((await inductor.readState([tableName]))[0]).toStrictEqual(
-        schemaRV2,
+        blueprintRV2,
       );
     },
     5_000,

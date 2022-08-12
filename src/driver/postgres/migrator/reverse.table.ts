@@ -1,13 +1,13 @@
 import { ColumnTools } from '../../../column-tools';
+import { IColumn } from '../../../interface/blueprint/column.interface';
+import { ColumnKind } from '../../../interface/blueprint/column.kind';
+import { PostgresColumnType } from '../../../interface/blueprint/postgres/postgres.column-type';
 import { IFacts } from '../../../interface/facts.interface';
-import { IColumn } from '../../../interface/schema/column.interface';
-import { ColumnKind } from '../../../interface/schema/column.kind';
-import { PostgresColumnType } from '../../../interface/schema/postgres/postgres.column-type';
-import { createSchema } from '../../../util/create-schema';
-import { postgresValidateSchema } from '../postgres.schema-validator';
+import { createBlueprint } from '../../../util/create-blueprint';
+import { postgresValidateBlueprint } from '../postgres.blueprint-validator';
 
 export const reverseTable = async (facts: IFacts, tableName: string) => {
-  const schema = createSchema(tableName);
+  const blueprint = createBlueprint(tableName);
   const columns = await facts.getTableColumns(tableName);
   const compositivePrimaryKeys = await facts.getTablePrimaryKeys(tableName);
   const compositiveUniques = await facts.getTableUniques(tableName);
@@ -20,15 +20,15 @@ export const reverseTable = async (facts: IFacts, tableName: string) => {
   const compositiveIndexes = indexes.filter(index => index.columns.length > 1);
 
   for (const compositiveIndex of compositiveIndexes) {
-    schema.indexes[compositiveIndex.name] = {
+    blueprint.indexes[compositiveIndex.name] = {
       columns: compositiveIndex.columns,
       type: compositiveIndex.type,
     };
   }
 
-  // Merge compositive uniques into the schema, but remove the table prefix from the name
+  // Merge compositive uniques into the blueprint, but remove the table prefix from the name
   for (const [name, uniques] of Object.entries(compositiveUniques)) {
-    schema.uniques[name] = uniques;
+    blueprint.uniques[name] = uniques;
   }
 
   const enumColumns = await facts.findEnumeratorColumns(tableName, columns);
@@ -167,7 +167,7 @@ export const reverseTable = async (facts: IFacts, tableName: string) => {
       };
     }
 
-    schema.columns[column.name] = columnDef;
+    blueprint.columns[column.name] = columnDef;
   }
 
   // Process foreign keys
@@ -175,12 +175,12 @@ export const reverseTable = async (facts: IFacts, tableName: string) => {
 
   // TODO process for 1 unique on local, or compositive unique with the same order
   for (const [relationName, relationDefinition] of foreignKeys) {
-    schema.relations[relationName] = relationDefinition;
+    blueprint.relations[relationName] = relationDefinition;
 
     // Check if the local column is a primary key or has unique on it
     if (
-      schema.relations[relationName].columns.every(cName => {
-        const column = schema.columns[cName];
+      blueprint.relations[relationName].columns.every(cName => {
+        const column = blueprint.columns[cName];
 
         // Simple unique
         if (column.isPrimary || column.isUnique) {
@@ -188,13 +188,13 @@ export const reverseTable = async (facts: IFacts, tableName: string) => {
         }
       })
     ) {
-      schema.relations[relationName].isLocalUnique = true;
+      blueprint.relations[relationName].isLocalUnique = true;
     }
   }
 
-  postgresValidateSchema(schema);
+  postgresValidateBlueprint(blueprint);
 
-  return schema;
+  return blueprint;
 };
 
 const isSerialType = (type: PostgresColumnType) => {

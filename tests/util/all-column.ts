@@ -1,8 +1,8 @@
 import { ColumnTools, IColumn } from '../../src';
 import { getEnumName } from '../../src/driver/postgres/migrator/util/get-enum-name';
-import { ColumnKind } from '../../src/interface/schema/column.kind';
-import { PostgresColumnType } from '../../src/interface/schema/postgres/postgres.column-type';
-import { ISchema } from '../../src/interface/schema/schema.interface';
+import { IBlueprint } from '../../src/interface/blueprint/blueprint.interface';
+import { ColumnKind } from '../../src/interface/blueprint/column.kind';
+import { PostgresColumnType } from '../../src/interface/blueprint/postgres/postgres.column-type';
 
 type typeArguments = {
   length?: number;
@@ -56,7 +56,7 @@ export const createColumnWithType = (
   return definition;
 };
 
-export const allColumn: ISchema['columns'] = {
+export const allColumn: IBlueprint['columns'] = {
   bigint: createColumnWithType(PostgresColumnType.BIGINT),
   bigserial: createColumnWithType(PostgresColumnType.BIGSERIAL),
   bit: createColumnWithType(PostgresColumnType.BIT),

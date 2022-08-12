@@ -1,5 +1,5 @@
 import { IColumn, PostgresColumnType } from '../../src';
-import { createSchema } from '../../src/util/create-schema';
+import { createBlueprint } from '../../src/util/create-blueprint';
 import { createColumnWithType } from '../util/all-column';
 import { createTestInstance } from '../util/create-connection';
 
@@ -18,8 +18,8 @@ describe('[Postgres] Enumerated Column', () => {
       const columnName = `enum_${setType}`;
       const tableName = `enum_col_${setType}`;
 
-      const testSchema = createSchema(tableName);
-      testSchema.columns = {
+      const blueprint = createBlueprint(tableName);
+      blueprint.columns = {
         primary_column: {
           ...createColumnWithType(PostgresColumnType.SERIAL),
           isPrimary: true,
@@ -31,16 +31,16 @@ describe('[Postgres] Enumerated Column', () => {
         } as IColumn,
       };
 
-      // Remove schema if exists from a previous test
-      await inductor.driver.migrator.dropSchema(testSchema);
-      await inductor.setState([testSchema]);
+      // Remove blueprint if exists from a previous test
+      await inductor.driver.migrator.dropBlueprint(blueprint);
+      await inductor.setState([blueprint]);
 
       expect((await inductor.readState([tableName]))[0]).toStrictEqual(
-        testSchema,
+        blueprint,
       );
 
       // Cleanup
-      await inductor.driver.migrator.dropSchema(testSchema);
+      await inductor.driver.migrator.dropBlueprint(blueprint);
     },
   );
 });

@@ -1,5 +1,5 @@
 import { ColumnTools, IColumn, PostgresColumnType } from '../../src';
-import { createSchema } from '../../src/util/create-schema';
+import { createBlueprint } from '../../src/util/create-blueprint';
 import { createColumnWithType } from '../util/all-column';
 import { createTestInstance } from '../util/create-connection';
 
@@ -20,8 +20,8 @@ describe('[Postgres] Column Adding', () => {
       const columnName = `column_${columnSlug}`;
       const tableName = `column_add_${columnSlug}`;
 
-      const testSchema = createSchema(tableName);
-      testSchema.columns = {
+      const blueprint = createBlueprint(tableName);
+      blueprint.columns = {
         primary_column: {
           ...createColumnWithType(PostgresColumnType.SERIAL),
           isPrimary: true,
@@ -29,12 +29,12 @@ describe('[Postgres] Column Adding', () => {
         [columnName]: columnDef,
       };
 
-      // Remove schema if exists from a previous test
+      // Remove blueprint if exists from a previous test
       await inductor.driver.migrator.dropTable(tableName);
-      await inductor.setState([testSchema]);
+      await inductor.setState([blueprint]);
 
       expect((await inductor.readState([tableName]))[0]).toStrictEqual(
-        testSchema,
+        blueprint,
       );
 
       // Cleanup

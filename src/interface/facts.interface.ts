@@ -1,7 +1,7 @@
 import { Column } from 'knex-schema-inspector/dist/types/column';
+import { IBlueprint } from './blueprint/blueprint.interface';
+import { IRelation } from './blueprint/relation.interface';
 import { IReverseIndex } from './reverse/reverse-index.interface';
-import { IRelation } from './schema/relation.interface';
-import { ISchema } from './schema/schema.interface';
 
 export interface IFacts {
   // Add live changes
@@ -16,7 +16,7 @@ export interface IFacts {
   // Reverse calls
   getTableColumns(tableName: string): Promise<Column[]>;
   getTablePrimaryKeys(tableName: string): Promise<string[]>;
-  getTableUniques(tableName: string): Promise<ISchema['uniques']>;
+  getTableUniques(tableName: string): Promise<IBlueprint['uniques']>;
   getTableIndexes(tableName: string): Promise<IReverseIndex[]>;
   getTableDefaultValues(
     tableName: string,

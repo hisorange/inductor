@@ -1,26 +1,29 @@
+import { IBlueprint } from '../../../../interface/blueprint/blueprint.interface';
 import { IMigrationContext } from '../../../../interface/migration/migration-ctx.interface';
 import { MigrationRisk } from '../../../../interface/migration/migration.risk';
-import { ISchema } from '../../../../interface/schema/schema.interface';
 
-export const indexCreator = async (schema: ISchema, ctx: IMigrationContext) => {
+export const indexCreator = async (
+  blueprint: IBlueprint,
+  ctx: IMigrationContext,
+) => {
   // Apply the compositive indexes
-  for (const indexName in schema.indexes) {
-    if (Object.prototype.hasOwnProperty.call(schema.indexes, indexName)) {
+  for (const indexName in blueprint.indexes) {
+    if (Object.prototype.hasOwnProperty.call(blueprint.indexes, indexName)) {
       const createIndexQuery = ctx.knex.schema.alterTable(
-        schema.tableName,
+        blueprint.tableName,
         builder =>
           builder.index(
-            schema.indexes[indexName].columns,
+            blueprint.indexes[indexName].columns,
             indexName,
-            schema.indexes[indexName].type,
+            blueprint.indexes[indexName].type,
           ),
       );
 
       ctx.plan.steps.push({
         query: createIndexQuery,
         risk: MigrationRisk.LOW,
-        description: `Create compositive index [${indexName}] for table [${schema.tableName}]`,
-        phase: 1,
+        description: `Create compositive index [${indexName}] for table [${blueprint.tableName}]`,
+        phase: 2,
       });
     }
   }

@@ -1,10 +1,10 @@
 import { Knex } from 'knex';
 import { Model, ModelClass } from 'objection';
+import { IBlueprint } from './blueprint/blueprint.interface';
 import { IDatabase } from './database.interface';
 import { IFacts } from './facts.interface';
 import { IInspector } from './inspector.interface';
 import { IMigrator } from './migrator.interface';
-import { ISchema } from './schema/schema.interface';
 
 export interface IDriver {
   /**
@@ -30,12 +30,12 @@ export interface IDriver {
   readonly connection: Knex;
 
   /**
-   * Validate the schema for the database provider
+   * Validate the blueprint for the database provider
    */
-  validateSchema(schema: ISchema): void;
+  validateBlueprint(blueprint: IBlueprint): void;
 
   /**
-   * Convert the schema into a model class
+   * Convert the blueprint into a model class
    */
-  toModel(schema: ISchema): ModelClass<Model>;
+  toModel(blueprint: IBlueprint): ModelClass<Model>;
 }

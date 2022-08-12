@@ -1,6 +1,6 @@
 import { PostgresColumnType } from '../../src';
-import { PostgresForeignAction } from '../../src/interface/schema/postgres/postgres.foreign-action';
-import { createSchema } from '../../src/util/create-schema';
+import { PostgresForeignAction } from '../../src/interface/blueprint/postgres/postgres.foreign-action';
+import { createBlueprint } from '../../src/util/create-blueprint';
 import { createColumnWithType } from '../util/all-column';
 import { createTestInstance } from '../util/create-connection';
 
@@ -13,8 +13,8 @@ describe('[Postgres] Relations', () => {
     const tableNameA = `relation_belongsto_a`;
     const tableNameB = `relation_belongsto_b`;
 
-    const testSchemaA = createSchema(tableNameA);
-    testSchemaA.columns = {
+    const blueprintA = createBlueprint(tableNameA);
+    blueprintA.columns = {
       a_id_1: {
         ...createColumnWithType(PostgresColumnType.UUID),
         isPrimary: true,
@@ -25,8 +25,8 @@ describe('[Postgres] Relations', () => {
       },
     };
 
-    const testSchemaB = createSchema(tableNameB);
-    testSchemaB.relations = {
+    const blueprintB = createBlueprint(tableNameB);
+    blueprintB.relations = {
       belongs_to_a: {
         columns: ['b_id_1', 'b_id_2'],
         references: {
@@ -39,7 +39,7 @@ describe('[Postgres] Relations', () => {
       },
     };
 
-    testSchemaB.columns = {
+    blueprintB.columns = {
       b_id_1: {
         ...createColumnWithType(PostgresColumnType.UUID),
         isPrimary: true,
@@ -50,22 +50,22 @@ describe('[Postgres] Relations', () => {
       },
     };
 
-    // Remove schema if exists from a previous test
-    await inductor.driver.migrator.dropSchema(testSchemaB);
-    await inductor.driver.migrator.dropSchema(testSchemaA);
+    // Remove blueprint if exists from a previous test
+    await inductor.driver.migrator.dropBlueprint(blueprintB);
+    await inductor.driver.migrator.dropBlueprint(blueprintA);
 
     // Apply the new state
-    await inductor.setState([testSchemaA, testSchemaB]);
+    await inductor.setState([blueprintA, blueprintB]);
 
     expect((await inductor.readState([tableNameA]))[0]).toStrictEqual(
-      testSchemaA,
+      blueprintA,
     );
     expect((await inductor.readState([tableNameB]))[0]).toStrictEqual(
-      testSchemaB,
+      blueprintB,
     );
 
     // Cleanup
-    await inductor.driver.migrator.dropSchema(testSchemaB);
-    await inductor.driver.migrator.dropSchema(testSchemaA);
+    await inductor.driver.migrator.dropBlueprint(blueprintB);
+    await inductor.driver.migrator.dropBlueprint(blueprintA);
   });
 });

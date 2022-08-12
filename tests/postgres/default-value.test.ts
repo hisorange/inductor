@@ -1,5 +1,5 @@
 import { PostgresColumnType } from '../../src';
-import { createSchema } from '../../src/util/create-schema';
+import { createBlueprint } from '../../src/util/create-blueprint';
 import { createColumnWithType } from '../util/all-column';
 import { createTestInstance } from '../util/create-connection';
 
@@ -38,8 +38,8 @@ describe('[Postgres] Default Value', () => {
     ) => {
       const tableName = `create_def_value_${columnType}_${valueType}`;
 
-      const testSchema = createSchema(tableName);
-      testSchema.columns = {
+      const blueprint = createBlueprint(tableName);
+      blueprint.columns = {
         test_column: {
           ...createColumnWithType(columnType),
           defaultValue,
@@ -47,16 +47,16 @@ describe('[Postgres] Default Value', () => {
         },
       };
 
-      // Remove schema if exists from a previous test
-      await inductor.driver.migrator.dropSchema(testSchema);
-      await inductor.setState([testSchema]);
+      // Remove blueprint if exists from a previous test
+      await inductor.driver.migrator.dropBlueprint(blueprint);
+      await inductor.setState([blueprint]);
 
       expect((await inductor.readState([tableName]))[0]).toStrictEqual(
-        testSchema,
+        blueprint,
       );
 
       // Cleanup
-      await inductor.driver.migrator.dropSchema(testSchema);
+      await inductor.driver.migrator.dropBlueprint(blueprint);
     },
   );
 });

@@ -1,15 +1,15 @@
 import { Knex } from 'knex';
 import { ColumnTools } from '../../../column-tools';
-import { IColumn } from '../../../interface/schema/column.interface';
-import { PostgresColumnType } from '../../../interface/schema/postgres/postgres.column-type';
-import { ISchema } from '../../../interface/schema/schema.interface';
+import { IBlueprint } from '../../../interface/blueprint/blueprint.interface';
+import { IColumn } from '../../../interface/blueprint/column.interface';
+import { PostgresColumnType } from '../../../interface/blueprint/postgres/postgres.column-type';
 import { getTypeName } from './util/get-type-name';
 
 export const createColumn = (
   tableBuilder: Knex.CreateTableBuilder,
   name: string,
   column: IColumn,
-  schema: ISchema,
+  blueprint: IBlueprint,
 ) => {
   let columnBuilder: Knex.PostgreSqlColumnBuilder;
 
@@ -46,7 +46,7 @@ export const createColumn = (
   }
 
   // Add primary constraint, only if this is the only primary column
-  if (column.isPrimary && ColumnTools.filterPrimary(schema).length === 1) {
+  if (column.isPrimary && ColumnTools.filterPrimary(blueprint).length === 1) {
     columnBuilder.primary();
   }
 

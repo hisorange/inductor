@@ -1,4 +1,4 @@
-import { PostgresIndexType } from '../schema/postgres/postgres.index-type';
+import { PostgresIndexType } from '../blueprint/postgres/postgres.index-type';
 
 export interface IReverseIndex {
   name: string;

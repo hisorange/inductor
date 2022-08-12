@@ -1,6 +1,6 @@
 import { PostgresColumnType } from '../../src';
-import { PostgresIndexType } from '../../src/interface/schema/postgres/postgres.index-type';
-import { createSchema } from '../../src/util/create-schema';
+import { PostgresIndexType } from '../../src/interface/blueprint/postgres/postgres.index-type';
+import { createBlueprint } from '../../src/util/create-blueprint';
 import { createColumnWithType } from '../util/all-column';
 import { createTestInstance } from '../util/create-connection';
 
@@ -26,8 +26,8 @@ describe('[Postgres] Column Indexing', () => {
     ) => {
       const tableName = `column_index_${tableSuffix}`;
 
-      const testSchema = createSchema(tableName);
-      testSchema.columns = {
+      const blueprint = createBlueprint(tableName);
+      blueprint.columns = {
         primary_column: {
           ...createColumnWithType(PostgresColumnType.SERIAL),
           isPrimary: true,
@@ -42,12 +42,12 @@ describe('[Postgres] Column Indexing', () => {
         },
       };
 
-      // Remove schema if exists from a previous test
+      // Remove blueprint if exists from a previous test
       await inductor.driver.migrator.dropTable(tableName);
-      await inductor.setState([testSchema]);
+      await inductor.setState([blueprint]);
 
       expect((await inductor.readState([tableName]))[0]).toStrictEqual(
-        testSchema,
+        blueprint,
       );
 
       // Cleanup

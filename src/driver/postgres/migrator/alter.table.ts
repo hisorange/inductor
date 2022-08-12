@@ -1,23 +1,23 @@
 import { diff } from 'just-diff';
 import { Knex } from 'knex';
 import { ColumnTools } from '../../../column-tools';
+import { IBlueprint } from '../../../interface/blueprint/blueprint.interface';
+import { PostgresColumnType } from '../../../interface/blueprint/postgres/postgres.column-type';
 import { IMigrationPlan } from '../../../interface/migration/migration-plan.interface';
 import { MigrationRisk } from '../../../interface/migration/migration.risk';
-import { PostgresColumnType } from '../../../interface/schema/postgres/postgres.column-type';
-import { ISchema } from '../../../interface/schema/schema.interface';
 import { createColumn } from './create.column';
 import { getTypeName } from './util/get-type-name';
 
 export const alterTable = async (
   schemaBuilder: Knex.SchemaBuilder,
-  currentSchema: ISchema,
-  expectedSchema: ISchema,
+  currentBlueprint: IBlueprint,
+  expectedBlueprint: IBlueprint,
   changePlan: IMigrationPlan,
 ): Promise<void> => {
   const query = schemaBuilder.alterTable(
-    expectedSchema.tableName,
+    expectedBlueprint.tableName,
     async tableBuilder => {
-      const difference = diff(currentSchema, expectedSchema);
+      const difference = diff(currentBlueprint, expectedBlueprint);
       // Track the primary keys change, since it may has to be altered after the columns
       let isPrimaryChanged = false;
       let isPrimaryCreated = false;
@@ -35,12 +35,12 @@ export const alterTable = async (
               createColumn(
                 tableBuilder,
                 name,
-                expectedSchema.columns[name],
-                expectedSchema,
+                expectedBlueprint.columns[name],
+                expectedBlueprint,
               );
 
               // New column added to the primary list
-              if (expectedSchema.columns[name].isPrimary) {
+              if (expectedBlueprint.columns[name].isPrimary) {
                 isPrimaryChanged = true;
                 isPrimaryCreated = true;
               }
@@ -52,7 +52,7 @@ export const alterTable = async (
               tableBuilder.dropColumn(name);
 
               // Column removed from the primary list
-              if (currentSchema.columns[name].isPrimary) {
+              if (currentBlueprint.columns[name].isPrimary) {
                 isPrimaryChanged = true;
                 isPrimaryDropped = true;
               }
@@ -62,7 +62,7 @@ export const alterTable = async (
             // Column altered
             case 'replace':
               if (path[1] === name) {
-                const column = expectedSchema.columns[name];
+                const column = expectedBlueprint.columns[name];
 
                 // Route the alteration based on the change
                 switch (path[2]) {
@@ -145,22 +145,25 @@ export const alterTable = async (
             case 'add':
               // We have to check if the unique existed before
               // because the add is only applied to the columns
-              if (currentSchema.uniques[uniqueName]) {
+              if (currentBlueprint.uniques[uniqueName]) {
                 tableBuilder.dropUnique(
-                  currentSchema.uniques[uniqueName].columns,
+                  currentBlueprint.uniques[uniqueName].columns,
                   uniqueName,
                 );
               }
 
-              tableBuilder.unique(expectedSchema.uniques[uniqueName].columns, {
-                indexName: uniqueName,
-              });
+              tableBuilder.unique(
+                expectedBlueprint.uniques[uniqueName].columns,
+                {
+                  indexName: uniqueName,
+                },
+              );
               break;
 
             // Unique removed
             case 'remove':
               tableBuilder.dropUnique(
-                currentSchema.uniques[uniqueName].columns,
+                currentBlueprint.uniques[uniqueName].columns,
                 uniqueName,
               );
               break;
@@ -170,8 +173,8 @@ export const alterTable = async (
 
       // Primary key changed
       if (isPrimaryChanged) {
-        const currentPrimaries = ColumnTools.filterPrimary(currentSchema);
-        const expectedPrimaries = ColumnTools.filterPrimary(expectedSchema);
+        const currentPrimaries = ColumnTools.filterPrimary(currentBlueprint);
+        const expectedPrimaries = ColumnTools.filterPrimary(expectedBlueprint);
 
         // Remove the current primary keys
         if (currentPrimaries.length > 0) {

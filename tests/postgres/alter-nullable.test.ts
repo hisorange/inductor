@@ -1,5 +1,5 @@
 import { ColumnTools, IColumn, PostgresColumnType } from '../../src';
-import { createSchema } from '../../src/util/create-schema';
+import { createBlueprint } from '../../src/util/create-blueprint';
 import { createColumnWithType } from '../util/all-column';
 import { createTestInstance } from '../util/create-connection';
 
@@ -24,8 +24,8 @@ describe('[Postgres] Alter Nullable', () => {
       const columnName = `column_${columnSlug}`;
       const tableName = `alter_nullable_${columnSlug}`;
 
-      const testSchema = createSchema(tableName);
-      testSchema.columns = {
+      const blueprintRV1 = createBlueprint(tableName);
+      blueprintRV1.columns = {
         primary_column: {
           ...createColumnWithType(PostgresColumnType.SERIAL),
           isPrimary: true,
@@ -33,34 +33,34 @@ describe('[Postgres] Alter Nullable', () => {
         [columnName]: columnDef,
       };
 
-      // Remove schema if exists from a previous test
+      // Remove blueprint if exists from a previous test
       await inductor.driver.migrator.dropTable(tableName);
-      await inductor.setState([testSchema]);
+      await inductor.setState([blueprintRV1]);
 
       expect((await inductor.readState([tableName]))[0]).toStrictEqual(
-        testSchema,
+        blueprintRV1,
       );
 
       // Continue with a true state
-      testSchema.columns[columnName].isNullable = true;
-      testSchema.columns[columnName].defaultValue = null;
-      await inductor.setState([testSchema]);
+      blueprintRV1.columns[columnName].isNullable = true;
+      blueprintRV1.columns[columnName].defaultValue = null;
+      await inductor.setState([blueprintRV1]);
 
       expect((await inductor.readState([tableName]))[0]).toStrictEqual(
-        testSchema,
+        blueprintRV1,
       );
 
       // Continue with a false state
-      testSchema.columns[columnName].isNullable = false;
-      testSchema.columns[columnName].defaultValue = undefined;
-      await inductor.setState([testSchema]);
+      blueprintRV1.columns[columnName].isNullable = false;
+      blueprintRV1.columns[columnName].defaultValue = undefined;
+      await inductor.setState([blueprintRV1]);
 
       expect((await inductor.readState([tableName]))[0]).toStrictEqual(
-        testSchema,
+        blueprintRV1,
       );
 
       // Cleanup
-      await inductor.driver.migrator.dropSchema(testSchema);
+      await inductor.driver.migrator.dropBlueprint(blueprintRV1);
     },
   );
 });

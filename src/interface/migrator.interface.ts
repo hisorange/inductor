@@ -1,11 +1,18 @@
+import { IBlueprint } from './blueprint/blueprint.interface';
 import { IMigrationPlan } from './migration/migration-plan.interface';
-import { ISchema } from './schema/schema.interface';
 
 export interface IMigrator {
-  dropSchema(schema: ISchema): Promise<void>;
+  /**
+   * Drop the blueprint from the database.
+   */
+  dropBlueprint(blueprint: IBlueprint): Promise<void>;
+
+  /**
+   * Drop the table from the database.
+   */
   dropTable(tableName: string): Promise<void>;
 
-  readState(filters?: string[]): Promise<ISchema[]>;
-  cmpState(schemas: ISchema[]): Promise<IMigrationPlan>;
-  setState(schemas: ISchema[]): Promise<void>;
+  readState(filters?: string[]): Promise<IBlueprint[]>;
+  cmpState(blueprints: IBlueprint[]): Promise<IMigrationPlan>;
+  setState(blueprints: IBlueprint[]): Promise<void>;
 }

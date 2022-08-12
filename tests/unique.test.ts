@@ -1,7 +1,7 @@
 import cloneDeep from 'lodash.clonedeep';
 import { ColumnTools } from '../src';
-import { PostgresColumnType } from '../src/interface/schema/postgres/postgres.column-type';
-import { createSchema } from '../src/util/create-schema';
+import { PostgresColumnType } from '../src/interface/blueprint/postgres/postgres.column-type';
+import { createBlueprint } from '../src/util/create-blueprint';
 import { allColumn, createColumnWithType } from './util/all-column';
 import { createTestInstance } from './util/create-connection';
 
@@ -22,35 +22,27 @@ describe('Unique Constraint', () => {
   const testTables = Object.keys(uniqueCols);
   const cleanup = async () => {
     await Promise.all([
-      inductor.driver.connection.schema.dropTableIfExists(
-        `unique_test_upgrade`,
-      ),
+      inductor.driver.migrator.dropTable(`unique_test_upgrade`),
     ]);
 
     // Drop test tables from previous tests
     await Promise.all(
       testTables.map(name =>
-        inductor.driver.connection.schema.dropTableIfExists(
-          `unique_test_${name}`,
-        ),
+        inductor.driver.migrator.dropTable(`unique_test_${name}`),
       ),
     );
 
     // Drop test tables from previous tests
     await Promise.all(
       testTables.map(name =>
-        inductor.driver.connection.schema.dropTableIfExists(
-          `alter_unique_${name}`,
-        ),
+        inductor.driver.migrator.dropTable(`alter_unique_${name}`),
       ),
     );
 
     // Drop test tables from previous tests
     await Promise.all(
       testTables.map(name =>
-        inductor.driver.connection.schema.dropTableIfExists(
-          `unique_test_comp_${name}`,
-        ),
+        inductor.driver.migrator.dropTable(`unique_test_comp_${name}`),
       ),
     );
   };
@@ -67,17 +59,19 @@ describe('Unique Constraint', () => {
     async (columnKey: string) => {
       const tableName = `unique_test_${columnKey}`;
 
-      const schema = createSchema(tableName);
-      schema.columns = {
+      const blueprint = createBlueprint(tableName);
+      blueprint.columns = {
         [columnKey]: uniqueCols[columnKey],
       };
       // Set the column to unique
-      schema.columns[columnKey].isUnique = true;
+      blueprint.columns[columnKey].isUnique = true;
 
       // Apply the statement
-      await inductor.setState([schema]);
+      await inductor.setState([blueprint]);
 
-      expect(schema).toStrictEqual((await inductor.readState([tableName]))[0]);
+      expect(blueprint).toStrictEqual(
+        (await inductor.readState([tableName]))[0],
+      );
     },
   );
 
@@ -85,8 +79,8 @@ describe('Unique Constraint', () => {
     'should alter the UNIQUE flag for [%s] column',
     async colName => {
       const tableName = `alter_unique_${colName}`;
-      const schemaRV1 = createSchema(tableName);
-      schemaRV1.columns = {
+      const blueprintRV1 = createBlueprint(tableName);
+      blueprintRV1.columns = {
         id: {
           ...createColumnWithType(PostgresColumnType.INTEGER),
           isPrimary: true,
@@ -95,29 +89,29 @@ describe('Unique Constraint', () => {
         createdAt: createColumnWithType(PostgresColumnType.DATE),
       };
       // Set nullable to false
-      schemaRV1.columns[colName].isUnique = false;
-      await inductor.setState([schemaRV1]);
+      blueprintRV1.columns[colName].isUnique = false;
+      await inductor.setState([blueprintRV1]);
 
-      expect(schemaRV1).toStrictEqual(
+      expect(blueprintRV1).toStrictEqual(
         (await inductor.readState([tableName]))[0],
       );
 
-      const schemaRV2 = cloneDeep(schemaRV1);
+      const blueprintRV2 = cloneDeep(blueprintRV1);
       // Change the nullable
-      schemaRV2.columns[colName].isUnique = true;
-      await inductor.setState([schemaRV2]);
+      blueprintRV2.columns[colName].isUnique = true;
+      await inductor.setState([blueprintRV2]);
 
-      expect(schemaRV2).toStrictEqual(
+      expect(blueprintRV2).toStrictEqual(
         (await inductor.readState([tableName]))[0],
       );
 
-      const schemaRV3 = cloneDeep(schemaRV2);
+      const blueprintRV3 = cloneDeep(blueprintRV2);
       // Revert the nullable
-      schemaRV3.columns[colName].isUnique = false;
+      blueprintRV3.columns[colName].isUnique = false;
 
-      await inductor.setState([schemaRV3]);
+      await inductor.setState([blueprintRV3]);
 
-      expect(schemaRV3).toStrictEqual(
+      expect(blueprintRV3).toStrictEqual(
         (await inductor.readState([tableName]))[0],
       );
     },
@@ -129,8 +123,8 @@ describe('Unique Constraint', () => {
       const tableName = `unique_test_comp_${columnKey}`;
       const uniqueName = `unique_pair_${columnKey}`;
 
-      const schema = createSchema(tableName);
-      schema.columns = {
+      const blueprint = createBlueprint(tableName);
+      blueprint.columns = {
         [columnKey]: uniqueCols[columnKey],
         pair_for_comp: {
           ...createColumnWithType(PostgresColumnType.BIGINT),
@@ -138,54 +132,56 @@ describe('Unique Constraint', () => {
       };
 
       // Ensure the column is not unique
-      schema.columns[columnKey].isUnique = false;
+      blueprint.columns[columnKey].isUnique = false;
 
       // Create the composite unique
-      schema.uniques = {
+      blueprint.uniques = {
         [uniqueName]: {
           columns: [columnKey, 'pair_for_comp'],
         },
       };
-      await inductor.setState([schema]);
+      await inductor.setState([blueprint]);
 
-      expect(schema).toStrictEqual((await inductor.readState([tableName]))[0]);
+      expect(blueprint).toStrictEqual(
+        (await inductor.readState([tableName]))[0],
+      );
     },
   );
 
   test('should alter between compound unique states', async () => {
     const tableName = 'unique_test_upgrade';
-    const schema = createSchema(tableName);
-    schema.columns = {
+    const blueprint = createBlueprint(tableName);
+    blueprint.columns = {
       col_1: {
         ...createColumnWithType(PostgresColumnType.INTEGER),
         isUnique: true,
       },
       col_2: createColumnWithType(PostgresColumnType.INTEGER),
     };
-    await inductor.setState([schema]);
+    await inductor.setState([blueprint]);
 
-    expect(schema).toStrictEqual((await inductor.readState([tableName]))[0]);
+    expect(blueprint).toStrictEqual((await inductor.readState([tableName]))[0]);
 
     // Set the second column as unique to convert the index into a compositive one
-    schema.columns.col_1.isUnique = false;
-    schema.uniques.test_cmp_1 = {
+    blueprint.columns.col_1.isUnique = false;
+    blueprint.uniques.test_cmp_1 = {
       columns: ['col_1', 'col_2'],
     };
-    await inductor.setState([schema]);
+    await inductor.setState([blueprint]);
 
-    expect(schema).toStrictEqual((await inductor.readState([tableName]))[0]);
+    expect(blueprint).toStrictEqual((await inductor.readState([tableName]))[0]);
 
     // Create a new column and add it to the composite unique
-    schema.columns.col_3 = createColumnWithType(PostgresColumnType.INTEGER);
-    schema.uniques.test_cmp_1.columns.push('col_3');
-    await inductor.setState([schema]);
+    blueprint.columns.col_3 = createColumnWithType(PostgresColumnType.INTEGER);
+    blueprint.uniques.test_cmp_1.columns.push('col_3');
+    await inductor.setState([blueprint]);
 
-    expect(schema).toStrictEqual((await inductor.readState([tableName]))[0]);
+    expect(blueprint).toStrictEqual((await inductor.readState([tableName]))[0]);
 
     // Remove the composite unique
-    delete schema.uniques.test_cmp_1;
-    await inductor.setState([schema]);
+    delete blueprint.uniques.test_cmp_1;
+    await inductor.setState([blueprint]);
 
-    expect(schema).toStrictEqual((await inductor.readState([tableName]))[0]);
+    expect(blueprint).toStrictEqual((await inductor.readState([tableName]))[0]);
   });
 });

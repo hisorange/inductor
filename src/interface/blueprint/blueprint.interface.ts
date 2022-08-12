@@ -1,11 +1,11 @@
+import { BlueprintKind } from './blueprint.kind';
 import { IColumn } from './column.interface';
 import { ICompositiveIndex } from './index.interface';
 import { IRelation } from './relation.interface';
-import { SchemaKind } from './schema.kind';
 import { IUnique } from './unique.interface';
 
-export interface ISchema<
-  SchemaMeta = unknown,
+export interface IBlueprint<
+  BlueprintMeta = unknown,
   ColumnMeta = unknown,
   UniqueMeta = unknown,
   IndexMeta = unknown,
@@ -14,7 +14,7 @@ export interface ISchema<
   /**
    * Can define view or table.
    */
-  kind: SchemaKind;
+  kind: BlueprintKind;
 
   /**
    * Programatical identified. (applied as the table's name)
@@ -50,7 +50,7 @@ export interface ISchema<
   };
 
   /**
-   * Associated metadata with the schema
+   * Associated metadata with the blueprint
    */
-  meta?: SchemaMeta;
+  meta?: BlueprintMeta;
 }

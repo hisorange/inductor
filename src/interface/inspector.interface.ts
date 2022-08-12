@@ -1,8 +1,8 @@
 import { Column } from 'knex-schema-inspector/dist/types/column';
+import { IBlueprint } from './blueprint/blueprint.interface';
+import { IRelation } from './blueprint/relation.interface';
 import { IReverseIndex } from './reverse/reverse-index.interface';
 import { IReverseUnique } from './reverse/reverse-unique.interface';
-import { IRelation } from './schema/relation.interface';
-import { ISchema } from './schema/schema.interface';
 
 export interface IInspector {
   tables(): Promise<string[]>;
@@ -17,7 +17,7 @@ export interface IInspector {
   getUniqueConstraints(): Promise<string[]>;
   getIndexes(tableName: string): Promise<IReverseIndex[]>;
   getUniques(tableName: string): Promise<IReverseUnique[]>;
-  getCompositeUniques(tableName: string): Promise<ISchema['uniques']>;
+  getCompositeUniques(tableName: string): Promise<IBlueprint['uniques']>;
   getCompositePrimaryKeys(tableName: string): Promise<string[]>;
   getDefaultValues(
     tableName: string,

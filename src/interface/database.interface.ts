@@ -1,12 +1,12 @@
 import { Knex } from 'knex';
-import { ISchema } from './schema/schema.interface';
+import { IBlueprint } from './blueprint/blueprint.interface';
 
 /**
- * Describe the database schema, and the connection associated with it.
+ * Describe the database blueprint, and the connection associated with it.
  */
 export interface IDatabase<
   DatabaseMeta = unknown,
-  SchemaMeta = unknown,
+  BlueprintMeta = unknown,
   ColumnMeta = unknown,
 > {
   /**
@@ -16,7 +16,7 @@ export interface IDatabase<
 
   /**
    * Indicates which driver is used to connect to the database,
-   * and which model is used to interact with the schemas.
+   * and which model is used to interact with the blueprints.
    */
   readonly provider: 'postgres';
 
@@ -26,23 +26,23 @@ export interface IDatabase<
   readonly connection: Knex.PgConnectionConfig;
 
   /**
-   * Flag to indicate that the schemas are read only,
+   * Flag to indicate that the blueprints are read only,
    * and the database should not be modified.
    */
   readonly isReadOnly: boolean;
 
   /**
-   * Schemas associated with the database
+   * blueprints associated with the database
    */
-  schemas: {
-    [schemaRef: string]: ISchema<SchemaMeta, ColumnMeta>;
+  blueprints: {
+    [blueprintRef: string]: IBlueprint<BlueprintMeta, ColumnMeta>;
   };
 
   /**
-   * List of regex patterns to filter schemas from the database.
-   * In case it's empty, all schemas are returned.
+   * List of regex patterns to filter blueprints from the database.
+   * In case it's empty, all blueprints are returned.
    */
-  schemaFilters: string[];
+  filters: string[];
 
   /**
    * Associated metadata with the database

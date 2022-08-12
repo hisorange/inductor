@@ -13,8 +13,8 @@ export const createTestInstance = (filters: string[] = []) => {
     },
     provider: 'postgres',
     isReadOnly: false,
-    schemas: {},
-    schemaFilters: filters,
+    blueprints: {},
+    filters: filters,
   };
 
   return new Inductor(database);

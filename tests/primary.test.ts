@@ -1,8 +1,8 @@
 import cloneDeep from 'lodash.clonedeep';
 import { ColumnTools } from '../src';
-import { PostgresColumnType } from '../src/interface/schema/postgres/postgres.column-type';
-import { PostgresIndexType } from '../src/interface/schema/postgres/postgres.index-type';
-import { createSchema } from '../src/util/create-schema';
+import { PostgresColumnType } from '../src/interface/blueprint/postgres/postgres.column-type';
+import { PostgresIndexType } from '../src/interface/blueprint/postgres/postgres.index-type';
+import { createBlueprint } from '../src/util/create-blueprint';
 import { allColumn, createColumnWithType } from './util/all-column';
 import { createTestInstance } from './util/create-connection';
 
@@ -22,23 +22,17 @@ describe('Primary Constraint', () => {
   const testTables = Object.keys(primaryColumns);
 
   const clearTables = async () => {
-    await inductor.driver.connection.schema.dropTableIfExists(
-      `alter_primary_extend`,
-    );
+    await inductor.driver.migrator.dropTable(`alter_primary_extend`);
 
     await Promise.all(
       testTables.map(name =>
-        inductor.driver.connection.schema.dropTableIfExists(
-          `create_primary_${name}`,
-        ),
+        inductor.driver.migrator.dropTable(`create_primary_${name}`),
       ),
     );
 
     await Promise.all(
       testTables.map(name =>
-        inductor.driver.connection.schema.dropTableIfExists(
-          `alter_primary_${name}`,
-        ),
+        inductor.driver.migrator.dropTable(`alter_primary_${name}`),
       ),
     );
   };
@@ -54,16 +48,16 @@ describe('Primary Constraint', () => {
     'should create the PRIMARY flag for [%s] column',
     async colName => {
       const tableName = `create_primary_${colName}`;
-      const testSchema = createSchema(tableName);
-      testSchema.columns = {
+      const testBlueprint = createBlueprint(tableName);
+      testBlueprint.columns = {
         [colName]: {
           ...primaryColumns[colName],
           isPrimary: true,
         },
       };
-      await inductor.setState([testSchema]);
+      await inductor.setState([testBlueprint]);
 
-      expect(testSchema).toStrictEqual(
+      expect(testBlueprint).toStrictEqual(
         (await inductor.readState([tableName]))[0],
       );
     },
@@ -73,8 +67,8 @@ describe('Primary Constraint', () => {
     'should alter the PRIMARY flag for [%s] column',
     async colName => {
       const tableName = `alter_primary_${colName}`;
-      const schemaRV1 = createSchema(tableName);
-      schemaRV1.columns = {
+      const blueprintRV1 = createBlueprint(tableName);
+      blueprintRV1.columns = {
         prefix: {
           ...createColumnWithType(PostgresColumnType.INTEGER),
         },
@@ -85,28 +79,28 @@ describe('Primary Constraint', () => {
         },
       };
 
-      schemaRV1.columns[colName].isPrimary = false;
-      await inductor.setState([schemaRV1]);
+      blueprintRV1.columns[colName].isPrimary = false;
+      await inductor.setState([blueprintRV1]);
 
-      expect(schemaRV1).toStrictEqual(
+      expect(blueprintRV1).toStrictEqual(
         (await inductor.readState([tableName]))[0],
       );
 
-      const schemaRV2 = cloneDeep(schemaRV1);
-      schemaRV2.columns[colName].isPrimary = true;
-      await inductor.setState([schemaRV2]);
+      const blueprintRV2 = cloneDeep(blueprintRV1);
+      blueprintRV2.columns[colName].isPrimary = true;
+      await inductor.setState([blueprintRV2]);
 
-      expect(schemaRV2).toStrictEqual(
+      expect(blueprintRV2).toStrictEqual(
         (await inductor.readState([tableName]))[0],
       );
 
-      const schemaRV3 = cloneDeep(schemaRV2);
+      const blueprintRV3 = cloneDeep(blueprintRV2);
       // Revert the nullable
-      schemaRV3.columns[colName].isPrimary = false;
+      blueprintRV3.columns[colName].isPrimary = false;
 
-      await inductor.setState([schemaRV3]);
+      await inductor.setState([blueprintRV3]);
 
-      expect(schemaRV3).toStrictEqual(
+      expect(blueprintRV3).toStrictEqual(
         (await inductor.readState([tableName]))[0],
       );
     },
@@ -115,49 +109,59 @@ describe('Primary Constraint', () => {
 
   test('should add/remove the primary keys', async () => {
     const tableName = 'alter_primary_extend';
-    const schemaRV1 = createSchema(tableName);
-    schemaRV1.columns = {
+    const blueprintRV1 = createBlueprint(tableName);
+    blueprintRV1.columns = {
       first: {
         ...createColumnWithType(PostgresColumnType.INTEGER),
         isPrimary: true,
       },
     };
-    await inductor.setState([schemaRV1]);
+    await inductor.setState([blueprintRV1]);
 
-    expect(schemaRV1).toStrictEqual((await inductor.readState([tableName]))[0]);
+    expect(blueprintRV1).toStrictEqual(
+      (await inductor.readState([tableName]))[0],
+    );
 
     // Extend the primary
-    const schemaRV2 = cloneDeep(schemaRV1);
-    schemaRV2.columns.second = {
+    const blueprintRV2 = cloneDeep(blueprintRV1);
+    blueprintRV2.columns.second = {
       ...createColumnWithType(PostgresColumnType.INTEGER),
       isPrimary: true,
     };
-    await inductor.setState([schemaRV2]);
+    await inductor.setState([blueprintRV2]);
 
-    expect(schemaRV2).toStrictEqual((await inductor.readState([tableName]))[0]);
+    expect(blueprintRV2).toStrictEqual(
+      (await inductor.readState([tableName]))[0],
+    );
 
     // Add the third primary column
-    const schemaRV3 = cloneDeep(schemaRV2);
-    schemaRV3.columns.third = {
+    const blueprintRV3 = cloneDeep(blueprintRV2);
+    blueprintRV3.columns.third = {
       ...createColumnWithType(PostgresColumnType.INTEGER),
       isPrimary: true,
     };
-    await inductor.setState([schemaRV3]);
+    await inductor.setState([blueprintRV3]);
 
-    expect(schemaRV3).toStrictEqual((await inductor.readState([tableName]))[0]);
+    expect(blueprintRV3).toStrictEqual(
+      (await inductor.readState([tableName]))[0],
+    );
 
     // Remove the third primary column
-    const schemaRV4 = cloneDeep(schemaRV3);
-    schemaRV4.columns.third.isPrimary = false;
-    await inductor.setState([schemaRV4]);
+    const blueprintRV4 = cloneDeep(blueprintRV3);
+    blueprintRV4.columns.third.isPrimary = false;
+    await inductor.setState([blueprintRV4]);
 
-    expect(schemaRV4).toStrictEqual((await inductor.readState([tableName]))[0]);
+    expect(blueprintRV4).toStrictEqual(
+      (await inductor.readState([tableName]))[0],
+    );
 
     // Remove the second primary column
-    const schemaRV5 = cloneDeep(schemaRV4);
-    schemaRV5.columns.second.isPrimary = false;
-    await inductor.setState([schemaRV5]);
+    const blueprintRV5 = cloneDeep(blueprintRV4);
+    blueprintRV5.columns.second.isPrimary = false;
+    await inductor.setState([blueprintRV5]);
 
-    expect(schemaRV5).toStrictEqual((await inductor.readState([tableName]))[0]);
+    expect(blueprintRV5).toStrictEqual(
+      (await inductor.readState([tableName]))[0],
+    );
   });
 });

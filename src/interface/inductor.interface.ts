@@ -1,23 +1,23 @@
 import { Model, ModelClass } from 'objection';
+import { IBlueprint } from './blueprint/blueprint.interface';
 import { IDriver } from './driver.interface';
 import { IMigrationPlan } from './migration/migration-plan.interface';
-import { ISchema } from './schema/schema.interface';
 
 export interface IInductor {
   /**
    * Apply a new state to the database.
    */
-  setState(schemas: ISchema[]): Promise<void>;
+  setState(blueprints: IBlueprint[]): Promise<void>;
 
   /**
-   * Read the database state and return it as a list of schemas.
+   * Read the database state and return it as a list of blueprints.
    */
-  readState(schemaFilters?: string[]): Promise<ISchema[]>;
+  readState(filters?: string[]): Promise<IBlueprint[]>;
 
   /**
    * Calculate the changes needed to migrate the database to the target state.
    */
-  cmpState(schemas: ISchema[]): Promise<IMigrationPlan>;
+  cmpState(blueprints: IBlueprint[]): Promise<IMigrationPlan>;
 
   /**
    * Get the associated model by it's name.

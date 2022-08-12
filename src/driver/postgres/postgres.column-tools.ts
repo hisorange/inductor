@@ -1,6 +1,6 @@
-import { IColumn } from '../../interface/schema/column.interface';
-import { PostgresColumnType } from '../../interface/schema/postgres/postgres.column-type';
-import { PostgresIndexType } from '../../interface/schema/postgres/postgres.index-type';
+import { IColumn } from '../../interface/blueprint/column.interface';
+import { PostgresColumnType } from '../../interface/blueprint/postgres/postgres.column-type';
+import { PostgresIndexType } from '../../interface/blueprint/postgres/postgres.index-type';
 
 const CannotBePrimary = [
   PostgresColumnType.BOX,

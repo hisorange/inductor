@@ -33,7 +33,7 @@ export interface IRelation<RelationMeta = unknown> {
   onUpdate: PostgresForeignAction;
 
   /**
-   * Associated metadata with the schema
+   * Associated metadata with the blueprint
    */
   meta?: RelationMeta;
 }

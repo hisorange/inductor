@@ -1,24 +1,24 @@
 import { ColumnTools } from '../../../../column-tools';
+import { IBlueprint } from '../../../../interface/blueprint/blueprint.interface';
 import { IMigrationContext } from '../../../../interface/migration/migration-ctx.interface';
 import { MigrationRisk } from '../../../../interface/migration/migration.risk';
-import { ISchema } from '../../../../interface/schema/schema.interface';
 import { createColumn } from '../create.column';
 
 export const columnCreator = async (
-  schema: ISchema,
+  blueprint: IBlueprint,
   ctx: IMigrationContext,
 ) => {
-  if (Object.keys(schema.columns).length) {
+  if (Object.keys(blueprint.columns).length) {
     const createColumnsQuery = ctx.knex.schema.alterTable(
-      schema.tableName,
+      blueprint.tableName,
       builder => {
-        for (const name in schema.columns) {
-          if (Object.prototype.hasOwnProperty.call(schema.columns, name)) {
-            createColumn(builder, name, schema.columns[name], schema);
+        for (const name in blueprint.columns) {
+          if (Object.prototype.hasOwnProperty.call(blueprint.columns, name)) {
+            createColumn(builder, name, blueprint.columns[name], blueprint);
           }
         }
 
-        const primaries = ColumnTools.filterPrimary(schema);
+        const primaries = ColumnTools.filterPrimary(blueprint);
 
         if (primaries.length > 1) {
           builder.primary(primaries);
@@ -29,7 +29,7 @@ export const columnCreator = async (
     ctx.plan.steps.push({
       query: createColumnsQuery,
       risk: MigrationRisk.NONE,
-      description: `Create columns for table [${schema.tableName}]`,
+      description: `Create columns for table [${blueprint.tableName}]`,
       phase: 1,
     });
   }

@@ -1,11 +1,11 @@
 import BaseAdapter from 'knex-schema-inspector/dist/dialects/postgres';
 import { Column } from 'knex-schema-inspector/dist/types/column';
+import { IBlueprint } from '../../interface/blueprint/blueprint.interface';
+import { PostgresForeignAction } from '../../interface/blueprint/postgres/postgres.foreign-action';
+import { IRelation } from '../../interface/blueprint/relation.interface';
 import { IInspector } from '../../interface/inspector.interface';
 import { IReverseIndex } from '../../interface/reverse/reverse-index.interface';
 import { IReverseUnique } from '../../interface/reverse/reverse-unique.interface';
-import { PostgresForeignAction } from '../../interface/schema/postgres/postgres.foreign-action';
-import { IRelation } from '../../interface/schema/relation.interface';
-import { ISchema } from '../../interface/schema/schema.interface';
 
 export type IEnumeratorStructure = { column: string; values: string[] };
 
@@ -375,8 +375,8 @@ export class PostgresInspector extends BaseAdapter implements IInspector {
     return uniques;
   }
 
-  async getCompositeUniques(tableName: string): Promise<ISchema['uniques']> {
-    const unique: ISchema['uniques'] = {};
+  async getCompositeUniques(tableName: string): Promise<IBlueprint['uniques']> {
+    const unique: IBlueprint['uniques'] = {};
     const entries = await this.getUniques(tableName);
 
     for (const entry of entries) {

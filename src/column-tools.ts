@@ -1,13 +1,13 @@
 import { PostgresColumnTools } from './driver/postgres/postgres.column-tools';
-import { ISchema } from './interface/schema/schema.interface';
+import { IBlueprint } from './interface/blueprint/blueprint.interface';
 
-// Find and filter the primary column names from the schema
-export const filterPrimary = (schema: ISchema) => {
+// Find and filter the primary column names from the blueprint
+export const filterPrimary = (blueprint: IBlueprint) => {
   const primaries = [];
 
-  for (const colName in schema.columns) {
-    if (Object.prototype.hasOwnProperty.call(schema.columns, colName)) {
-      const colDef = schema.columns[colName];
+  for (const colName in blueprint.columns) {
+    if (Object.prototype.hasOwnProperty.call(blueprint.columns, colName)) {
+      const colDef = blueprint.columns[colName];
 
       if (colDef.isPrimary) {
         primaries.push(colName);

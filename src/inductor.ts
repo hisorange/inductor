@@ -1,19 +1,19 @@
 import { Model, ModelClass } from 'objection';
 import pino, { Logger } from 'pino';
 import { PostgresDriver } from './driver/postgres/postgres.driver';
+import { IBlueprint } from './interface/blueprint/blueprint.interface';
 import { IDatabase } from './interface/database.interface';
 import { IDriver } from './interface/driver.interface';
 import { IInductor } from './interface/inductor.interface';
 import { IMigrationPlan } from './interface/migration/migration-plan.interface';
-import { ISchema } from './interface/schema/schema.interface';
 
 export class Inductor implements IInductor {
   /**
-   * Associated schemas with the connection
+   * Associated blueprints with the connection
    */
   protected currentState = new Map<
     string,
-    { schema: ISchema; model: ModelClass<Model> }
+    { blueprint: IBlueprint; model: ModelClass<Model> }
   >();
 
   readonly driver: IDriver;
@@ -41,21 +41,21 @@ export class Inductor implements IInductor {
     });
   }
 
-  cmpState(schemas: ISchema[]): Promise<IMigrationPlan> {
-    return this.driver.migrator.cmpState(schemas);
+  cmpState(blueprints: IBlueprint[]): Promise<IMigrationPlan> {
+    return this.driver.migrator.cmpState(blueprints);
   }
 
-  async setState(schemas: ISchema[]): Promise<void> {
+  async setState(blueprints: IBlueprint[]): Promise<void> {
     this.logger.info('Applying new state');
 
-    const plan = await this.driver.migrator.cmpState(schemas);
+    const plan = await this.driver.migrator.cmpState(blueprints);
     this.currentState = new Map();
 
     await plan.apply().then(() => {
-      for (const schema of schemas) {
-        this.currentState.set(schema.tableName, {
-          schema,
-          model: this.driver.toModel(schema),
+      for (const blueprint of blueprints) {
+        this.currentState.set(blueprint.tableName, {
+          blueprint: blueprint,
+          model: this.driver.toModel(blueprint),
         });
       }
     });
@@ -71,7 +71,7 @@ export class Inductor implements IInductor {
     return association.model as ModelClass<T>;
   }
 
-  async readState(filters: string[] = []): Promise<ISchema[]> {
+  async readState(filters: string[] = []): Promise<IBlueprint[]> {
     return this.driver.migrator.readState(filters);
   }
 
