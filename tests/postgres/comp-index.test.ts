@@ -13,7 +13,11 @@ describe('[Postgres] Compositive Indexing', () => {
     ['btree', PostgresColumnType.TEXT, PostgresIndexType.BTREE],
     ['gist', PostgresColumnType.POINT, PostgresIndexType.GIST],
     ['gin', PostgresColumnType.JSONB, PostgresIndexType.GIN],
-    ['brin', PostgresColumnType.TIMESTAMP, PostgresIndexType.BRIN],
+    [
+      'brin',
+      PostgresColumnType.TIMESTAMP_WITH_TIMEZONE,
+      PostgresIndexType.BRIN,
+    ],
     ['brin', PostgresColumnType.DATE, PostgresIndexType.BRIN],
   ])(
     'should create [%s] compositive index with [%s] column',
@@ -22,8 +26,11 @@ describe('[Postgres] Compositive Indexing', () => {
       columnType: PostgresColumnType,
       indexType: PostgresIndexType,
     ) => {
-      const tableName = `column_index_${tableSuffix}`;
       const columnSafeType = columnType.replace(/\s/g, '_');
+      const tableName = `cpm_itest_${tableSuffix}_${columnSafeType.substring(
+        0,
+        10,
+      )}`;
       const indexName = `${tableName}_${columnSafeType}_${indexType}`;
 
       const blueprint = createBlueprint(tableName);

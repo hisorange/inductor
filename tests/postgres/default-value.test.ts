@@ -36,7 +36,10 @@ describe('[Postgres] Default Value', () => {
       valueType: string,
       defaultValue: any,
     ) => {
-      const tableName = `create_def_value_${columnType}_${valueType}`;
+      const tableName = `create_def_value_${columnType.replace(
+        /\s/g,
+        '',
+      )}_${valueType}`;
 
       const blueprint = createBlueprint(tableName);
       blueprint.columns = {

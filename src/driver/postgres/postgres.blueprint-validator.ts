@@ -10,6 +10,16 @@ export const postgresValidateBlueprint = (blueprint: IBlueprint): void => {
     throw new InvalidBlueprint('Missing table name');
   }
 
+  // Validate for invalid table names
+  if (blueprint.tableName.length > 63) {
+    throw new InvalidBlueprint('Table name is too long');
+  }
+
+  // Validate for invalid table names characters
+  if (!blueprint.tableName.match(/^[_]?[a-zA-Z0-9_]*$/)) {
+    throw new InvalidBlueprint('Table name format is invalid');
+  }
+
   // Has to have at least one column
   if (!Object.keys(blueprint.columns).length) {
     throw new InvalidBlueprint('Mininum one column is required');

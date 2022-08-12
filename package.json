@@ -25,13 +25,12 @@
     "db:start": "docker-compose up -d --renew-anon-volumes",
     "db:stop": "docker-compose down",
     "test:types": "tsc --noEmit",
-    "test": "jest -i --runInBand",
+    "test": "jest",
     "gen:pg-test": "hygen pg-test new"
   },
   "devDependencies": {
     "@types/jest": "^28.0.0",
     "@types/lodash.clonedeep": "^4.5.7",
-    "@types/lodash.memoize": "^4.1.7",
     "@types/node": "^16.0.0",
     "@types/uuid": "^8.3.4",
     "hygen": "^6.2.8",
@@ -42,12 +41,11 @@
   },
   "dependencies": {
     "just-diff": "^5.0.1",
-    "lodash.memoize": "^4.1.2",
     "uuid": "^8.3.2"
   },
   "optionalDependencies": {
-    "knex": "^2.2.0",
     "knex-schema-inspector": "^2.0.3",
+    "knex": "^2.2.0",
     "objection": "^3.0.1",
     "pg": "^8.7.3",
     "pino": "^7.11.0"
