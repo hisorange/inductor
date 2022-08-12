@@ -44,7 +44,32 @@ describe('[Postgres] Able to handle new column risks', () => {
     );
   });
 
-  test('should be impossible to create new column without default value', async () => {
+  test('should be possible to create new column without default value with zero rows', async () => {
+    const tableName = `new_column_test_w_defv`;
+    const blueprintRV1 = createBlueprint(tableName);
+    blueprintRV1.columns = {
+      id: {
+        ...createColumnWithType(PostgresColumnType.SERIAL),
+        isPrimary: true,
+      },
+      name: createColumnWithType(PostgresColumnType.TEXT),
+    };
+
+    await inductor.setState([blueprintRV1]);
+
+    expect((await inductor.readState([tableName]))[0]).toStrictEqual(
+      blueprintRV1,
+    );
+
+    const blueprintRV2 = cloneDeep(blueprintRV1);
+    blueprintRV2.columns['new_column_without_defv'] = createColumnWithType(
+      PostgresColumnType.INTEGER,
+    );
+
+    await expect(inductor.setState([blueprintRV2])).resolves.toBe(undefined);
+  });
+
+  test('should be impossible to create new column without default value with non-zero rows', async () => {
     const tableName = `new_column_test_wo_defv`;
     const blueprintRV1 = createBlueprint(tableName);
     blueprintRV1.columns = {
