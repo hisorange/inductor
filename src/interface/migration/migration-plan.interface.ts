@@ -1,5 +1,6 @@
 import { Knex } from 'knex';
 import { MigrationRisk } from './migration.risk';
+import { IStepResult } from './step-result.interface';
 
 interface IPlanStep {
   query: Knex.SchemaBuilder;
@@ -20,5 +21,5 @@ export interface IMigrationPlan {
   readonly steps: IPlanStep[];
 
   getHighestRisk(): MigrationRisk;
-  apply(): Promise<void>;
+  apply(): Promise<IStepResult[]>;
 }

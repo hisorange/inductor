@@ -1,6 +1,7 @@
 import { Logger } from 'pino';
 import { IMigrationPlan } from './interface/migration/migration-plan.interface';
 import { MigrationRisk } from './interface/migration/migration.risk';
+import { IStepResult } from './interface/migration/step-result.interface';
 
 export class MigrationPlan implements IMigrationPlan {
   readonly steps: IMigrationPlan['steps'] = [];
@@ -29,28 +30,41 @@ export class MigrationPlan implements IMigrationPlan {
     return highestRisk;
   }
 
-  async apply(): Promise<void> {
+  async apply(): Promise<IStepResult[]> {
+    const results = [];
+
     if (this.steps.length) {
       this.logger.info('Applying [%d] changes', this.steps.length);
 
       for (const [idx, step] of this.steps
         .sort((a, b) => (a.phase > b.phase ? 1 : -1))
         .entries()) {
+        const startedAt = Date.now();
         const sql = step.query.toQuery();
 
         if (sql.length) {
-          console.log(
-            `[${idx + 1}/${this.steps.length}]`,
-            `[${step.risk.toUpperCase()}]`,
-            step.description,
-            '\n ---- \t',
-            step.query.toString(),
+          this.logger.debug(
+            [
+              `[${idx + 1}/${this.steps.length}]`,
+              `[${step.risk.toUpperCase()}]`,
+              step.description,
+              '\n ---- \t',
+              step.query.toString(),
+            ].join(' '),
           );
-          this.logger.debug(sql);
         }
+
+        results.push({
+          query: sql,
+          risk: step.risk,
+          executionTime: Date.now() - startedAt,
+          order: idx + 1,
+        });
 
         await step.query;
       }
     }
+
+    return results;
   }
 }
