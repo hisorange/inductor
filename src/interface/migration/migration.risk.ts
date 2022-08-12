@@ -3,4 +3,5 @@ export enum MigrationRisk {
   LOW = 'Low',
   MEDIUM = 'Medium',
   HIGH = 'High',
+  IMPOSSIBLE = 'Impossible',
 }

@@ -1,4 +1,5 @@
 import { Logger } from 'pino';
+import { ImpossibleMigration } from './exception/impossible-migration.exception';
 import { IMigrationPlan } from './interface/migration/migration-plan.interface';
 import { MigrationRisk } from './interface/migration/migration.risk';
 import { IStepResult } from './interface/migration/step-result.interface';
@@ -12,12 +13,17 @@ export class MigrationPlan implements IMigrationPlan {
     let highestRisk = MigrationRisk.NONE;
 
     for (const step of this.steps) {
+      if (step.risk === MigrationRisk.IMPOSSIBLE) {
+        return MigrationRisk.IMPOSSIBLE;
+      }
       if (step.risk === MigrationRisk.HIGH) {
-        return MigrationRisk.HIGH;
+        highestRisk = MigrationRisk.HIGH;
       }
 
       if (step.risk === MigrationRisk.MEDIUM) {
-        highestRisk = MigrationRisk.MEDIUM;
+        if (highestRisk !== MigrationRisk.HIGH) {
+          highestRisk = MigrationRisk.MEDIUM;
+        }
       }
 
       if (step.risk === MigrationRisk.LOW) {
@@ -32,8 +38,6 @@ export class MigrationPlan implements IMigrationPlan {
 
   explain(): void {
     if (this.steps.length) {
-      this.logger.info('Applying [%d] changes', this.steps.length);
-
       for (const [idx, step] of this.steps
         .sort((a, b) => (a.phase > b.phase ? 0 : -1))
         .entries()) {
@@ -58,10 +62,15 @@ export class MigrationPlan implements IMigrationPlan {
 
   async apply(): Promise<IStepResult[]> {
     const results = [];
-    this.explain();
 
     if (this.steps.length) {
-      this.logger.info('Applying [%d] changes', this.steps.length);
+      this.explain();
+
+      if (this.getHighestRisk() === MigrationRisk.IMPOSSIBLE) {
+        throw new ImpossibleMigration(
+          'Migration plan contains impossible step(s)',
+        );
+      }
 
       for (const [idx, step] of this.steps
         .sort((a, b) => (a.phase > b.phase ? 0 : -1))

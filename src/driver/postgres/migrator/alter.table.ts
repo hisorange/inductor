@@ -91,10 +91,28 @@ export const alterTable = async (
 
     if (path[0] === 'columns') {
       const columnName = path[1] as string;
+      const columnDefinition = target.columns[columnName];
 
       switch (op) {
         // New column added
         case 'add':
+          let risk = MigrationRisk.NONE;
+
+          // Check if the column has a default value
+          // If not then we have to check for rows
+          // as creating a new column without default would make the step impossible
+          if (typeof columnDefinition.defaultValue === 'undefined') {
+            const countResult = await ctx.knex
+              .select()
+              .from(target.tableName)
+              .limit(1)
+              .count('* as count');
+
+            if (countResult[0].count > 0) {
+              risk = MigrationRisk.IMPOSSIBLE;
+            }
+          }
+
           ctx.plan.steps.push({
             query: ctx.knex.schema.alterTable(target.tableName, builder =>
               createColumn(
@@ -105,7 +123,7 @@ export const alterTable = async (
                 ctx.facts,
               ),
             ),
-            risk: MigrationRisk.LOW,
+            risk,
             description: `Creating new column ${columnName}`,
             phase: 3,
           });
@@ -139,8 +157,6 @@ export const alterTable = async (
         // Column altered
         case 'replace':
           if (path[1] === columnName) {
-            const columnDefinition = target.columns[columnName];
-
             // Route the alteration based on the change
             switch (path[2]) {
               case 'isNullable':

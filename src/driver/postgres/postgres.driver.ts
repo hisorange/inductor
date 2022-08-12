@@ -54,14 +54,17 @@ export class PostgresDriver implements IDriver {
     const columnMap = new Map<string, string>();
     const propertyMap = new Map<string, string>();
 
-    for (const columnName in Object.keys(blueprint.columns)) {
-      const propertyName =
-        blueprint.columns[columnName]?.propertyName ?? columnName;
+    for (const columnName in blueprint.columns) {
+      if (Object.prototype.hasOwnProperty.call(blueprint.columns, columnName)) {
+        const columnDefinition = blueprint.columns[columnName];
 
-      // Map column names to property names
-      columnMap.set(columnName, propertyName);
-      // Map property names to column names
-      propertyMap.set(propertyName, columnName);
+        const propertyName = columnDefinition?.propertyName ?? columnName;
+
+        // Map column names to property names
+        columnMap.set(columnName, propertyName);
+        // Map property names to column names
+        propertyMap.set(propertyName, columnName);
+      }
     }
 
     // Map database columns to code level references
