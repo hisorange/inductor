@@ -1,8 +1,5 @@
 import { Column } from 'knex-schema-inspector/dist/types/column';
-import { IBlueprint } from '../blueprint/blueprint.interface';
-import { IReverseIndex } from '../reverse/reverse-index.interface';
-import { IReverseUnique } from '../reverse/reverse-unique.interface';
-import { IForeginKeyFact } from './foreign-key.fact';
+import { IFacts } from './facts.interface';
 
 export interface IFactSource {
   tables(): Promise<string[]>;
@@ -13,12 +10,11 @@ export interface IFactSource {
     columns: Column[],
   ): Promise<{ column: string; values: string[] }[]>;
 
-  getForeignKeys(): Promise<IForeginKeyFact>;
+  getRelations(): Promise<IFacts['relations']>;
   getUniqueConstraints(): Promise<string[]>;
-  getIndexes(tableName: string): Promise<IReverseIndex[]>;
-  getUniques(tableName: string): Promise<IReverseUnique[]>;
-  getCompositeUniques(tableName: string): Promise<IBlueprint['uniques']>;
-  getCompositePrimaryKeys(tableName: string): Promise<string[]>;
+  getIndexes(): Promise<IFacts['indexes']>;
+  getUniques(): Promise<IFacts['uniques']>;
+  getCompositePrimaryKeys(): Promise<IFacts['compositePrimaryKeys']>;
   getDefaultValues(
     tableName: string,
   ): Promise<{ column: string; defaultValue: string }[]>;

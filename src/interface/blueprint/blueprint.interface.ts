@@ -1,6 +1,6 @@
 import { BlueprintKind } from './blueprint.kind';
 import { IColumn } from './column.interface';
-import { ICompositiveIndex } from './index.interface';
+import { ICompositeIndex } from './index.interface';
 import { IRelation } from './relation.interface';
 import { IUnique } from './unique.interface';
 
@@ -39,7 +39,7 @@ export interface IBlueprint<
    * Indices of the table.
    */
   indexes: {
-    [indexName: string]: ICompositiveIndex<IndexMeta>;
+    [indexName: string]: ICompositeIndex<IndexMeta>;
   };
 
   /**

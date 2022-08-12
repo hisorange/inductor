@@ -150,38 +150,53 @@ describe('Unique Constraint', () => {
 
   test('should alter between compound unique states', async () => {
     const tableName = 'unique_test_upgrade';
-    const blueprint = createBlueprint(tableName);
-    blueprint.columns = {
+    const blueprintRV1 = createBlueprint(tableName);
+    blueprintRV1.columns = {
       col_1: {
         ...createColumnWithType(PostgresColumnType.INTEGER),
         isUnique: true,
       },
       col_2: createColumnWithType(PostgresColumnType.INTEGER),
     };
-    await inductor.setState([blueprint]);
+    await inductor.setState([blueprintRV1]);
 
-    expect(blueprint).toStrictEqual((await inductor.readState([tableName]))[0]);
+    console.log('READ STATE', (await inductor.readState([tableName]))[0]);
 
-    // Set the second column as unique to convert the index into a compositive one
-    blueprint.columns.col_1.isUnique = false;
-    blueprint.uniques.test_cmp_1 = {
+    expect((await inductor.readState([tableName]))[0]).toStrictEqual(
+      blueprintRV1,
+    );
+
+    // Set the second column as unique to convert the index into a composite one
+    const blueprintRV2 = cloneDeep(blueprintRV1);
+    blueprintRV2.columns.col_1.isUnique = false;
+    blueprintRV2.uniques.test_cmp_1 = {
       columns: ['col_1', 'col_2'],
     };
-    await inductor.setState([blueprint]);
+    await inductor.setState([blueprintRV2]);
 
-    expect(blueprint).toStrictEqual((await inductor.readState([tableName]))[0]);
+    expect(blueprintRV2).toStrictEqual(
+      (await inductor.readState([tableName]))[0],
+    );
 
     // Create a new column and add it to the composite unique
-    blueprint.columns.col_3 = createColumnWithType(PostgresColumnType.INTEGER);
-    blueprint.uniques.test_cmp_1.columns.push('col_3');
-    await inductor.setState([blueprint]);
+    const blueprintRV3 = cloneDeep(blueprintRV2);
+    blueprintRV3.columns.col_3 = createColumnWithType(
+      PostgresColumnType.INTEGER,
+    );
+    blueprintRV3.uniques.test_cmp_1.columns.push('col_3');
+    await inductor.setState([blueprintRV3]);
 
-    expect(blueprint).toStrictEqual((await inductor.readState([tableName]))[0]);
+    expect(blueprintRV3).toStrictEqual(
+      (await inductor.readState([tableName]))[0],
+    );
 
     // Remove the composite unique
-    delete blueprint.uniques.test_cmp_1;
-    await inductor.setState([blueprint]);
+    const blueprintRV4 = cloneDeep(blueprintRV3);
+    delete blueprintRV4.uniques.test_cmp_1;
+    await inductor.setState([blueprintRV4]);
 
-    expect(blueprint).toStrictEqual((await inductor.readState([tableName]))[0]);
+    expect(blueprintRV4).toStrictEqual(
+      (await inductor.readState([tableName]))[0],
+    );
   });
 });

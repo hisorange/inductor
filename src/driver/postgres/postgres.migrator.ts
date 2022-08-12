@@ -27,7 +27,7 @@ export class PostgresMigrator implements IMigrator {
 
     await this.facts.gather();
 
-    for (const table of this.facts.getListOfTables(filters)) {
+    for (const table of this.facts.getTables(filters)) {
       const blueprint = await reverseTable(this.facts, table);
 
       blueprints.push(blueprint);

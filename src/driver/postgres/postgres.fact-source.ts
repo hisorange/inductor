@@ -1,11 +1,8 @@
 import BaseAdapter from 'knex-schema-inspector/dist/dialects/postgres';
 import { Column } from 'knex-schema-inspector/dist/types/column';
-import { IBlueprint } from '../../interface/blueprint/blueprint.interface';
 import { PostgresForeignAction } from '../../interface/blueprint/postgres/postgres.foreign-action';
 import { IFactSource } from '../../interface/fact/fact-source.interface';
-import { IForeginKeyFact } from '../../interface/fact/foreign-key.fact';
-import { IReverseIndex } from '../../interface/reverse/reverse-index.interface';
-import { IReverseUnique } from '../../interface/reverse/reverse-unique.interface';
+import { IFacts } from '../../interface/fact/facts.interface';
 
 export type IEnumeratorStructure = { column: string; values: string[] };
 
@@ -176,8 +173,8 @@ export class PostgresInspector extends BaseAdapter implements IFactSource {
     return [];
   }
 
-  async getForeignKeys(): Promise<IForeginKeyFact> {
-    const facts: IForeginKeyFact = {};
+  async getRelations(): Promise<IFacts['relations']> {
+    const fact: IFacts['relations'] = {};
 
     const query = this.knex({
       fks: 'information_schema.table_constraints',
@@ -197,7 +194,7 @@ export class PostgresInspector extends BaseAdapter implements IFactSource {
         remoteColumnName: 'kcu_primary.column_name',
         updateRule: 'rc.update_rule',
         deleteRule: 'rc.delete_rule',
-        // Important for compositive remote keys, where the order matters
+        // Important for composite remote keys, where the order matters
         ordinalPosition: 'kcu_foreign.ordinal_position',
       })
       .innerJoin(
@@ -262,11 +259,11 @@ export class PostgresInspector extends BaseAdapter implements IFactSource {
 
     for (const row of rows) {
       // Create the table key
-      if (!facts.hasOwnProperty(row.localTableName)) {
-        facts[row.localTableName] = {};
+      if (!fact.hasOwnProperty(row.localTableName)) {
+        fact[row.localTableName] = {};
       }
 
-      const tableRef = facts[row.localTableName];
+      const tableRef = fact[row.localTableName];
 
       // Create the contraint key
       if (!tableRef.hasOwnProperty(row.relationName)) {
@@ -276,7 +273,7 @@ export class PostgresInspector extends BaseAdapter implements IFactSource {
             table: row.remoteTableName,
             columns: [row.remoteColumnName],
           },
-          isLocalUnique: false,
+          isLocalUnique: true,
           onDelete: row.deleteRule.toLowerCase() as PostgresForeignAction,
           onUpdate: row.updateRule.toLowerCase() as PostgresForeignAction,
         };
@@ -290,30 +287,28 @@ export class PostgresInspector extends BaseAdapter implements IFactSource {
       }
     }
 
-    return facts;
+    return fact;
   }
 
   async getUniqueConstraints(): Promise<string[]> {
-    const query = this.knex({
-      tc: 'information_schema.table_constraints',
-    })
-      .select({
-        uniqueName: 'tc.constraint_name',
+    return (
+      await this.knex({
+        tc: 'information_schema.table_constraints',
       })
-      .where({
-        'tc.constraint_type': 'UNIQUE',
-        'tc.table_schema': this.knex.raw('current_schema()'),
-      });
-
-    const rows = await query;
-
-    return rows.map(r => r.uniqueName);
+        .select({
+          uniqueName: 'tc.constraint_name',
+        })
+        .where({
+          'tc.constraint_type': 'UNIQUE',
+          'tc.table_schema': this.knex.raw('current_schema()'),
+        })
+    ).map(r => r.uniqueName);
   }
 
   /**
    * Read the database table definition for indexes.
    */
-  async getIndexes(tableName: string): Promise<IReverseIndex[]> {
+  async getIndexes(): Promise<IFacts['indexes']> {
     const query = this.knex({
       f: 'pg_attribute',
     })
@@ -348,7 +343,7 @@ export class PostgresInspector extends BaseAdapter implements IFactSource {
       .where({
         'c.relkind': 'r',
         'n.nspname': this.knex.raw('current_schema()'),
-        'c.relname': tableName,
+        //'c.relname': tableName,
       })
       .whereNot({
         'i.oid': 0,
@@ -357,35 +352,34 @@ export class PostgresInspector extends BaseAdapter implements IFactSource {
       .orderBy('f.attnum', 'asc');
 
     const rows = await query;
-    const indexes: IReverseIndex[] = [];
+    const fact: IFacts['indexes'] = {};
 
-    rows.forEach(r => {
-      const idx = indexes.findIndex(i => i.name === r.idx_name);
-
-      // Create the index entry
-      if (idx === -1) {
-        indexes.push({
-          name: r.idx_name,
-          columns: [r.column],
-          type: r.idx_type,
-        });
-      } else {
-        // Add the column to the index
-        indexes[idx].columns.push(r.column);
+    for (const row of rows) {
+      if (!fact.hasOwnProperty(row.table)) {
+        fact[row.table] = {};
       }
-    });
 
-    return indexes;
+      if (!fact[row.table].hasOwnProperty(row.idx_name)) {
+        fact[row.table][row.idx_name] = {
+          columns: [],
+          type: row.idx_type,
+        };
+      }
+
+      fact[row.table][row.idx_name].columns.push(row.column);
+    }
+
+    return fact;
   }
 
-  /**
-   * Read the defined uniques for the given table name
-   */
-  async getUniques(tableName: string): Promise<IReverseUnique[]> {
+  async getUniques(): Promise<IFacts['uniques']> {
+    const fact: IFacts['uniques'] = {};
+
     const query = this.knex({
       tc: 'information_schema.table_constraints',
     })
       .select({
+        tableName: 'tc.table_name',
         uniqueName: 'tc.constraint_name',
         columnName: 'kcu.column_name',
       })
@@ -400,55 +394,37 @@ export class PostgresInspector extends BaseAdapter implements IFactSource {
       .where({
         'tc.constraint_type': 'UNIQUE',
         'tc.table_schema': this.knex.raw('current_schema()'),
-        'tc.table_name': tableName,
+        //'tc.table_name': tableName,
       });
 
     const rows = await query;
-    const uniques: IReverseUnique[] = [];
 
-    rows.forEach(r => {
-      // Create an empty unique if it doesn't exist
-      if (!uniques.find(unq => unq.name === r.uniqueName)) {
-        uniques.push({
-          name: r.uniqueName,
-          columns: [],
-        });
+    for (const row of rows) {
+      if (!fact.hasOwnProperty(row.tableName)) {
+        fact[row.tableName] = {};
       }
 
-      const unq = uniques.find(unq => unq.name === r.uniqueName);
+      const tableRef = fact[row.tableName];
 
-      if (unq) {
-        unq.columns.push(r.columnName);
-      }
-    });
-
-    return uniques;
-  }
-
-  async getCompositeUniques(tableName: string): Promise<IBlueprint['uniques']> {
-    const unique: IBlueprint['uniques'] = {};
-    const entries = await this.getUniques(tableName);
-
-    for (const entry of entries) {
-      if (entry.columns.length > 1) {
-        unique[entry.name] = {
-          columns: entry.columns,
+      if (!tableRef.hasOwnProperty(row.uniqueName)) {
+        tableRef[row.uniqueName] = {
+          columns: [row.columnName],
         };
+      } else {
+        tableRef[row.uniqueName].columns.push(row.columnName);
       }
     }
 
-    return unique;
+    return fact;
   }
 
-  /**
-   * Read the defined compositive primary keys for the given table name
-   */
-  async getCompositePrimaryKeys(tableName: string): Promise<string[]> {
+  async getCompositePrimaryKeys(): Promise<IFacts['compositePrimaryKeys']> {
     const query = this.knex({
       tc: 'information_schema.table_constraints',
     })
       .select({
-        uniqueName: 'tc.constraint_name',
+        tableName: 'tc.table_name',
+        contraintName: 'tc.constraint_name',
         columnName: 'kcu.column_name',
       })
       .join(
@@ -462,17 +438,19 @@ export class PostgresInspector extends BaseAdapter implements IFactSource {
       .where({
         'tc.constraint_type': 'PRIMARY KEY',
         'tc.table_schema': this.knex.raw('current_schema()'),
-        'tc.table_name': tableName,
       });
 
-    const rows = await query;
-    const primaryKeys: string[] = [];
+    const fact: IFacts['compositePrimaryKeys'] = {};
 
-    rows.forEach(r => {
-      primaryKeys.push(r.columnName);
-    });
+    for (const row of await query) {
+      if (!fact.hasOwnProperty(row.tableName)) {
+        fact[row.tableName] = [];
+      }
 
-    return primaryKeys;
+      fact[row.tableName].push(row.columnName);
+    }
+
+    return fact;
   }
 
   async getDefaultValues(

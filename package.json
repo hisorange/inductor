@@ -25,7 +25,7 @@
     "db:start": "docker-compose up -d --renew-anon-volumes",
     "db:stop": "docker-compose down",
     "test:types": "tsc --noEmit",
-    "test": "jest",
+    "test": "jest -i",
     "gen:pg-test": "hygen pg-test new"
   },
   "devDependencies": {

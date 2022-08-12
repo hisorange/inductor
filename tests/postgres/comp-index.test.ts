@@ -4,7 +4,7 @@ import { createBlueprint } from '../../src/util/create-blueprint';
 import { createColumnWithType } from '../util/all-column';
 import { createTestInstance } from '../util/create-connection';
 
-describe('[Postgres] Compositive Indexing', () => {
+describe('[Postgres] Composite Indexing', () => {
   const inductor = createTestInstance();
 
   afterAll(() => inductor.close());
@@ -20,7 +20,7 @@ describe('[Postgres] Compositive Indexing', () => {
     ],
     ['brin', PostgresColumnType.DATE, PostgresIndexType.BRIN],
   ])(
-    'should create [%s] compositive index with [%s] column',
+    'should create [%s] composite index with [%s] column',
     async (
       tableSuffix: string,
       columnType: PostgresColumnType,

@@ -107,26 +107,26 @@ export const postgresValidateBlueprint = (blueprint: IBlueprint): void => {
     }
   }
 
-  // Validate compositive indexes
-  for (const [name, compositiveIndex] of Object.entries(blueprint.indexes)) {
-    if (compositiveIndex.columns.length < 2) {
+  // Validate composite indexes
+  for (const [name, compositeIndex] of Object.entries(blueprint.indexes)) {
+    if (compositeIndex.columns.length < 2) {
       throw new InvalidBlueprint(
-        `Compositive index [${name}] must have at least 2 columns`,
+        `Composite index [${name}] must have at least 2 columns`,
       );
     }
 
     // Cannot have the type hash or spgist
     if (
-      compositiveIndex.type === PostgresIndexType.HASH ||
-      compositiveIndex.type === PostgresIndexType.SPGIST
+      compositeIndex.type === PostgresIndexType.HASH ||
+      compositeIndex.type === PostgresIndexType.SPGIST
     ) {
       throw new InvalidBlueprint(
-        `Compositive index [${name}] cannot have either hash and spgist`,
+        `Composite index [${name}] cannot have either hash and spgist`,
       );
     }
   }
 
-  // Validate the compositive unique fields for valid types
+  // Validate the composite unique fields for valid types
   for (const uniqueName in blueprint.uniques) {
     const validColumns: string[] = [];
     const expectedColumns: string[] = [];

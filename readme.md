@@ -2,7 +2,7 @@
 
 Easy to use library to control your database table's schema without migrations or any manual work.
 You can simply describe how you want a table to look like, and the rest will be calculated by the library.
-It manages the primary keys, uniques, indexes, and even their compositive forms for you.
+It manages the primary keys, uniques, indexes, and even their composite forms for you.
 
 Do you wanna add a new column from a UI? Just add it to your schema and apply it to the database.
 With this seamless solution you can forget about migrations, and waiting for the devops / dba to change the database.
@@ -142,14 +142,14 @@ Gonna track the implemented and missing features with all the generic capabiliti
 - Update: Can modify the state
 - Delete: Can remove the feature from the database
 
-| Feature                       | Create | Read | Update | Delete |
-| :---------------------------- | :----: | :--: | :----: | :----: |
-| Columns                       |   Y    |  Y   |   Y    |   Y    |
-| Nullable Columns              |   Y    |  Y   |   Y    |   Y    |
-| Enumerated Columns            |   Y    |  Y   |   N    |   N    |
-| Single Unique Constraint      |   Y    |  Y   |   Y    |   Y    |
-| Compositive Unique Constraint |   Y    |  Y   |   ?    |   ?    |
-| Compositive Foreign Key       |   Y    |  Y   |   N    |   N    |
+| Feature                     | Create | Read | Update | Delete |
+| :-------------------------- | :----: | :--: | :----: | :----: |
+| Columns                     |   Y    |  Y   |   Y    |   Y    |
+| Nullable Columns            |   Y    |  Y   |   Y    |   Y    |
+| Enumerated Columns          |   Y    |  Y   |   N    |   N    |
+| Single Unique Constraint    |   Y    |  Y   |   Y    |   Y    |
+| Composite Unique Constraint |   Y    |  Y   |   ?    |   ?    |
+| Composite Foreign Key       |   Y    |  Y   |   N    |   N    |
 
 ### License
 

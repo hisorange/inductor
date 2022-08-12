@@ -6,7 +6,7 @@ export const indexCreator = async (
   blueprint: IBlueprint,
   ctx: IMigrationContext,
 ) => {
-  // Apply the compositive indexes
+  // Apply the composite indexes
   for (const indexName in blueprint.indexes) {
     if (Object.prototype.hasOwnProperty.call(blueprint.indexes, indexName)) {
       const createIndexQuery = ctx.knex.schema.alterTable(
@@ -22,7 +22,7 @@ export const indexCreator = async (
       ctx.plan.steps.push({
         query: createIndexQuery,
         risk: MigrationRisk.LOW,
-        description: `Create compositive index [${indexName}] for table [${blueprint.tableName}]`,
+        description: `Create composite index [${indexName}] for table [${blueprint.tableName}]`,
         phase: 2,
       });
     }

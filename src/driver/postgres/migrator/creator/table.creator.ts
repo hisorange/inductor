@@ -18,7 +18,7 @@ export const tableCreator = async (
   });
 
   // Register the fact that the table exits
-  ctx.facts.addNewTable(blueprint.tableName);
+  ctx.facts.addTable(blueprint.tableName);
 
   // Add columns
   await columnCreator(blueprint, ctx);

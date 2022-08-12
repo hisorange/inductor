@@ -247,7 +247,7 @@ export const alterTable = async (
               }),
             ),
             risk: MigrationRisk.LOW,
-            description: `Creating compositive unique ${uniqueName}`,
+            description: `Creating composite unique ${uniqueName}`,
             phase: 3,
           });
 
@@ -263,7 +263,7 @@ export const alterTable = async (
               ),
             ),
             risk: MigrationRisk.LOW,
-            description: `Dropping compositive unique ${uniqueName}`,
+            description: `Dropping composite unique ${uniqueName}`,
             phase: 3,
           });
           break;

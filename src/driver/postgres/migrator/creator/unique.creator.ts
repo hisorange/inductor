@@ -6,7 +6,7 @@ export const uniqueCreator = async (
   blueprint: IBlueprint,
   ctx: IMigrationContext,
 ) => {
-  // Apply the compositive unique constraints
+  // Apply the composite unique constraints
   for (const uniqueName in blueprint.uniques) {
     if (Object.prototype.hasOwnProperty.call(blueprint.uniques, uniqueName)) {
       if (ctx.facts.isUniqueConstraintExists(uniqueName)) {
@@ -26,12 +26,12 @@ export const uniqueCreator = async (
       ctx.plan.steps.push({
         query: createUniqueQuery,
         risk: MigrationRisk.NONE,
-        description: `Create compositive unique [${uniqueName}] for table [${blueprint.tableName}]`,
+        description: `Create composite unique [${uniqueName}] for table [${blueprint.tableName}]`,
         phase: 2,
       });
 
       // Track to avoid duplicates in the same migration context.
-      ctx.facts.addNewUniqueConstraint(uniqueName);
+      ctx.facts.addUnique(uniqueName);
     }
   }
 };

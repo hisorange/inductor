@@ -2,6 +2,7 @@ import { ColumnTools } from '../../../column-tools';
 import { IColumn } from '../../../interface/blueprint/column.interface';
 import { ColumnKind } from '../../../interface/blueprint/column.kind';
 import { PostgresColumnType } from '../../../interface/blueprint/postgres/postgres.column-type';
+import { PostgresIndexType } from '../../../interface/blueprint/postgres/postgres.index-type';
 import { IFactCollector } from '../../../interface/fact/fact-collector.interface';
 import { createBlueprint } from '../../../util/create-blueprint';
 import { postgresValidateBlueprint } from '../postgres.blueprint-validator';
@@ -11,27 +12,41 @@ export const reverseTable = async (
   tableName: string,
 ) => {
   const blueprint = createBlueprint(tableName);
-  const columns = await facts.getTableColumns(tableName);
-  const compositivePrimaryKeys = await facts.getTablePrimaryKeys(tableName);
-  const compositiveUniques = await facts.getTableUniques(tableName);
-  const indexes = await facts.getTableIndexes(tableName);
-  const defaultValues = await facts.getTableDefaultValues(tableName);
+  blueprint.relations = facts.getTableForeignKeys(tableName);
+  blueprint.uniques = facts.getTableUniques(tableName);
+  blueprint.indexes = facts.getTableIndexes(tableName);
 
-  const singleColumnIndexes = indexes.filter(
-    index => index.columns.length === 1,
-  );
-  const compositiveIndexes = indexes.filter(index => index.columns.length > 1);
+  const compositePrimaryKeys = facts.getTablePrimaryKeys(tableName);
 
-  for (const compositiveIndex of compositiveIndexes) {
-    blueprint.indexes[compositiveIndex.name] = {
-      columns: compositiveIndex.columns,
-      type: compositiveIndex.type,
-    };
+  const [columns, defaultValues] = await Promise.all([
+    facts.getTableColumns(tableName),
+    facts.getTableDefaultValues(tableName),
+  ]);
+
+  const singleColumnIndexes = new Map<string, PostgresIndexType>();
+
+  // Remove non-composite indexes
+  for (const index in blueprint.indexes) {
+    if (Object.prototype.hasOwnProperty.call(blueprint.indexes, index)) {
+      const definition = blueprint.indexes[index];
+
+      if (definition.columns.length === 1) {
+        singleColumnIndexes.set(definition.columns[0], definition.type);
+
+        delete blueprint.indexes[index];
+      }
+    }
   }
 
-  // Merge compositive uniques into the blueprint, but remove the table prefix from the name
-  for (const [name, uniques] of Object.entries(compositiveUniques)) {
-    blueprint.uniques[name] = uniques;
+  // Remove non-composite uniques
+  for (const constraint in blueprint.uniques) {
+    if (Object.prototype.hasOwnProperty.call(blueprint.uniques, constraint)) {
+      const definition = blueprint.uniques[constraint];
+
+      if (definition.columns.length < 2) {
+        delete blueprint.uniques[constraint];
+      }
+    }
   }
 
   const enumColumns = await facts.findEnumeratorColumns(tableName, columns);
@@ -60,8 +75,8 @@ export const reverseTable = async (
     let isPrimary = column.is_primary_key;
     const isSerial = isSerialType(type);
 
-    // Determine if the column is a compositive primary key
-    if (isSerial || compositivePrimaryKeys.includes(column.name)) {
+    // Determine if the column is a composite primary key
+    if (isSerial || compositePrimaryKeys.includes(column.name)) {
       isPrimary = true;
     }
 
@@ -73,13 +88,9 @@ export const reverseTable = async (
 
     let isIndexed: IColumn['isIndexed'] = false;
 
-    const singleColumnIndex = singleColumnIndexes.find(index =>
-      index.columns.includes(column.name),
-    );
-
     // Determine if the column is an index
-    if (singleColumnIndex) {
-      isIndexed = singleColumnIndex.type;
+    if (singleColumnIndexes.has(column.name)) {
+      isIndexed = singleColumnIndexes.get(column.name)!;
     }
 
     const columnDef: IColumn = {
@@ -171,28 +182,6 @@ export const reverseTable = async (
     }
 
     blueprint.columns[column.name] = columnDef;
-  }
-
-  // Process foreign keys
-  const foreignKeys = facts.getTableForeignKeys(tableName);
-
-  // TODO process for 1 unique on local, or compositive unique with the same order
-  for (const [relationName, relationDefinition] of foreignKeys) {
-    blueprint.relations[relationName] = relationDefinition;
-
-    // Check if the local column is a primary key or has unique on it
-    if (
-      blueprint.relations[relationName].columns.every(cName => {
-        const column = blueprint.columns[cName];
-
-        // Simple unique
-        if (column.isPrimary || column.isUnique) {
-          return true;
-        }
-      })
-    ) {
-      blueprint.relations[relationName].isLocalUnique = true;
-    }
   }
 
   postgresValidateBlueprint(blueprint);
