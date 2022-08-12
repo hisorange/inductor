@@ -171,7 +171,7 @@ export const reverseTable = async (facts: IFacts, tableName: string) => {
   }
 
   // Process foreign keys
-  const foreignKeys = await facts.getTableForeignKeys(tableName);
+  const foreignKeys = facts.getTableForeignKeys(tableName);
 
   // TODO process for 1 unique on local, or compositive unique with the same order
   for (const [relationName, relationDefinition] of foreignKeys) {

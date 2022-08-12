@@ -1,6 +1,7 @@
 import { Column } from 'knex-schema-inspector/dist/types/column';
 import { IBlueprint } from './interface/blueprint/blueprint.interface';
 import { IRelation } from './interface/blueprint/relation.interface';
+import { IForeginKeyFact } from './interface/fact/foreign-key.fact';
 import { IFacts } from './interface/facts.interface';
 import { IInspector } from './interface/inspector.interface';
 import { IReverseIndex } from './interface/reverse/reverse-index.interface';
@@ -9,6 +10,8 @@ export class Facts implements IFacts {
   protected tables: string[] = [];
   protected uniqueConstraints: string[] = [];
   protected typeNames: string[] = [];
+  protected tableRowChecks = new Map<string, boolean>();
+  protected foreignKeysFacts: IForeginKeyFact = {};
 
   constructor(protected inspector: IInspector) {}
 
@@ -20,6 +23,17 @@ export class Facts implements IFacts {
     this.tables.push(tableName);
   }
 
+  async isTableHasRows(tableName: string): Promise<boolean> {
+    if (!this.tableRowChecks.has(tableName)) {
+      this.tableRowChecks.set(
+        tableName,
+        await this.inspector.isTableHasRows(tableName),
+      );
+    }
+
+    return this.tableRowChecks.get(tableName)!;
+  }
+
   addNewUniqueConstraint(constraintName: string): void {
     this.uniqueConstraints.push(constraintName);
   }
@@ -28,6 +42,8 @@ export class Facts implements IFacts {
     this.tables = await this.inspector.tables(); // TODO remove this and query the types with table indicator
     this.uniqueConstraints = await this.inspector.getUniqueConstraints();
     this.typeNames = await this.inspector.getDefinedTypes();
+    this.tableRowChecks = new Map<string, boolean>();
+    this.foreignKeysFacts = await this.inspector.getForeignKeys();
   }
 
   getListOfTables(filters: string[] = []): string[] {
@@ -73,8 +89,27 @@ export class Facts implements IFacts {
     return this.inspector.findEnumeratorColumns(tableName, columns);
   }
 
-  async getTableForeignKeys(tableName: string): Promise<[string, IRelation][]> {
-    return this.inspector.getForeignKeys(tableName);
+  getTableForeignKeys(tableName: string): [string, IRelation][] {
+    if (this.foreignKeysFacts.hasOwnProperty(tableName)) {
+      return Object.keys(this.foreignKeysFacts[tableName]).map(key => [
+        key,
+        this.foreignKeysFacts[tableName][key],
+      ]);
+    }
+
+    return [];
+  }
+
+  addTableForeignKey(
+    tableName: string,
+    name: string,
+    definition: IRelation<unknown>,
+  ): void {
+    if (!this.foreignKeysFacts.hasOwnProperty(tableName)) {
+      this.foreignKeysFacts[tableName] = {};
+    }
+
+    this.foreignKeysFacts[tableName][name] = definition;
   }
 
   async getTableColumns(tableName: string): Promise<Column[]> {

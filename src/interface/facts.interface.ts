@@ -26,7 +26,15 @@ export interface IFacts {
     tableName: string,
     columns: Column[],
   ): Promise<{ column: string; values: string[] }[]>;
-  getTableForeignKeys(tableName: string): Promise<[string, IRelation][]>;
+
+  getTableForeignKeys(tableName: string): [string, IRelation][];
+  addTableForeignKey(
+    tableName: string,
+    name: string,
+    definition: IRelation,
+  ): void;
+
+  isTableHasRows(tableName: string): Promise<boolean>;
 
   refresh(): Promise<void>;
 }

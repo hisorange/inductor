@@ -2,7 +2,7 @@ import BaseAdapter from 'knex-schema-inspector/dist/dialects/postgres';
 import { Column } from 'knex-schema-inspector/dist/types/column';
 import { IBlueprint } from '../../interface/blueprint/blueprint.interface';
 import { PostgresForeignAction } from '../../interface/blueprint/postgres/postgres.foreign-action';
-import { IRelation } from '../../interface/blueprint/relation.interface';
+import { IForeginKeyFact } from '../../interface/fact/foreign-key.fact';
 import { IInspector } from '../../interface/inspector.interface';
 import { IReverseIndex } from '../../interface/reverse/reverse-index.interface';
 import { IReverseUnique } from '../../interface/reverse/reverse-unique.interface';
@@ -13,6 +13,20 @@ export type IEnumeratorStructure = { column: string; values: string[] };
  * Reads the connection's database into a set of structure
  */
 export class PostgresInspector extends BaseAdapter implements IInspector {
+  async isTableHasRows(tableName: string): Promise<boolean> {
+    const countResult = await this.knex
+      .select()
+      .from(tableName)
+      .limit(1)
+      .count('* as count');
+
+    if (countResult[0].count > 0) {
+      return true;
+    }
+
+    return false;
+  }
+
   async getDefinedTypes(): Promise<string[]> {
     const query = this.knex({
       t: 'pg_type',
@@ -162,8 +176,8 @@ export class PostgresInspector extends BaseAdapter implements IInspector {
     return [];
   }
 
-  async getForeignKeys(tableName: string): Promise<[string, IRelation][]> {
-    const relations = new Map<string, IRelation>();
+  async getForeignKeys(): Promise<IForeginKeyFact> {
+    const facts: IForeginKeyFact = {};
 
     const query = this.knex({
       fks: 'information_schema.table_constraints',
@@ -227,7 +241,7 @@ export class PostgresInspector extends BaseAdapter implements IInspector {
         'fks.constraint_type': 'FOREIGN KEY',
         'pks.constraint_type': 'PRIMARY KEY',
         'fks.table_schema': this.knex.raw('current_schema()'),
-        'fks.table_name': tableName,
+        // 'fks.table_name': tableName,
       })
       .orderBy('fks.constraint_name')
       .orderBy('kcu_foreign.ordinal_position');
@@ -247,9 +261,16 @@ export class PostgresInspector extends BaseAdapter implements IInspector {
     }[] = await query;
 
     for (const row of rows) {
-      // Check if the relation already exists
-      if (!relations.has(row.relationName)) {
-        relations.set(row.relationName, {
+      // Create the table key
+      if (!facts.hasOwnProperty(row.localTableName)) {
+        facts[row.localTableName] = {};
+      }
+
+      const tableRef = facts[row.localTableName];
+
+      // Create the contraint key
+      if (!tableRef.hasOwnProperty(row.relationName)) {
+        tableRef[row.relationName] = {
           columns: [row.localColumnName],
           references: {
             table: row.remoteTableName,
@@ -258,15 +279,18 @@ export class PostgresInspector extends BaseAdapter implements IInspector {
           isLocalUnique: false,
           onDelete: row.deleteRule.toLowerCase() as PostgresForeignAction,
           onUpdate: row.updateRule.toLowerCase() as PostgresForeignAction,
-        });
-      } else {
-        const relation = relations.get(row.relationName)!;
-        relation.columns.push(row.localColumnName);
-        relation.references.columns.push(row.remoteColumnName);
+        };
+      }
+      // Add the new column
+      else {
+        tableRef[row.relationName].columns.push(row.localColumnName);
+        tableRef[row.relationName].references.columns.push(
+          row.remoteColumnName,
+        );
       }
     }
 
-    return Array.from(relations.entries());
+    return facts;
   }
 
   async getUniqueConstraints(): Promise<string[]> {

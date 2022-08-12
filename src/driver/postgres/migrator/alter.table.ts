@@ -102,13 +102,7 @@ export const alterTable = async (
           // If not then we have to check for rows
           // as creating a new column without default would make the step impossible
           if (typeof columnDefinition.defaultValue === 'undefined') {
-            const countResult = await ctx.knex
-              .select()
-              .from(target.tableName)
-              .limit(1)
-              .count('* as count');
-
-            if (countResult[0].count > 0) {
+            if (await ctx.facts.isTableHasRows(target.tableName)) {
               risk = MigrationRisk.IMPOSSIBLE;
             }
           }

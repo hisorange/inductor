@@ -26,6 +26,12 @@ export const fkCreator = async (
             .onUpdate(onUpdate),
       );
 
+      ctx.facts.addTableForeignKey(
+        blueprint.tableName,
+        foreignKeyName,
+        relation,
+      );
+
       ctx.plan.steps.push({
         query: createForeignKeyQuery,
         risk: ctx.facts.isTableExists(table)

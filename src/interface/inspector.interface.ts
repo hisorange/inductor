@@ -1,6 +1,6 @@
 import { Column } from 'knex-schema-inspector/dist/types/column';
 import { IBlueprint } from './blueprint/blueprint.interface';
-import { IRelation } from './blueprint/relation.interface';
+import { IForeginKeyFact } from './fact/foreign-key.fact';
 import { IReverseIndex } from './reverse/reverse-index.interface';
 import { IReverseUnique } from './reverse/reverse-unique.interface';
 
@@ -13,7 +13,7 @@ export interface IInspector {
     columns: Column[],
   ): Promise<{ column: string; values: string[] }[]>;
 
-  getForeignKeys(tableName: string): Promise<[string, IRelation][]>;
+  getForeignKeys(): Promise<IForeginKeyFact>;
   getUniqueConstraints(): Promise<string[]>;
   getIndexes(tableName: string): Promise<IReverseIndex[]>;
   getUniques(tableName: string): Promise<IReverseUnique[]>;
@@ -24,4 +24,5 @@ export interface IInspector {
   ): Promise<{ column: string; defaultValue: string }[]>;
 
   getDefinedTypes(): Promise<string[]>;
+  isTableHasRows(tableName: string): Promise<boolean>;
 }
