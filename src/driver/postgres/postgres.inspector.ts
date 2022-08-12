@@ -1,5 +1,6 @@
 import BaseAdapter from 'knex-schema-inspector/dist/dialects/postgres';
 import { Column } from 'knex-schema-inspector/dist/types/column';
+import { IInspector } from '../../interface/inspector.interface';
 import { IReverseIndex } from '../../interface/reverse/reverse-index.interface';
 import { IReverseUnique } from '../../interface/reverse/reverse-unique.interface';
 import { PostgresForeignAction } from '../../interface/schema/postgres/postgres.foreign-action';
@@ -11,7 +12,7 @@ export type IEnumeratorStructure = { column: string; values: string[] };
 /**
  * Reads the connection's database into a set of structure
  */
-export class PostgresInspector extends BaseAdapter {
+export class PostgresInspector extends BaseAdapter implements IInspector {
   async isTypeExists(typeName: string): Promise<boolean> {
     const query = this.knex('pg_type').where({ typname: typeName }).count();
     const result = await query;

@@ -6,19 +6,21 @@ import { Facts } from '../../facts';
 import { IDatabase } from '../../interface/database.interface';
 import { IDriver } from '../../interface/driver.interface';
 import { IFacts } from '../../interface/facts.interface';
+import { IInspector } from '../../interface/inspector.interface';
+import { IMigrator } from '../../interface/migrator.interface';
 import { ISchema } from '../../interface/schema/schema.interface';
 import { PostgresInspector } from './postgres.inspector';
 import { PostgresMigrator } from './postgres.migrator';
 import { postgresValidateSchema } from './postgres.schema-validator';
 
 export class PostgresDriver implements IDriver {
-  readonly migrator: PostgresMigrator;
-  readonly inspector: PostgresInspector;
+  readonly migrator: IMigrator;
+  readonly inspector: IInspector;
   readonly connection: Knex;
   readonly facts: IFacts;
 
   constructor(logger: Logger, readonly database: IDatabase) {
-    (this.connection = knex({
+    this.connection = knex({
       client: 'pg',
       connection: {
         application_name: 'Inductor',
@@ -29,9 +31,9 @@ export class PostgresDriver implements IDriver {
         min: 0,
         idleTimeoutMillis: 5_000,
       },
-    })),
-      (this.inspector = new PostgresInspector(this.connection));
+    });
 
+    this.inspector = new PostgresInspector(this.connection);
     this.facts = new Facts(this.inspector);
     this.migrator = new PostgresMigrator(logger, this.connection, this.facts);
   }

@@ -1,6 +1,6 @@
 import { Column } from 'knex-schema-inspector/dist/types/column';
-import { PostgresInspector } from './driver/postgres/postgres.inspector';
 import { IFacts } from './interface/facts.interface';
+import { IInspector } from './interface/inspector.interface';
 import { IReverseIndex } from './interface/reverse/reverse-index.interface';
 import { IRelation } from './interface/schema/relation.interface';
 import { ISchema } from './interface/schema/schema.interface';
@@ -9,7 +9,7 @@ export class Facts implements IFacts {
   protected tables: string[] = [];
   protected uniqueConstraints: string[] = [];
 
-  constructor(protected inspector: PostgresInspector) {}
+  constructor(protected inspector: IInspector) {}
 
   addNewTable(tableName: string) {
     this.tables.push(tableName);
