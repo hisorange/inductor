@@ -2,11 +2,14 @@ import { ColumnTools } from '../../../column-tools';
 import { IColumn } from '../../../interface/blueprint/column.interface';
 import { ColumnKind } from '../../../interface/blueprint/column.kind';
 import { PostgresColumnType } from '../../../interface/blueprint/postgres/postgres.column-type';
-import { IFacts } from '../../../interface/facts.interface';
+import { IFactCollector } from '../../../interface/fact/fact-collector.interface';
 import { createBlueprint } from '../../../util/create-blueprint';
 import { postgresValidateBlueprint } from '../postgres.blueprint-validator';
 
-export const reverseTable = async (facts: IFacts, tableName: string) => {
+export const reverseTable = async (
+  facts: IFactCollector,
+  tableName: string,
+) => {
   const blueprint = createBlueprint(tableName);
   const columns = await facts.getTableColumns(tableName);
   const compositivePrimaryKeys = await facts.getTablePrimaryKeys(tableName);

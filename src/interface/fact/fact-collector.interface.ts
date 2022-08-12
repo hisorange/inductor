@@ -1,9 +1,9 @@
 import { Column } from 'knex-schema-inspector/dist/types/column';
-import { IBlueprint } from './blueprint/blueprint.interface';
-import { IRelation } from './blueprint/relation.interface';
-import { IReverseIndex } from './reverse/reverse-index.interface';
+import { IBlueprint } from '../blueprint/blueprint.interface';
+import { IRelation } from '../blueprint/relation.interface';
+import { IReverseIndex } from '../reverse/reverse-index.interface';
 
-export interface IFacts {
+export interface IFactCollector {
   // Add live changes
   addNewTable(tableName: string): void;
   addNewUniqueConstraint(constraintName: string): void;
@@ -36,5 +36,5 @@ export interface IFacts {
 
   isTableHasRows(tableName: string): Promise<boolean>;
 
-  refresh(): Promise<void>;
+  gather(): Promise<void>;
 }

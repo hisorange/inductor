@@ -1,8 +1,8 @@
 import { Logger } from 'pino';
-import { ImpossibleMigration } from './exception/impossible-migration.exception';
-import { IMigrationPlan } from './interface/migration/migration-plan.interface';
-import { MigrationRisk } from './interface/migration/migration.risk';
-import { IStepResult } from './interface/migration/step-result.interface';
+import { ImpossibleMigration } from '../exception/impossible-migration.exception';
+import { IMigrationPlan } from '../interface/migration/migration-plan.interface';
+import { MigrationRisk } from '../interface/migration/migration.risk';
+import { IStepResult } from '../interface/migration/step-result.interface';
 
 export class MigrationPlan implements IMigrationPlan {
   readonly steps: IMigrationPlan['steps'] = [];

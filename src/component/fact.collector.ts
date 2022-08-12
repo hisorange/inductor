@@ -1,19 +1,19 @@
 import { Column } from 'knex-schema-inspector/dist/types/column';
-import { IBlueprint } from './interface/blueprint/blueprint.interface';
-import { IRelation } from './interface/blueprint/relation.interface';
-import { IForeginKeyFact } from './interface/fact/foreign-key.fact';
-import { IFacts } from './interface/facts.interface';
-import { IInspector } from './interface/inspector.interface';
-import { IReverseIndex } from './interface/reverse/reverse-index.interface';
+import { IBlueprint } from '../interface/blueprint/blueprint.interface';
+import { IRelation } from '../interface/blueprint/relation.interface';
+import { IFactCollector } from '../interface/fact/fact-collector.interface';
+import { IFactSource } from '../interface/fact/fact-source.interface';
+import { IForeginKeyFact } from '../interface/fact/foreign-key.fact';
+import { IReverseIndex } from '../interface/reverse/reverse-index.interface';
 
-export class Facts implements IFacts {
+export class FactCollector implements IFactCollector {
   protected tables: string[] = [];
   protected uniqueConstraints: string[] = [];
   protected typeNames: string[] = [];
   protected tableRowChecks = new Map<string, boolean>();
   protected foreignKeysFacts: IForeginKeyFact = {};
 
-  constructor(protected inspector: IInspector) {}
+  constructor(protected factSource: IFactSource) {}
 
   isTypeExists(typeName: string): boolean {
     return this.typeNames.includes(typeName);
@@ -27,7 +27,7 @@ export class Facts implements IFacts {
     if (!this.tableRowChecks.has(tableName)) {
       this.tableRowChecks.set(
         tableName,
-        await this.inspector.isTableHasRows(tableName),
+        await this.factSource.isTableHasRows(tableName),
       );
     }
 
@@ -38,12 +38,12 @@ export class Facts implements IFacts {
     this.uniqueConstraints.push(constraintName);
   }
 
-  async refresh(): Promise<void> {
-    this.tables = await this.inspector.tables(); // TODO remove this and query the types with table indicator
-    this.uniqueConstraints = await this.inspector.getUniqueConstraints();
-    this.typeNames = await this.inspector.getDefinedTypes();
+  async gather(): Promise<void> {
+    this.tables = await this.factSource.tables(); // TODO remove this and query the types with table indicator
+    this.uniqueConstraints = await this.factSource.getUniqueConstraints();
+    this.typeNames = await this.factSource.getDefinedTypes();
     this.tableRowChecks = new Map<string, boolean>();
-    this.foreignKeysFacts = await this.inspector.getForeignKeys();
+    this.foreignKeysFacts = await this.factSource.getForeignKeys();
   }
 
   getListOfTables(filters: string[] = []): string[] {
@@ -65,28 +65,28 @@ export class Facts implements IFacts {
   }
 
   async getTablePrimaryKeys(tableName: string): Promise<string[]> {
-    return this.inspector.getCompositePrimaryKeys(tableName);
+    return this.factSource.getCompositePrimaryKeys(tableName);
   }
 
   async getTableUniques(tableName: string): Promise<IBlueprint['uniques']> {
-    return this.inspector.getCompositeUniques(tableName);
+    return this.factSource.getCompositeUniques(tableName);
   }
 
   async getTableIndexes(tableName: string): Promise<IReverseIndex[]> {
-    return this.inspector.getIndexes(tableName);
+    return this.factSource.getIndexes(tableName);
   }
 
   async getTableDefaultValues(
     tableName: string,
   ): Promise<{ column: string; defaultValue: string }[]> {
-    return this.inspector.getDefaultValues(tableName);
+    return this.factSource.getDefaultValues(tableName);
   }
 
   async findEnumeratorColumns(
     tableName: string,
     columns: Column[],
   ): Promise<{ column: string; values: string[] }[]> {
-    return this.inspector.findEnumeratorColumns(tableName, columns);
+    return this.factSource.findEnumeratorColumns(tableName, columns);
   }
 
   getTableForeignKeys(tableName: string): [string, IRelation][] {
@@ -113,7 +113,7 @@ export class Facts implements IFacts {
   }
 
   async getTableColumns(tableName: string): Promise<Column[]> {
-    return this.inspector.columnInfo(tableName);
+    return this.factSource.columnInfo(tableName);
   }
 
   isTableExists(tableName: string): boolean {

@@ -2,22 +2,20 @@ import knex, { Knex } from 'knex';
 import { Model, ModelClass, Pojo } from 'objection';
 import { Logger } from 'pino';
 import { ColumnTools } from '../../column-tools';
-import { Facts } from '../../facts';
+import { FactCollector } from '../../component/fact.collector';
 import { IBlueprint } from '../../interface/blueprint/blueprint.interface';
 import { IDatabase } from '../../interface/database.interface';
 import { IDriver } from '../../interface/driver.interface';
-import { IFacts } from '../../interface/facts.interface';
-import { IInspector } from '../../interface/inspector.interface';
+import { IFactCollector } from '../../interface/fact/fact-collector.interface';
 import { IMigrator } from '../../interface/migrator.interface';
 import { postgresValidateBlueprint } from './postgres.blueprint-validator';
-import { PostgresInspector } from './postgres.inspector';
+import { PostgresInspector } from './postgres.fact-source';
 import { PostgresMigrator } from './postgres.migrator';
 
 export class PostgresDriver implements IDriver {
   readonly migrator: IMigrator;
-  readonly inspector: IInspector;
   readonly connection: Knex;
-  readonly facts: IFacts;
+  readonly factCollector: IFactCollector;
 
   constructor(logger: Logger, readonly database: IDatabase) {
     this.connection = knex({
@@ -33,9 +31,14 @@ export class PostgresDriver implements IDriver {
       },
     });
 
-    this.inspector = new PostgresInspector(this.connection);
-    this.facts = new Facts(this.inspector);
-    this.migrator = new PostgresMigrator(logger, this.connection, this.facts);
+    this.factCollector = new FactCollector(
+      new PostgresInspector(this.connection),
+    );
+    this.migrator = new PostgresMigrator(
+      logger,
+      this.connection,
+      this.factCollector,
+    );
   }
 
   validateBlueprint(blueprint: IBlueprint) {

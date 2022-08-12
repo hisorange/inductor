@@ -1,12 +1,12 @@
 import { Knex } from 'knex';
 import { Logger } from 'pino';
+import { MigrationPlan } from '../../component/migration.plan';
 import { IBlueprint } from '../../interface/blueprint/blueprint.interface';
 import { BlueprintKind } from '../../interface/blueprint/blueprint.kind';
-import { IFacts } from '../../interface/facts.interface';
+import { IFactCollector } from '../../interface/fact/fact-collector.interface';
 import { IMigrationContext } from '../../interface/migration/migration-ctx.interface';
 import { IMigrationPlan } from '../../interface/migration/migration-plan.interface';
 import { IMigrator } from '../../interface/migrator.interface';
-import { MigrationPlan } from '../../migration.plan';
 import { alterTable } from './migrator/alter.table';
 import { tableCreator } from './migrator/creator/table.creator';
 import { reverseTable } from './migrator/reverse.table';
@@ -16,7 +16,7 @@ export class PostgresMigrator implements IMigrator {
   constructor(
     readonly logger: Logger,
     protected knex: Knex,
-    protected facts: IFacts,
+    protected facts: IFactCollector,
   ) {}
 
   /**
@@ -25,7 +25,7 @@ export class PostgresMigrator implements IMigrator {
   async readState(filters: string[] = []): Promise<IBlueprint[]> {
     const blueprints = [];
 
-    await this.facts.refresh();
+    await this.facts.gather();
 
     for (const table of this.facts.getListOfTables(filters)) {
       const blueprint = await reverseTable(this.facts, table);
@@ -38,7 +38,7 @@ export class PostgresMigrator implements IMigrator {
 
   async cmpState(blueprints: IBlueprint[]): Promise<IMigrationPlan> {
     const plan = new MigrationPlan(this.logger);
-    await this.facts.refresh();
+    await this.facts.gather();
 
     const ctx: IMigrationContext = {
       knex: this.knex,

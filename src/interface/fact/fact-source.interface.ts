@@ -1,10 +1,10 @@
 import { Column } from 'knex-schema-inspector/dist/types/column';
-import { IBlueprint } from './blueprint/blueprint.interface';
-import { IForeginKeyFact } from './fact/foreign-key.fact';
-import { IReverseIndex } from './reverse/reverse-index.interface';
-import { IReverseUnique } from './reverse/reverse-unique.interface';
+import { IBlueprint } from '../blueprint/blueprint.interface';
+import { IReverseIndex } from '../reverse/reverse-index.interface';
+import { IReverseUnique } from '../reverse/reverse-unique.interface';
+import { IForeginKeyFact } from './foreign-key.fact';
 
-export interface IInspector {
+export interface IFactSource {
   tables(): Promise<string[]>;
   columnInfo(table: string): Promise<Column[]>;
   isTypeExists(typeName: string): Promise<boolean>;

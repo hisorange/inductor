@@ -24,9 +24,11 @@ describe('Create Table from Blueprint', () => {
       blueprint.columns = allColumn;
 
       await inductor.setState([blueprint]);
-      await inductor.driver.facts.refresh();
+      await inductor.driver.factCollector.gather();
 
-      expect(inductor.driver.facts.isTableExists(tableName)).toBeTruthy();
+      expect(
+        inductor.driver.factCollector.isTableExists(tableName),
+      ).toBeTruthy();
     },
   );
 });
