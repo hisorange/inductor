@@ -8,8 +8,13 @@ import { IReverseIndex } from './interface/reverse/reverse-index.interface';
 export class Facts implements IFacts {
   protected tables: string[] = [];
   protected uniqueConstraints: string[] = [];
+  protected typeNames: string[] = [];
 
   constructor(protected inspector: IInspector) {}
+
+  isTypeExists(typeName: string): boolean {
+    return this.typeNames.includes(typeName);
+  }
 
   addNewTable(tableName: string) {
     this.tables.push(tableName);
@@ -20,8 +25,9 @@ export class Facts implements IFacts {
   }
 
   async refresh(): Promise<void> {
-    this.tables = await this.inspector.tables();
+    this.tables = await this.inspector.tables(); // TODO remove this and query the types with table indicator
     this.uniqueConstraints = await this.inspector.getUniqueConstraints();
+    this.typeNames = await this.inspector.getDefinedTypes();
   }
 
   getListOfTables(filters: string[] = []): string[] {

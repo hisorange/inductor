@@ -36,7 +36,7 @@ export class Inductor implements IInductor {
   protected createLogger(name: string): Logger {
     return pino({
       name: `inductor.${name}`,
-      level: process.env.NODE_ENV !== 'production' ? 'debug' : 'warn',
+      level: process.env.NODE_ENV === 'production' ? 'warn' : 'debug',
       enabled: process.env.NODE_ENV !== 'test',
     });
   }

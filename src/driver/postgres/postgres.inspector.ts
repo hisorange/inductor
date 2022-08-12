@@ -13,6 +13,32 @@ export type IEnumeratorStructure = { column: string; values: string[] };
  * Reads the connection's database into a set of structure
  */
 export class PostgresInspector extends BaseAdapter implements IInspector {
+  async getDefinedTypes(): Promise<string[]> {
+    const query = this.knex({
+      t: 'pg_type',
+    })
+      .select({
+        type: 't.typname',
+      })
+      .join(
+        {
+          ns: 'pg_namespace',
+        },
+        {
+          'ns.oid': 't.typnamespace',
+        },
+      )
+      .where({
+        'ns.nspname': this.knex.raw('current_schema()'),
+        't.typisdefined': true,
+      })
+      .whereNot({
+        't.typarray': 0,
+      });
+
+    return (await query).map(r => r.type);
+  }
+
   async isTypeExists(typeName: string): Promise<boolean> {
     const query = this.knex('pg_type').where({ typname: typeName }).count();
     const result = await query;

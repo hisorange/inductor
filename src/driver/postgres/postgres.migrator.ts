@@ -61,7 +61,7 @@ export class PostgresMigrator implements IMigrator {
             targetState.tableName,
           );
 
-          await alterTable(this.knex.schema, currentState, targetState, plan);
+          await alterTable(ctx, currentState, targetState);
         }
       }
     }

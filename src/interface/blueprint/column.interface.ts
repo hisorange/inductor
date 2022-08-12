@@ -3,7 +3,7 @@ import { ColumnKind } from './column.kind';
 import { PostgresColumnType } from './postgres/postgres.column-type';
 import { PostgresIndexType } from './postgres/postgres.index-type';
 
-type EnumColumnType = {
+export type EnumColumnType = {
   name: PostgresColumnType.ENUM;
   nativeName: string;
   values: string[];

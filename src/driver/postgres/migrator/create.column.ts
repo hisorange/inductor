@@ -3,6 +3,7 @@ import { ColumnTools } from '../../../column-tools';
 import { IBlueprint } from '../../../interface/blueprint/blueprint.interface';
 import { IColumn } from '../../../interface/blueprint/column.interface';
 import { PostgresColumnType } from '../../../interface/blueprint/postgres/postgres.column-type';
+import { IFacts } from '../../../interface/facts.interface';
 import { getTypeName } from './util/get-type-name';
 
 export const createColumn = (
@@ -10,14 +11,22 @@ export const createColumn = (
   name: string,
   column: IColumn,
   blueprint: IBlueprint,
+  facts: IFacts,
 ) => {
   let columnBuilder: Knex.PostgreSqlColumnBuilder;
 
   if (column.type.name === PostgresColumnType.ENUM) {
-    columnBuilder = tableBuilder.enum(name, column.type.values, {
-      useNative: true,
-      enumName: column.type.nativeName,
-    });
+    // Check if the enum native type is already defined
+    const nativeType = column.type.nativeName;
+
+    if (facts.isTypeExists(nativeType)) {
+      columnBuilder = tableBuilder.specificType(name, nativeType);
+    } else {
+      columnBuilder = tableBuilder.enum(name, column.type.values, {
+        useNative: true,
+        enumName: column.type.nativeName,
+      });
+    }
   } else if (column.type.name === PostgresColumnType.JSON) {
     columnBuilder = tableBuilder.json(name);
   } else if (column.type.name === PostgresColumnType.JSONB) {

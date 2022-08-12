@@ -10,6 +10,7 @@ export interface IFacts {
 
   isTableExists(tableName: string): boolean;
   isUniqueConstraintExists(constraintName: string): boolean;
+  isTypeExists(typeName: string): boolean;
 
   getListOfTables(filters: string[]): string[];
 

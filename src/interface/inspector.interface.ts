@@ -22,4 +22,6 @@ export interface IInspector {
   getDefaultValues(
     tableName: string,
   ): Promise<{ column: string; defaultValue: string }[]>;
+
+  getDefinedTypes(): Promise<string[]>;
 }

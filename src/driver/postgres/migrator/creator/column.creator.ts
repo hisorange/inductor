@@ -14,7 +14,13 @@ export const columnCreator = async (
       builder => {
         for (const name in blueprint.columns) {
           if (Object.prototype.hasOwnProperty.call(blueprint.columns, name)) {
-            createColumn(builder, name, blueprint.columns[name], blueprint);
+            createColumn(
+              builder,
+              name,
+              blueprint.columns[name],
+              blueprint,
+              ctx.facts,
+            );
           }
         }
 
