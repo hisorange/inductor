@@ -22,7 +22,7 @@ export class PostgresMigrator implements IMigrator {
   /**
    * Read the database state and return it as a list of blueprints.
    */
-  async readState(filters: string[] = []): Promise<IBlueprint[]> {
+  async reverse(filters: string[] = []): Promise<IBlueprint[]> {
     const blueprints = [];
 
     await this.facts.gather();
@@ -36,7 +36,7 @@ export class PostgresMigrator implements IMigrator {
     return blueprints;
   }
 
-  async cmpState(blueprints: IBlueprint[]): Promise<IMigrationPlan> {
+  async compare(blueprints: IBlueprint[]): Promise<IMigrationPlan> {
     const plan = new MigrationPlan(this.logger);
     await this.facts.gather();
 
@@ -72,9 +72,9 @@ export class PostgresMigrator implements IMigrator {
   /**
    * Reads the connection's database into a set of structure, and update it to match the blueprints
    */
-  async setState(blueprints: IBlueprint[]): Promise<void> {
-    const changePlan = await this.cmpState(blueprints);
-    await changePlan.apply();
+  async migrate(blueprints: IBlueprint[]): Promise<void> {
+    const changePlan = await this.compare(blueprints);
+    await changePlan.execute();
   }
 
   async dropBlueprint(blueprint: IBlueprint): Promise<void> {

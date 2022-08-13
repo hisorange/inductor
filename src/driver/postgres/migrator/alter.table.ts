@@ -1,6 +1,6 @@
 import { diff } from 'just-diff';
 import { Knex } from 'knex';
-import { ColumnTools } from '../../../column-tools';
+import { ColumnTools } from '../../../component/column-tools';
 import { IColumn } from '../../../interface/blueprint';
 import { IBlueprint } from '../../../interface/blueprint/blueprint.interface';
 import { PostgresColumnType } from '../../../interface/blueprint/postgres/postgres.column-type';

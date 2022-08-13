@@ -38,7 +38,7 @@ const inductor = new Inductor({
 });
 
 // Apply the desired state, and the library will create or modify the databse to match the given blueprint
-await inductor.setState([
+await inductor.migrate([
   {
     name: 'my_table',
     kind: BlueprintKind.TABLE,

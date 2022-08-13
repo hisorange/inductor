@@ -1,4 +1,4 @@
-export * from './column-tools';
+export * from './component/column-tools';
 export * from './inductor';
 export * from './interface/blueprint/blueprint.interface';
 export * from './interface/blueprint/column.interface';

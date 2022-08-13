@@ -1,7 +1,7 @@
 import knex, { Knex } from 'knex';
 import { Model, ModelClass, Pojo } from 'objection';
 import { Logger } from 'pino';
-import { ColumnTools } from '../../column-tools';
+import { ColumnTools } from '../../component/column-tools';
 import { FactCollector } from '../../component/fact.collector';
 import { IBlueprint } from '../../interface/blueprint/blueprint.interface';
 import { IDatabase } from '../../interface/database.interface';
@@ -9,7 +9,7 @@ import { IDriver } from '../../interface/driver.interface';
 import { IFactCollector } from '../../interface/fact/fact-collector.interface';
 import { IMigrator } from '../../interface/migrator.interface';
 import { postgresValidateBlueprint } from './postgres.blueprint-validator';
-import { PostgresInspector } from './postgres.fact-source';
+import { PostgresFactSource } from './postgres.fact-source';
 import { PostgresMigrator } from './postgres.migrator';
 
 export class PostgresDriver implements IDriver {
@@ -17,11 +17,11 @@ export class PostgresDriver implements IDriver {
   readonly connection: Knex;
   readonly factCollector: IFactCollector;
 
-  constructor(logger: Logger, readonly database: IDatabase) {
+  constructor(id: string, logger: Logger, readonly database: IDatabase) {
     this.connection = knex({
       client: 'pg',
       connection: {
-        application_name: 'Inductor',
+        application_name: `inductor.${id}`,
         ...this.database.connection,
       },
       pool: {
@@ -32,7 +32,7 @@ export class PostgresDriver implements IDriver {
     });
 
     this.factCollector = new FactCollector(
-      new PostgresInspector(this.connection),
+      new PostgresFactSource(this.connection),
     );
     this.migrator = new PostgresMigrator(
       logger,

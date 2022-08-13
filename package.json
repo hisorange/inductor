@@ -41,13 +41,13 @@
   },
   "dependencies": {
     "just-diff": "^5.0.1",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "pino": "^7.11.0"
   },
   "optionalDependencies": {
     "knex-schema-inspector": "^2.0.3",
     "knex": "^2.2.0",
     "objection": "^3.0.1",
-    "pg": "^8.7.3",
-    "pino": "^7.11.0"
+    "pg": "^8.7.3"
   }
 }

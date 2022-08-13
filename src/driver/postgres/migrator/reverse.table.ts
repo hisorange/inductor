@@ -1,4 +1,4 @@
-import { ColumnTools } from '../../../column-tools';
+import { ColumnTools } from '../../../component/column-tools';
 import { IColumn } from '../../../interface/blueprint/column.interface';
 import { ColumnKind } from '../../../interface/blueprint/column.kind';
 import { PostgresColumnType } from '../../../interface/blueprint/postgres/postgres.column-type';

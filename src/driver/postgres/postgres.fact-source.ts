@@ -4,12 +4,10 @@ import { PostgresForeignAction } from '../../interface/blueprint/postgres/postgr
 import { IFactSource } from '../../interface/fact/fact-source.interface';
 import { IFacts } from '../../interface/fact/facts.interface';
 
-export type IEnumeratorStructure = { column: string; values: string[] };
-
 /**
  * Reads the connection's database into a set of structure
  */
-export class PostgresInspector extends BaseAdapter implements IFactSource {
+export class PostgresFactSource extends BaseAdapter implements IFactSource {
   async isTableHasRows(tableName: string): Promise<boolean> {
     const countResult = await this.knex
       .select()

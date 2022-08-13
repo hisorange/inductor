@@ -1,5 +1,5 @@
 import { Knex } from 'knex';
-import { ColumnTools } from '../../../column-tools';
+import { ColumnTools } from '../../../component/column-tools';
 import { IBlueprint } from '../../../interface/blueprint/blueprint.interface';
 import { IColumn } from '../../../interface/blueprint/column.interface';
 import { PostgresColumnType } from '../../../interface/blueprint/postgres/postgres.column-type';

@@ -55,10 +55,10 @@ describe('Primary Constraint', () => {
           isPrimary: true,
         },
       };
-      await inductor.setState([testBlueprint]);
+      await inductor.migrate([testBlueprint]);
 
       expect(testBlueprint).toStrictEqual(
-        (await inductor.readState([tableName]))[0],
+        (await inductor.reverse([tableName]))[0],
       );
     },
   );
@@ -80,28 +80,28 @@ describe('Primary Constraint', () => {
       };
 
       blueprintRV1.columns[colName].isPrimary = false;
-      await inductor.setState([blueprintRV1]);
+      await inductor.migrate([blueprintRV1]);
 
       expect(blueprintRV1).toStrictEqual(
-        (await inductor.readState([tableName]))[0],
+        (await inductor.reverse([tableName]))[0],
       );
 
       const blueprintRV2 = cloneDeep(blueprintRV1);
       blueprintRV2.columns[colName].isPrimary = true;
-      await inductor.setState([blueprintRV2]);
+      await inductor.migrate([blueprintRV2]);
 
       expect(blueprintRV2).toStrictEqual(
-        (await inductor.readState([tableName]))[0],
+        (await inductor.reverse([tableName]))[0],
       );
 
       const blueprintRV3 = cloneDeep(blueprintRV2);
       // Revert the nullable
       blueprintRV3.columns[colName].isPrimary = false;
 
-      await inductor.setState([blueprintRV3]);
+      await inductor.migrate([blueprintRV3]);
 
       expect(blueprintRV3).toStrictEqual(
-        (await inductor.readState([tableName]))[0],
+        (await inductor.reverse([tableName]))[0],
       );
     },
     5_000,
@@ -116,10 +116,10 @@ describe('Primary Constraint', () => {
         isPrimary: true,
       },
     };
-    await inductor.setState([blueprintRV1]);
+    await inductor.migrate([blueprintRV1]);
 
     expect(blueprintRV1).toStrictEqual(
-      (await inductor.readState([tableName]))[0],
+      (await inductor.reverse([tableName]))[0],
     );
 
     // Extend the primary
@@ -128,10 +128,10 @@ describe('Primary Constraint', () => {
       ...createColumnWithType(PostgresColumnType.INTEGER),
       isPrimary: true,
     };
-    await inductor.setState([blueprintRV2]);
+    await inductor.migrate([blueprintRV2]);
 
     expect(blueprintRV2).toStrictEqual(
-      (await inductor.readState([tableName]))[0],
+      (await inductor.reverse([tableName]))[0],
     );
 
     // Add the third primary column
@@ -140,28 +140,28 @@ describe('Primary Constraint', () => {
       ...createColumnWithType(PostgresColumnType.INTEGER),
       isPrimary: true,
     };
-    await inductor.setState([blueprintRV3]);
+    await inductor.migrate([blueprintRV3]);
 
     expect(blueprintRV3).toStrictEqual(
-      (await inductor.readState([tableName]))[0],
+      (await inductor.reverse([tableName]))[0],
     );
 
     // Remove the third primary column
     const blueprintRV4 = cloneDeep(blueprintRV3);
     blueprintRV4.columns.third.isPrimary = false;
-    await inductor.setState([blueprintRV4]);
+    await inductor.migrate([blueprintRV4]);
 
     expect(blueprintRV4).toStrictEqual(
-      (await inductor.readState([tableName]))[0],
+      (await inductor.reverse([tableName]))[0],
     );
 
     // Remove the second primary column
     const blueprintRV5 = cloneDeep(blueprintRV4);
     blueprintRV5.columns.second.isPrimary = false;
-    await inductor.setState([blueprintRV5]);
+    await inductor.migrate([blueprintRV5]);
 
     expect(blueprintRV5).toStrictEqual(
-      (await inductor.readState([tableName]))[0],
+      (await inductor.reverse([tableName]))[0],
     );
   });
 });

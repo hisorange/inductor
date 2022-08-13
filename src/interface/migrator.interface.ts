@@ -12,7 +12,7 @@ export interface IMigrator {
    */
   dropTable(tableName: string): Promise<void>;
 
-  readState(filters?: string[]): Promise<IBlueprint[]>;
-  cmpState(blueprints: IBlueprint[]): Promise<IMigrationPlan>;
-  setState(blueprints: IBlueprint[]): Promise<void>;
+  reverse(filters?: string[]): Promise<IBlueprint[]>;
+  compare(blueprints: IBlueprint[]): Promise<IMigrationPlan>;
+  migrate(blueprints: IBlueprint[]): Promise<void>;
 }

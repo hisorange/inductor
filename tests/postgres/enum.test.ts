@@ -35,11 +35,9 @@ describe('[Postgres] Enumerated Column', () => {
 
       // Remove blueprint if exists from a previous test
       await inductor.driver.migrator.dropBlueprint(blueprint);
-      await inductor.setState([blueprint]);
+      await inductor.migrate([blueprint]);
 
-      expect((await inductor.readState([tableName]))[0]).toStrictEqual(
-        blueprint,
-      );
+      expect((await inductor.reverse([tableName]))[0]).toStrictEqual(blueprint);
 
       // Cleanup
       await inductor.driver.migrator.dropBlueprint(blueprint);
@@ -70,10 +68,8 @@ describe('[Postgres] Enumerated Column', () => {
     };
 
     await inductor.driver.migrator.dropTable(tableName);
-    await inductor.setState([blueprintV1]);
-    expect((await inductor.readState([tableName]))[0]).toStrictEqual(
-      blueprintV1,
-    );
+    await inductor.migrate([blueprintV1]);
+    expect((await inductor.reverse([tableName]))[0]).toStrictEqual(blueprintV1);
 
     const blueprintV2 = cloneDeep(blueprintV1);
     (blueprintV2.columns.enum_column.type as EnumColumnType).values = [
@@ -81,10 +77,8 @@ describe('[Postgres] Enumerated Column', () => {
       'b',
       'd',
     ];
-    await inductor.setState([blueprintV2]);
+    await inductor.migrate([blueprintV2]);
 
-    expect((await inductor.readState([tableName]))[0]).toStrictEqual(
-      blueprintV2,
-    );
+    expect((await inductor.reverse([tableName]))[0]).toStrictEqual(blueprintV2);
   });
 });

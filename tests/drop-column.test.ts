@@ -49,17 +49,17 @@ describe('Drop Column', () => {
 
       const blueprintRV1 = createBlueprint(tableName);
       blueprintRV1.columns = columns;
-      await inductor.setState([blueprintRV1]);
+      await inductor.migrate([blueprintRV1]);
 
-      expect((await inductor.readState([tableName]))[0]).toStrictEqual(
+      expect((await inductor.reverse([tableName]))[0]).toStrictEqual(
         blueprintRV1,
       );
 
       const blueprintRV2 = cloneDeep(blueprintRV1);
       delete blueprintRV2.columns[col];
-      await inductor.setState([blueprintRV2]);
+      await inductor.migrate([blueprintRV2]);
 
-      expect((await inductor.readState([tableName]))[0]).toStrictEqual(
+      expect((await inductor.reverse([tableName]))[0]).toStrictEqual(
         blueprintRV2,
       );
     },

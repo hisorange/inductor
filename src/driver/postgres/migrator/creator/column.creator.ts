@@ -1,4 +1,4 @@
-import { ColumnTools } from '../../../../column-tools';
+import { ColumnTools } from '../../../../component/column-tools';
 import { IBlueprint } from '../../../../interface/blueprint/blueprint.interface';
 import { IMigrationContext } from '../../../../interface/migration/migration-ctx.interface';
 import { MigrationRisk } from '../../../../interface/migration/migration.risk';

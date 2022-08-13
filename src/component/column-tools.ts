@@ -1,5 +1,5 @@
-import { PostgresColumnTools } from './driver/postgres/postgres.column-tools';
-import { IBlueprint } from './interface/blueprint/blueprint.interface';
+import { PostgresColumnTools } from '../driver/postgres/postgres.column-tools';
+import { IBlueprint } from '../interface/blueprint/blueprint.interface';
 
 // Find and filter the primary column names from the blueprint
 export const filterPrimary = (blueprint: IBlueprint) => {

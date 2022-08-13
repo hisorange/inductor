@@ -52,11 +52,9 @@ describe('[Postgres] Default Value', () => {
 
       // Remove blueprint if exists from a previous test
       await inductor.driver.migrator.dropBlueprint(blueprint);
-      await inductor.setState([blueprint]);
+      await inductor.migrate([blueprint]);
 
-      expect((await inductor.readState([tableName]))[0]).toStrictEqual(
-        blueprint,
-      );
+      expect((await inductor.reverse([tableName]))[0]).toStrictEqual(blueprint);
 
       // Cleanup
       await inductor.driver.migrator.dropBlueprint(blueprint);

@@ -20,13 +20,13 @@ describe('[Postgres] Able to handle new column risks', () => {
       name: createColumnWithType(PostgresColumnType.TEXT),
     };
 
-    await inductor.setState([blueprintRV1]);
+    await inductor.migrate([blueprintRV1]);
 
-    expect((await inductor.readState([tableName]))[0]).toStrictEqual(
+    expect((await inductor.reverse([tableName]))[0]).toStrictEqual(
       blueprintRV1,
     );
 
-    const modelRV1 = inductor.getModel(tableName);
+    const modelRV1 = inductor.model(tableName);
     await modelRV1.query().insert({ name: 'duckling' });
 
     const blueprintRV2 = cloneDeep(blueprintRV1);
@@ -35,11 +35,11 @@ describe('[Postgres] Able to handle new column risks', () => {
       defaultValue: 42,
     };
 
-    await inductor.setState([blueprintRV2]);
-    const modelRV2 = inductor.getModel(tableName);
+    await inductor.migrate([blueprintRV2]);
+    const modelRV2 = inductor.model(tableName);
     await modelRV2.query().insert({ name: 'lama' });
 
-    expect((await inductor.readState([tableName]))[0]).toStrictEqual(
+    expect((await inductor.reverse([tableName]))[0]).toStrictEqual(
       blueprintRV2,
     );
   });
@@ -55,9 +55,9 @@ describe('[Postgres] Able to handle new column risks', () => {
       name: createColumnWithType(PostgresColumnType.TEXT),
     };
 
-    await inductor.setState([blueprintRV1]);
+    await inductor.migrate([blueprintRV1]);
 
-    expect((await inductor.readState([tableName]))[0]).toStrictEqual(
+    expect((await inductor.reverse([tableName]))[0]).toStrictEqual(
       blueprintRV1,
     );
 
@@ -66,7 +66,7 @@ describe('[Postgres] Able to handle new column risks', () => {
       PostgresColumnType.INTEGER,
     );
 
-    await expect(inductor.setState([blueprintRV2])).resolves.toBe(undefined);
+    await expect(inductor.migrate([blueprintRV2])).resolves.not.toThrow();
   });
 
   test('should be impossible to create new column without default value with non-zero rows', async () => {
@@ -80,13 +80,13 @@ describe('[Postgres] Able to handle new column risks', () => {
       name: createColumnWithType(PostgresColumnType.TEXT),
     };
 
-    await inductor.setState([blueprintRV1]);
+    await inductor.migrate([blueprintRV1]);
 
-    expect((await inductor.readState([tableName]))[0]).toStrictEqual(
+    expect((await inductor.reverse([tableName]))[0]).toStrictEqual(
       blueprintRV1,
     );
 
-    const modelRV1 = inductor.getModel(tableName);
+    const modelRV1 = inductor.model(tableName);
     await modelRV1.query().insert({ name: 'poc' });
 
     const blueprintRV2 = cloneDeep(blueprintRV1);
@@ -94,7 +94,7 @@ describe('[Postgres] Able to handle new column risks', () => {
       PostgresColumnType.INTEGER,
     );
 
-    await expect(inductor.setState([blueprintRV2])).rejects.toBeInstanceOf(
+    await expect(inductor.migrate([blueprintRV2])).rejects.toBeInstanceOf(
       ImpossibleMigration,
     );
   });

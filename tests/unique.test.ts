@@ -67,11 +67,9 @@ describe('Unique Constraint', () => {
       blueprint.columns[columnKey].isUnique = true;
 
       // Apply the statement
-      await inductor.setState([blueprint]);
+      await inductor.migrate([blueprint]);
 
-      expect(blueprint).toStrictEqual(
-        (await inductor.readState([tableName]))[0],
-      );
+      expect(blueprint).toStrictEqual((await inductor.reverse([tableName]))[0]);
     },
   );
 
@@ -90,29 +88,29 @@ describe('Unique Constraint', () => {
       };
       // Set nullable to false
       blueprintRV1.columns[colName].isUnique = false;
-      await inductor.setState([blueprintRV1]);
+      await inductor.migrate([blueprintRV1]);
 
       expect(blueprintRV1).toStrictEqual(
-        (await inductor.readState([tableName]))[0],
+        (await inductor.reverse([tableName]))[0],
       );
 
       const blueprintRV2 = cloneDeep(blueprintRV1);
       // Change the nullable
       blueprintRV2.columns[colName].isUnique = true;
-      await inductor.setState([blueprintRV2]);
+      await inductor.migrate([blueprintRV2]);
 
       expect(blueprintRV2).toStrictEqual(
-        (await inductor.readState([tableName]))[0],
+        (await inductor.reverse([tableName]))[0],
       );
 
       const blueprintRV3 = cloneDeep(blueprintRV2);
       // Revert the nullable
       blueprintRV3.columns[colName].isUnique = false;
 
-      await inductor.setState([blueprintRV3]);
+      await inductor.migrate([blueprintRV3]);
 
       expect(blueprintRV3).toStrictEqual(
-        (await inductor.readState([tableName]))[0],
+        (await inductor.reverse([tableName]))[0],
       );
     },
   );
@@ -140,11 +138,9 @@ describe('Unique Constraint', () => {
           columns: [columnKey, 'pair_for_comp'],
         },
       };
-      await inductor.setState([blueprint]);
+      await inductor.migrate([blueprint]);
 
-      expect(blueprint).toStrictEqual(
-        (await inductor.readState([tableName]))[0],
-      );
+      expect(blueprint).toStrictEqual((await inductor.reverse([tableName]))[0]);
     },
   );
 
@@ -158,11 +154,11 @@ describe('Unique Constraint', () => {
       },
       col_2: createColumnWithType(PostgresColumnType.INTEGER),
     };
-    await inductor.setState([blueprintRV1]);
+    await inductor.migrate([blueprintRV1]);
 
-    console.log('READ STATE', (await inductor.readState([tableName]))[0]);
+    console.log('READ STATE', (await inductor.reverse([tableName]))[0]);
 
-    expect((await inductor.readState([tableName]))[0]).toStrictEqual(
+    expect((await inductor.reverse([tableName]))[0]).toStrictEqual(
       blueprintRV1,
     );
 
@@ -172,10 +168,10 @@ describe('Unique Constraint', () => {
     blueprintRV2.uniques.test_cmp_1 = {
       columns: ['col_1', 'col_2'],
     };
-    await inductor.setState([blueprintRV2]);
+    await inductor.migrate([blueprintRV2]);
 
     expect(blueprintRV2).toStrictEqual(
-      (await inductor.readState([tableName]))[0],
+      (await inductor.reverse([tableName]))[0],
     );
 
     // Create a new column and add it to the composite unique
@@ -184,19 +180,19 @@ describe('Unique Constraint', () => {
       PostgresColumnType.INTEGER,
     );
     blueprintRV3.uniques.test_cmp_1.columns.push('col_3');
-    await inductor.setState([blueprintRV3]);
+    await inductor.migrate([blueprintRV3]);
 
     expect(blueprintRV3).toStrictEqual(
-      (await inductor.readState([tableName]))[0],
+      (await inductor.reverse([tableName]))[0],
     );
 
     // Remove the composite unique
     const blueprintRV4 = cloneDeep(blueprintRV3);
     delete blueprintRV4.uniques.test_cmp_1;
-    await inductor.setState([blueprintRV4]);
+    await inductor.migrate([blueprintRV4]);
 
     expect(blueprintRV4).toStrictEqual(
-      (await inductor.readState([tableName]))[0],
+      (await inductor.reverse([tableName]))[0],
     );
   });
 });

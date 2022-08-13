@@ -23,7 +23,7 @@ describe('Create Table from Blueprint', () => {
       const blueprint = createBlueprint(tableName);
       blueprint.columns = allColumn;
 
-      await inductor.setState([blueprint]);
+      await inductor.migrate([blueprint]);
       await inductor.driver.factCollector.gather();
 
       expect(

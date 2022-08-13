@@ -35,27 +35,27 @@ describe('[Postgres] Alter Nullable', () => {
 
       // Remove blueprint if exists from a previous test
       await inductor.driver.migrator.dropTable(tableName);
-      await inductor.setState([blueprintRV1]);
+      await inductor.migrate([blueprintRV1]);
 
-      expect((await inductor.readState([tableName]))[0]).toStrictEqual(
+      expect((await inductor.reverse([tableName]))[0]).toStrictEqual(
         blueprintRV1,
       );
 
       // Continue with a true state
       blueprintRV1.columns[columnName].isNullable = true;
       blueprintRV1.columns[columnName].defaultValue = null;
-      await inductor.setState([blueprintRV1]);
+      await inductor.migrate([blueprintRV1]);
 
-      expect((await inductor.readState([tableName]))[0]).toStrictEqual(
+      expect((await inductor.reverse([tableName]))[0]).toStrictEqual(
         blueprintRV1,
       );
 
       // Continue with a false state
       blueprintRV1.columns[columnName].isNullable = false;
       blueprintRV1.columns[columnName].defaultValue = undefined;
-      await inductor.setState([blueprintRV1]);
+      await inductor.migrate([blueprintRV1]);
 
-      expect((await inductor.readState([tableName]))[0]).toStrictEqual(
+      expect((await inductor.reverse([tableName]))[0]).toStrictEqual(
         blueprintRV1,
       );
 

@@ -60,7 +60,7 @@ export class MigrationPlan implements IMigrationPlan {
     }
   }
 
-  async apply(): Promise<IStepResult[]> {
+  async execute(): Promise<IStepResult[]> {
     const results = [];
 
     if (this.steps.length) {

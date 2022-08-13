@@ -31,11 +31,9 @@ describe('[Postgres] Column Adding', () => {
 
       // Remove blueprint if exists from a previous test
       await inductor.driver.migrator.dropTable(tableName);
-      await inductor.setState([blueprint]);
+      await inductor.migrate([blueprint]);
 
-      expect((await inductor.readState([tableName]))[0]).toStrictEqual(
-        blueprint,
-      );
+      expect((await inductor.reverse([tableName]))[0]).toStrictEqual(blueprint);
 
       // Cleanup
       await inductor.driver.migrator.dropTable(tableName);

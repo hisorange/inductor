@@ -10,11 +10,6 @@ export interface IDatabase<
   ColumnMeta = unknown,
 > {
   /**
-   * Identifier for logging purposes
-   */
-  readonly id: string;
-
-  /**
    * Indicates which driver is used to connect to the database,
    * and which model is used to interact with the blueprints.
    */

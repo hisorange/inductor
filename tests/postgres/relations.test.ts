@@ -55,14 +55,10 @@ describe('[Postgres] Relations', () => {
     await inductor.driver.migrator.dropBlueprint(blueprintA);
 
     // Apply the new state
-    await inductor.setState([blueprintA, blueprintB]);
+    await inductor.migrate([blueprintA, blueprintB]);
 
-    expect((await inductor.readState([tableNameA]))[0]).toStrictEqual(
-      blueprintA,
-    );
-    expect((await inductor.readState([tableNameB]))[0]).toStrictEqual(
-      blueprintB,
-    );
+    expect((await inductor.reverse([tableNameA]))[0]).toStrictEqual(blueprintA);
+    expect((await inductor.reverse([tableNameB]))[0]).toStrictEqual(blueprintB);
 
     // Cleanup
     await inductor.driver.migrator.dropBlueprint(blueprintB);

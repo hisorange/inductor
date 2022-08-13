@@ -21,5 +21,5 @@ export interface IMigrationPlan {
   readonly steps: IPlanStep[];
 
   getHighestRisk(): MigrationRisk;
-  apply(): Promise<IStepResult[]>;
+  execute(): Promise<IStepResult[]>;
 }

@@ -3,7 +3,6 @@ import { IDatabase } from '../../src/interface/database.interface';
 
 export const createTestInstance = (filters: string[] = []) => {
   const database: IDatabase = {
-    id: 'test_database',
     connection: {
       host: 'localhost',
       port: 9999,
