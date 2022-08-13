@@ -1,5 +1,6 @@
 import { Knex } from 'knex';
-import { IBlueprint } from './blueprint/blueprint.interface';
+import { IBlueprint } from '../blueprint/blueprint.interface';
+import { DatabaseProvider } from './database.provider';
 
 /**
  * Describe the database blueprint, and the connection associated with it.
@@ -13,7 +14,7 @@ export interface IDatabase<
    * Indicates which driver is used to connect to the database,
    * and which model is used to interact with the blueprints.
    */
-  readonly provider: 'postgres';
+  readonly provider: DatabaseProvider;
 
   /**
    * Database connection configuration

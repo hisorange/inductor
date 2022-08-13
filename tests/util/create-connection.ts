@@ -1,5 +1,6 @@
 import { Inductor } from '../../src/inductor';
-import { IDatabase } from '../../src/interface/database.interface';
+import { IDatabase } from '../../src/interface/database/database.interface';
+import { DatabaseProvider } from '../../src/interface/database/database.provider';
 
 export const createTestInstance = (filters: string[] = []) => {
   const database: IDatabase = {
@@ -10,7 +11,7 @@ export const createTestInstance = (filters: string[] = []) => {
       user: 'inductor',
       password: 'inductor',
     },
-    provider: 'postgres',
+    provider: DatabaseProvider.POSTGRES,
     isReadOnly: false,
     blueprints: {},
     filters: filters,

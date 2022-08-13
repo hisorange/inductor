@@ -2,22 +2,23 @@ import { Model, ModelClass } from 'objection';
 import pino, { Logger } from 'pino';
 import { v4 } from 'uuid';
 import { PostgresDriver } from './driver/postgres/postgres.driver';
-import { ModelNotFound } from './exception/model-not-found.exception';
-import { IBlueprint } from './interface/blueprint/blueprint.interface';
-import { IDatabase } from './interface/database.interface';
-import { IDriver } from './interface/driver.interface';
-import { IInductor } from './interface/inductor.interface';
-import { IMigrationPlan } from './interface/migration/migration-plan.interface';
-import { IStepResult } from './interface/migration/step-result.interface';
+import { ModelNotFound, UnsupportedProvider } from './exception';
+import {
+  IBlueprint,
+  IDatabase,
+  IDriver,
+  IInductor,
+  IMigrationPlan,
+  IStepResult,
+} from './interface';
+import { BlueprintMap } from './interface/blueprint.map';
+import { DatabaseProvider } from './interface/database/database.provider';
 
 export class Inductor implements IInductor {
   /**
    * Associated blueprints with the connection
    */
-  protected blueprints = new Map<
-    string,
-    { blueprint: IBlueprint; model: ModelClass<Model> }
-  >();
+  protected blueprints: BlueprintMap = new Map();
 
   readonly id: string;
   readonly logger: Logger;
@@ -29,7 +30,19 @@ export class Inductor implements IInductor {
   constructor(database: IDatabase, logger?: Inductor['logger']) {
     this.id = v4().substring(0, 8);
     this.logger = logger || this.createLogger();
-    this.driver = new PostgresDriver(this.id, this.logger, database);
+    this.driver = this.createDriver(database);
+  }
+
+  /**
+   * Create the driver instance based on the provider.
+   */
+  protected createDriver(database: IDatabase): IDriver {
+    switch (database.provider) {
+      case DatabaseProvider.POSTGRES:
+        return new PostgresDriver(this.id, this.logger, database);
+      default:
+        throw new UnsupportedProvider(database.provider);
+    }
   }
 
   /**
@@ -48,8 +61,7 @@ export class Inductor implements IInductor {
   }
 
   async migrate(blueprints: IBlueprint[]): Promise<IStepResult[]> {
-    return this.driver.migrator
-      .compare(blueprints)
+    return this.compare(blueprints)
       .then(plan => plan.execute())
       .then(result => {
         this.blueprints = new Map(
@@ -66,16 +78,16 @@ export class Inductor implements IInductor {
       });
   }
 
+  reverse(filters: string[] = []): Promise<IBlueprint[]> {
+    return this.driver.migrator.reverse(filters);
+  }
+
   model<T extends Model = Model>(table: string): ModelClass<T> {
     if (!this.blueprints.has(table)) {
       throw new ModelNotFound(table);
     }
 
     return this.blueprints.get(table)!.model as ModelClass<T>;
-  }
-
-  reverse(filters: string[] = []): Promise<IBlueprint[]> {
-    return this.driver.migrator.reverse(filters);
   }
 
   close() {

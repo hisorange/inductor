@@ -1,7 +1,7 @@
 import { Knex } from 'knex';
 import { Model, ModelClass } from 'objection';
 import { IBlueprint } from './blueprint/blueprint.interface';
-import { IDatabase } from './database.interface';
+import { IDatabase } from './database/database.interface';
 import { IFactCollector } from './fact/fact-collector.interface';
 import { IMigrator } from './migrator.interface';
 

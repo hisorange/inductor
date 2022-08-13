@@ -4,7 +4,7 @@ import { Logger } from 'pino';
 import { ColumnTools } from '../../component/column-tools';
 import { FactCollector } from '../../component/fact.collector';
 import { IBlueprint } from '../../interface/blueprint/blueprint.interface';
-import { IDatabase } from '../../interface/database.interface';
+import { IDatabase } from '../../interface/database/database.interface';
 import { IDriver } from '../../interface/driver.interface';
 import { IFactCollector } from '../../interface/fact/fact-collector.interface';
 import { IMigrator } from '../../interface/migrator.interface';

@@ -37,18 +37,16 @@ export class PostgresMigrator implements IMigrator {
   }
 
   async compare(blueprints: IBlueprint[]): Promise<IMigrationPlan> {
-    const plan = new MigrationPlan(this.logger);
-    await this.facts.gather();
-
     const ctx: IMigrationContext = {
       knex: this.knex,
       facts: this.facts,
-      plan: plan,
+      plan: new MigrationPlan(this.logger),
     };
 
-    for (const targetState of blueprints) {
-      this.logger.debug('Processing blueprint %s', targetState.tableName);
+    await this.facts.gather();
 
+    for (const targetState of blueprints) {
+      // TODO after every fact is concurrent and live updated, we can do this concurrently
       if (targetState.kind === BlueprintKind.TABLE) {
         // If the table doesn't exist, create it
         if (!this.facts.isTableExists(targetState.tableName)) {
@@ -66,15 +64,7 @@ export class PostgresMigrator implements IMigrator {
       }
     }
 
-    return plan;
-  }
-
-  /**
-   * Reads the connection's database into a set of structure, and update it to match the blueprints
-   */
-  async migrate(blueprints: IBlueprint[]): Promise<void> {
-    const changePlan = await this.compare(blueprints);
-    await changePlan.execute();
+    return ctx.plan;
   }
 
   async dropBlueprint(blueprint: IBlueprint): Promise<void> {

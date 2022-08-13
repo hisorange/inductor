@@ -14,5 +14,4 @@ export interface IMigrator {
 
   reverse(filters?: string[]): Promise<IBlueprint[]>;
   compare(blueprints: IBlueprint[]): Promise<IMigrationPlan>;
-  migrate(blueprints: IBlueprint[]): Promise<void>;
 }

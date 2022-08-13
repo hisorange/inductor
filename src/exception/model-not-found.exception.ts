@@ -1,1 +1,3 @@
-export class ModelNotFound extends Error {}
+import { InductorException } from './inductor.exception';
+
+export class ModelNotFound extends InductorException {}
