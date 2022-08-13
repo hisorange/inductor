@@ -1,4 +1,5 @@
 import { Column } from 'knex-schema-inspector/dist/types/column';
+import { IColumn } from '../interface';
 import { IBlueprint } from '../interface/blueprint/blueprint.interface';
 import { IRelation } from '../interface/blueprint/relation.interface';
 import { IFactCollector } from '../interface/fact/fact-collector.interface';
@@ -43,6 +44,7 @@ export class FactCollector implements IFactCollector {
       uniques,
       compositePrimaryKeys,
       indexes,
+      defaultValues,
     ] = await Promise.all([
       this.factSource.tables(),
       this.factSource.getDefinedTypes(),
@@ -51,6 +53,7 @@ export class FactCollector implements IFactCollector {
       this.factSource.getUniques(),
       this.factSource.getCompositePrimaryKeys(),
       this.factSource.getIndexes(),
+      this.factSource.getDefaultValues(),
     ]);
 
     this.facts = {
@@ -62,6 +65,7 @@ export class FactCollector implements IFactCollector {
       tableRowChecks: new Map<string, boolean>(),
       compositePrimaryKeys,
       indexes,
+      defaultValues,
     };
 
     //console.log(inspect(this.facts, false, 5, true));
@@ -103,10 +107,12 @@ export class FactCollector implements IFactCollector {
       : {};
   }
 
-  async getTableDefaultValues(
-    table: string,
-  ): Promise<{ column: string; defaultValue: string }[]> {
-    return this.factSource.getDefaultValues(table);
+  getTableDefaultValues(table: string): {
+    [columnName: string]: IColumn['defaultValue'];
+  } {
+    return this.facts.defaultValues.hasOwnProperty(table)
+      ? this.facts.defaultValues[table]
+      : {};
   }
 
   async findEnumeratorColumns(

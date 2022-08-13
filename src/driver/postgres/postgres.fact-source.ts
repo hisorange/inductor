@@ -451,13 +451,12 @@ export class PostgresFactSource extends BaseAdapter implements IFactSource {
     return fact;
   }
 
-  async getDefaultValues(
-    tableName: string,
-  ): Promise<{ column: string; defaultValue: string }[]> {
+  async getDefaultValues(): Promise<IFacts['defaultValues']> {
     const query = this.knex({
       a: 'pg_catalog.pg_attribute',
     })
       .select({
+        tableName: 'pc.relname',
         column: 'a.attname',
         isNotNull: 'attnotnull',
         defaultValue: this.knex.raw('pg_get_expr(d.adbin, d.adrelid)'),
@@ -490,27 +489,38 @@ export class PostgresFactSource extends BaseAdapter implements IFactSource {
       .andWhere('a.attnum', '>', 0)
       .andWhere({
         'pn.nspname': this.knex.raw('current_schema()'),
-        'pc.relname': tableName,
+        //'pc.relname': tableName,
       });
 
-    return (await query).map(r => {
-      return {
-        column: r.column,
-        defaultValue:
-          r.defaultValue === null
-            ? r.isNotNull
-              ? undefined
-              : null
-            : [
-                'NULL::bpchar',
-                'NULL::"bit"',
-                'NULL::bit varying',
-                'NULL::character varying',
-                'NULL::numeric',
-              ].includes(r.defaultValue)
-            ? null
-            : r.defaultValue.replace(/^'(.+)'::.+$/, '$1'),
-      };
-    });
+    const facts: IFacts['defaultValues'] = {};
+    const rows: {
+      tableName: string;
+      column: string;
+      isNotNull: string;
+      defaultValue: string;
+    }[] = await query;
+
+    for (const row of rows) {
+      if (!facts.hasOwnProperty(row.tableName)) {
+        facts[row.tableName] = {};
+      }
+
+      facts[row.tableName][row.column] =
+        row.defaultValue === null
+          ? row.isNotNull
+            ? undefined
+            : null
+          : [
+              'NULL::bpchar',
+              'NULL::"bit"',
+              'NULL::bit varying',
+              'NULL::character varying',
+              'NULL::numeric',
+            ].includes(row.defaultValue)
+          ? null
+          : row.defaultValue.replace(/^'(.+)'::.+$/, '$1');
+    }
+
+    return facts;
   }
 }

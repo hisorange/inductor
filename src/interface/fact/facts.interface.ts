@@ -1,4 +1,4 @@
-import { IBlueprint, IRelation } from '../blueprint';
+import { IBlueprint, IColumn, IRelation } from '../blueprint';
 
 export interface IFacts {
   tables: string[];
@@ -18,5 +18,10 @@ export interface IFacts {
   };
   indexes: {
     [tableName: string]: IBlueprint['indexes'];
+  };
+  defaultValues: {
+    [tableName: string]: {
+      [columnName: string]: IColumn['defaultValue'];
+    };
   };
 }

@@ -15,10 +15,7 @@ export interface IFactSource {
   getIndexes(): Promise<IFacts['indexes']>;
   getUniques(): Promise<IFacts['uniques']>;
   getCompositePrimaryKeys(): Promise<IFacts['compositePrimaryKeys']>;
-  getDefaultValues(
-    tableName: string,
-  ): Promise<{ column: string; defaultValue: string }[]>;
-
+  getDefaultValues(): Promise<IFacts['defaultValues']>;
   getDefinedTypes(): Promise<string[]>;
   isTableHasRows(tableName: string): Promise<boolean>;
 }

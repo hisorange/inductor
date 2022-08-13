@@ -1,4 +1,5 @@
 import { Column } from 'knex-schema-inspector/dist/types/column';
+import { IColumn } from '../blueprint';
 import { IBlueprint } from '../blueprint/blueprint.interface';
 import { IRelation } from '../blueprint/relation.interface';
 
@@ -18,9 +19,9 @@ export interface IFactCollector {
   getTablePrimaryKeys(tableName: string): string[];
   getTableUniques(tableName: string): IBlueprint['uniques'];
   getTableIndexes(tableName: string): IBlueprint['indexes'];
-  getTableDefaultValues(
-    tableName: string,
-  ): Promise<{ column: string; defaultValue: string }[]>;
+  getTableDefaultValues(tableName: string): {
+    [columnName: string]: IColumn['defaultValue'];
+  };
   findEnumeratorColumns(
     tableName: string,
     columns: Column[],
