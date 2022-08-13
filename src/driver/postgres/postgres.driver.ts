@@ -1,3 +1,4 @@
+import EventEmitter2 from 'eventemitter2';
 import knex, { Knex } from 'knex';
 import { Model, ModelClass, Pojo } from 'objection';
 import { Logger } from 'pino';
@@ -17,7 +18,12 @@ export class PostgresDriver implements IDriver {
   readonly connection: Knex;
   readonly factCollector: IFactCollector;
 
-  constructor(id: string, logger: Logger, readonly database: IDatabase) {
+  constructor(
+    id: string,
+    readonly logger: Logger,
+    readonly database: IDatabase,
+    readonly event: EventEmitter2,
+  ) {
     this.connection = knex({
       client: 'pg',
       connection: {
@@ -29,6 +35,11 @@ export class PostgresDriver implements IDriver {
         min: 0,
         idleTimeoutMillis: 5_000,
       },
+    });
+
+    this.connection.on('query', query => {
+      this.event.emit('query', query);
+      //console.log(query.sql);
     });
 
     this.factCollector = new FactCollector(

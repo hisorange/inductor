@@ -1,4 +1,6 @@
+import EventEmitter2 from 'eventemitter2';
 import { Model, ModelClass } from 'objection';
+import { Logger } from 'pino';
 import { IBlueprint } from './blueprint/blueprint.interface';
 import { IDriver } from './driver.interface';
 import { IMigrationPlan } from './migration/migration-plan.interface';
@@ -37,4 +39,8 @@ export interface IInductor {
    * Get the database provider specific driver.
    */
   readonly driver: IDriver;
+
+  readonly logger: Logger;
+
+  readonly event: EventEmitter2;
 }

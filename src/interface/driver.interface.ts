@@ -1,3 +1,4 @@
+import EventEmitter2 from 'eventemitter2';
 import { Knex } from 'knex';
 import { Model, ModelClass } from 'objection';
 import { IBlueprint } from './blueprint/blueprint.interface';
@@ -10,6 +11,7 @@ export interface IDriver {
    * Associated database
    */
   readonly database: IDatabase;
+  readonly event: EventEmitter2;
 
   /**
    * Migration planner / executer instance

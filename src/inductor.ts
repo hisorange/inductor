@@ -1,3 +1,4 @@
+import EventEmitter2 from 'eventemitter2';
 import { Model, ModelClass } from 'objection';
 import pino, { Logger } from 'pino';
 import { v4 } from 'uuid';
@@ -23,6 +24,7 @@ export class Inductor implements IInductor {
   readonly id: string;
   readonly logger: Logger;
   readonly driver: IDriver;
+  readonly event: EventEmitter2;
 
   /**
    * Create a new connection
@@ -30,6 +32,7 @@ export class Inductor implements IInductor {
   constructor(database: IDatabase, logger?: Inductor['logger']) {
     this.id = v4().substring(0, 8);
     this.logger = logger || this.createLogger();
+    this.event = new EventEmitter2();
     this.driver = this.createDriver(database);
   }
 
@@ -39,7 +42,7 @@ export class Inductor implements IInductor {
   protected createDriver(database: IDatabase): IDriver {
     switch (database.provider) {
       case DatabaseProvider.POSTGRES:
-        return new PostgresDriver(this.id, this.logger, database);
+        return new PostgresDriver(this.id, this.logger, database, this.event);
       default:
         throw new UnsupportedProvider(database.provider);
     }
@@ -91,7 +94,6 @@ export class Inductor implements IInductor {
   }
 
   close() {
-    this.logger.info('Closing connection');
     return this.driver.connection.destroy();
   }
 }
