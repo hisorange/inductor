@@ -8,9 +8,9 @@ import { IDatabase } from '../../interface/database/database.interface';
 import { IDriver } from '../../interface/driver.interface';
 import { IFactCollector } from '../../interface/fact/fact-collector.interface';
 import { IMigrator } from '../../interface/migrator.interface';
-import { postgresValidateBlueprint } from './postgres.blueprint-validator';
 import { PostgresFactSource } from './postgres.fact-source';
-import { PostgresMigrator } from './postgres.migrator';
+import { PostgresMigrationPlanner } from './postgres.migrator';
+import { PostgresValidator } from './postgres.validator';
 
 export class PostgresDriver implements IDriver {
   readonly migrator: IMigrator;
@@ -34,7 +34,7 @@ export class PostgresDriver implements IDriver {
     this.factCollector = new FactCollector(
       new PostgresFactSource(this.connection),
     );
-    this.migrator = new PostgresMigrator(
+    this.migrator = new PostgresMigrationPlanner(
       logger,
       this.connection,
       this.factCollector,
@@ -42,7 +42,7 @@ export class PostgresDriver implements IDriver {
   }
 
   validateBlueprint(blueprint: IBlueprint) {
-    postgresValidateBlueprint(blueprint);
+    PostgresValidator(blueprint);
   }
 
   /**

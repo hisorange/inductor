@@ -7,12 +7,12 @@ import { IFactCollector } from '../../interface/fact/fact-collector.interface';
 import { IMigrationContext } from '../../interface/migration/migration-ctx.interface';
 import { IMigrationPlan } from '../../interface/migration/migration-plan.interface';
 import { IMigrator } from '../../interface/migrator.interface';
-import { alterTable } from './migrator/alter.table';
-import { tableCreator } from './migrator/creator/table.creator';
-import { reverseTable } from './migrator/reverse.table';
+import { PostgresAlterPlanner } from './migrator/alter.planner';
+import { PostgresCreatePlanner } from './migrator/create.planner';
+import { PostgresStateReader } from './migrator/state.reader';
 
 // Calculates and applies the changes on the database
-export class PostgresMigrator implements IMigrator {
+export class PostgresMigrationPlanner implements IMigrator {
   constructor(
     readonly logger: Logger,
     protected knex: Knex,
@@ -26,11 +26,10 @@ export class PostgresMigrator implements IMigrator {
     const blueprints = [];
 
     await this.facts.gather();
+    const reader = new PostgresStateReader(this.facts);
 
     for (const table of this.facts.getTables(filters)) {
-      const blueprint = await reverseTable(this.facts, table);
-
-      blueprints.push(blueprint);
+      blueprints.push(await reader.reverse(table));
     }
 
     return blueprints;
@@ -44,25 +43,23 @@ export class PostgresMigrator implements IMigrator {
     };
 
     await this.facts.gather();
+    const creator = new PostgresCreatePlanner(ctx);
+    const alterer = new PostgresAlterPlanner(ctx);
 
-    for (const targetState of blueprints) {
-      // TODO after every fact is concurrent and live updated, we can do this concurrently
-      if (targetState.kind === BlueprintKind.TABLE) {
-        // If the table doesn't exist, create it
-        if (!this.facts.isTableExists(targetState.tableName)) {
-          await tableCreator(targetState, ctx);
+    await Promise.all(
+      blueprints.map(blueprint => {
+        if (blueprint.kind === BlueprintKind.TABLE) {
+          // If the table doesn't exist, create it
+          if (!this.facts.isTableExists(blueprint.tableName)) {
+            return creator.createTable(blueprint);
+          }
+          // If the table exists, compare the state and apply the alterations
+          else {
+            return alterer.alterTable(blueprint);
+          }
         }
-        // If the table exists, compare the state and apply the alterations
-        else {
-          const currentState = await reverseTable(
-            this.facts,
-            targetState.tableName,
-          );
-
-          await alterTable(ctx, currentState, targetState);
-        }
-      }
-    }
+      }),
+    );
 
     return ctx.plan;
   }

@@ -4,7 +4,7 @@ import { PostgresColumnType } from '../../interface/blueprint/postgres/postgres.
 import { PostgresIndexType } from '../../interface/blueprint/postgres/postgres.index-type';
 import { PostgresColumnTools } from './postgres.column-tools';
 
-export const postgresValidateBlueprint = (blueprint: IBlueprint): void => {
+export const PostgresValidator = (blueprint: IBlueprint): void => {
   // Validate the table name, or it's just spaces
   if (!blueprint.tableName || blueprint.tableName.trim().length === 0) {
     throw new InvalidBlueprint('Missing table name');
