@@ -1,5 +1,4 @@
 import { Column } from 'knex-schema-inspector/dist/types/column';
-import { IColumn } from '../interface';
 import { IBlueprint } from '../interface/blueprint/blueprint.interface';
 import { IRelation } from '../interface/blueprint/relation.interface';
 import { IFactCollector } from '../interface/fact/fact-collector.interface';
@@ -44,7 +43,8 @@ export class FactCollector implements IFactCollector {
       uniques,
       compositePrimaryKeys,
       indexes,
-      defaultValues,
+      columnValues,
+      enumerators,
     ] = await Promise.all([
       this.factSource.tables(),
       this.factSource.getDefinedTypes(),
@@ -53,7 +53,8 @@ export class FactCollector implements IFactCollector {
       this.factSource.getUniques(),
       this.factSource.getCompositePrimaryKeys(),
       this.factSource.getIndexes(),
-      this.factSource.getDefaultValues(),
+      this.factSource.getColumnValues(),
+      this.factSource.getEnumerators(),
     ]);
 
     this.facts = {
@@ -65,7 +66,8 @@ export class FactCollector implements IFactCollector {
       tableRowChecks: new Map<string, boolean>(),
       compositePrimaryKeys,
       indexes,
-      defaultValues,
+      columnValues,
+      enumerators,
     };
 
     //console.log(inspect(this.facts, false, 5, true));
@@ -107,19 +109,21 @@ export class FactCollector implements IFactCollector {
       : {};
   }
 
-  getTableDefaultValues(table: string): {
-    [columnName: string]: IColumn['defaultValue'];
-  } {
-    return this.facts.defaultValues.hasOwnProperty(table)
-      ? this.facts.defaultValues[table]
+  getTableColumnValues(table: string) {
+    return this.facts.columnValues.hasOwnProperty(table)
+      ? this.facts.columnValues[table]
       : {};
   }
 
-  async findEnumeratorColumns(
-    table: string,
-    columns: Column[],
-  ): Promise<{ column: string; values: string[] }[]> {
-    return this.factSource.findEnumeratorColumns(table, columns);
+  getTableEnumerators(table: string): {
+    [columnName: string]: {
+      nativeType: string;
+      values: string[];
+    };
+  } {
+    return this.facts.enumerators.hasOwnProperty(table)
+      ? this.facts.enumerators[table]
+      : {};
   }
 
   getTableForeignKeys(table: string): IBlueprint['relations'] {

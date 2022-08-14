@@ -9,5 +9,6 @@ export const createFacts = (): IFacts => ({
   tableRowChecks: new Map<string, boolean>(),
   compositePrimaryKeys: {},
   indexes: {},
-  defaultValues: {},
+  columnValues: {},
+  enumerators: {},
 });

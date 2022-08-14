@@ -24,22 +24,11 @@ describe('Unique Constraint', () => {
     await Promise.all([
       inductor.driver.migrator.dropTable(`unique_test_upgrade`),
     ]);
-
-    // Drop test tables from previous tests
-    await Promise.all(
-      testTables.map(name =>
-        inductor.driver.migrator.dropTable(`unique_test_${name}`),
-      ),
-    );
-
-    // Drop test tables from previous tests
     await Promise.all(
       testTables.map(name =>
         inductor.driver.migrator.dropTable(`alter_unique_${name}`),
       ),
     );
-
-    // Drop test tables from previous tests
     await Promise.all(
       testTables.map(name =>
         inductor.driver.migrator.dropTable(`unique_test_comp_${name}`),
@@ -47,34 +36,13 @@ describe('Unique Constraint', () => {
     );
   };
 
-  beforeAll(() => cleanup());
-
   afterAll(async () => {
     await cleanup();
     await inductor.close();
   });
 
-  test.each(Object.keys(uniqueCols))(
-    'should create simple unique on [%s] column type',
-    async (columnKey: string) => {
-      const tableName = `unique_test_${columnKey}`;
-
-      const blueprint = createBlueprint(tableName);
-      blueprint.columns = {
-        [columnKey]: uniqueCols[columnKey],
-      };
-      // Set the column to unique
-      blueprint.columns[columnKey].isUnique = true;
-
-      // Apply the statement
-      await inductor.migrate([blueprint]);
-
-      expect(blueprint).toStrictEqual((await inductor.reverse([tableName]))[0]);
-    },
-  );
-
   test.each(testTables)(
-    'should alter the UNIQUE flag for [%s] column',
+    'should manipulate the UNIQUE flag for [%s] column',
     async colName => {
       const tableName = `alter_unique_${colName}`;
       const blueprintRV1 = createBlueprint(tableName);
@@ -86,7 +54,7 @@ describe('Unique Constraint', () => {
         [colName]: uniqueCols[colName],
         createdAt: createColumnWithType(PostgresColumnType.DATE),
       };
-      // Set nullable to false
+      // Set unique to false
       blueprintRV1.columns[colName].isUnique = false;
       await inductor.migrate([blueprintRV1]);
 
@@ -95,7 +63,7 @@ describe('Unique Constraint', () => {
       );
 
       const blueprintRV2 = cloneDeep(blueprintRV1);
-      // Change the nullable
+      // Change the unique
       blueprintRV2.columns[colName].isUnique = true;
       await inductor.migrate([blueprintRV2]);
 
@@ -104,7 +72,7 @@ describe('Unique Constraint', () => {
       );
 
       const blueprintRV3 = cloneDeep(blueprintRV2);
-      // Revert the nullable
+      // Revert the unique
       blueprintRV3.columns[colName].isUnique = false;
 
       await inductor.migrate([blueprintRV3]);

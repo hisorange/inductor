@@ -20,15 +20,13 @@ export class PostgresStateReader {
     blueprint.indexes = this.facts.getTableIndexes(tableName);
 
     const compositePrimaryKeys = this.facts.getTablePrimaryKeys(tableName);
-    const defaultValues = this.facts.getTableDefaultValues(tableName);
+    const defaultValues = this.facts.getTableColumnValues(tableName);
+    const enumerators = this.facts.getTableEnumerators(tableName);
 
     const columns = await this.facts.getTableColumns(tableName);
-    const enumColumns = await this.facts.findEnumeratorColumns(
-      tableName,
-      columns,
-    );
 
     const singleColumnIndexes = new Map<string, PostgresIndexType>();
+    const singleColumnUniques = new Set<string>();
 
     // Remove non-composite indexes
     for (const index in blueprint.indexes) {
@@ -49,6 +47,7 @@ export class PostgresStateReader {
         const definition = blueprint.uniques[constraint];
 
         if (definition.columns.length < 2) {
+          singleColumnUniques.add(definition.columns[0]);
           delete blueprint.uniques[constraint];
         }
       }
@@ -56,34 +55,29 @@ export class PostgresStateReader {
 
     for (const column of columns) {
       const columnName = column.name;
+      const valueDef = defaultValues[columnName];
       const columnDef: IColumn = {
         type: {
-          name: column.data_type,
+          name: valueDef.typeName,
         } as IColumn['type'],
         kind: ColumnKind.COLUMN,
-        isNullable: column.is_nullable,
-        isUnique: column.is_unique,
-        isPrimary:
-          column.is_primary_key || compositePrimaryKeys.includes(columnName),
+        isNullable: valueDef.isNullable,
+        isUnique: singleColumnUniques.has(columnName),
+        isPrimary: compositePrimaryKeys.includes(columnName),
         isIndexed: false,
-        defaultValue: undefined,
+        defaultValue: valueDef.defaultValue,
       };
 
       columnDef.isIndexed = singleColumnIndexes.has(columnName)
         ? singleColumnIndexes.get(columnName)!
         : false;
-      columnDef.defaultValue = defaultValues.hasOwnProperty(columnName)
-        ? defaultValues[columnName]
-        : undefined;
-
-      const enumColDef = enumColumns.find(e => e.column == columnName);
 
       // Enum column check
-      if (enumColDef) {
+      if (enumerators.hasOwnProperty(columnName)) {
         columnDef.type = {
           name: PostgresColumnType.ENUM,
-          values: enumColDef.values,
-          nativeName: column.data_type,
+          values: enumerators[columnName].values,
+          nativeName: enumerators[columnName].nativeType,
         };
       }
 

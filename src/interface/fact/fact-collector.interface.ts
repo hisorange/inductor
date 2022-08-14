@@ -19,13 +19,20 @@ export interface IFactCollector {
   getTablePrimaryKeys(tableName: string): string[];
   getTableUniques(tableName: string): IBlueprint['uniques'];
   getTableIndexes(tableName: string): IBlueprint['indexes'];
-  getTableDefaultValues(tableName: string): {
-    [columnName: string]: IColumn['defaultValue'];
+  getTableColumnValues(tableName: string): {
+    [columnName: string]: {
+      defaultValue: IColumn['defaultValue'];
+      isNullable: boolean;
+      typeName: string;
+    };
   };
-  findEnumeratorColumns(
-    tableName: string,
-    columns: Column[],
-  ): Promise<{ column: string; values: string[] }[]>;
+
+  getTableEnumerators(tableName: string): {
+    [columnName: string]: {
+      nativeType: string;
+      values: string[];
+    };
+  };
 
   getTableForeignKeys(tableName: string): IBlueprint['relations'];
   addTableForeignKey(

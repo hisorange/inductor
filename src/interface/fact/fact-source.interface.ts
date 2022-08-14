@@ -4,18 +4,13 @@ import { IFacts } from './facts.interface';
 export interface IFactSource {
   tables(): Promise<string[]>;
   columnInfo(table: string): Promise<Column[]>;
-  isTypeExists(typeName: string): Promise<boolean>;
-  findEnumeratorColumns(
-    tableName: string,
-    columns: Column[],
-  ): Promise<{ column: string; values: string[] }[]>;
-
+  getEnumerators(): Promise<IFacts['enumerators']>;
   getRelations(): Promise<IFacts['relations']>;
   getUniqueConstraints(): Promise<string[]>;
   getIndexes(): Promise<IFacts['indexes']>;
   getUniques(): Promise<IFacts['uniques']>;
   getCompositePrimaryKeys(): Promise<IFacts['compositePrimaryKeys']>;
-  getDefaultValues(): Promise<IFacts['defaultValues']>;
+  getColumnValues(): Promise<IFacts['columnValues']>;
   getDefinedTypes(): Promise<string[]>;
   isTableHasRows(tableName: string): Promise<boolean>;
 }

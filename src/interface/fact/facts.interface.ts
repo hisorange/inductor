@@ -19,9 +19,21 @@ export interface IFacts {
   indexes: {
     [tableName: string]: IBlueprint['indexes'];
   };
-  defaultValues: {
+  columnValues: {
     [tableName: string]: {
-      [columnName: string]: IColumn['defaultValue'];
+      [columnName: string]: {
+        defaultValue: IColumn['defaultValue'];
+        isNullable: boolean;
+        typeName: string;
+      };
+    };
+  };
+  enumerators: {
+    [tableName: string]: {
+      [columnName: string]: {
+        nativeType: string;
+        values: string[];
+      };
     };
   };
 }

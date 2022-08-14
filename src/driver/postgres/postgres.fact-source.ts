@@ -1,5 +1,4 @@
 import BaseAdapter from 'knex-schema-inspector/dist/dialects/postgres';
-import { Column } from 'knex-schema-inspector/dist/types/column';
 import { PostgresForeignAction } from '../../interface/blueprint/postgres/postgres.foreign-action';
 import { IFactSource } from '../../interface/fact/fact-source.interface';
 import { IFacts } from '../../interface/fact/facts.interface';
@@ -48,127 +47,59 @@ export class PostgresFactSource extends BaseAdapter implements IFactSource {
     return (await query).map(r => r.type);
   }
 
-  async isTypeExists(typeName: string): Promise<boolean> {
-    const query = this.knex('pg_type').where({ typname: typeName }).count();
-    const result = await query;
-
-    return result[0].count == 1;
-  }
-
-  protected genericTypes(): RegExp[] {
-    return [
-      /^bigint/i,
-      /^int8/i,
-      /^bigserial/i,
-      /^serial8/i,
-      /^bit/i,
-      /^bit varying/i,
-      /^boolean/i,
-      /^bool/i,
-      /^box/i,
-      /^bytea/i,
-      /^character/i,
-      /^char/i,
-      /^character varying/i,
-      /^varchar/i,
-      /^cidr/i,
-      /^circle/i,
-      /^date/i,
-      /^double precision/i,
-      /^float8/i,
-      /^inet/i,
-      /^integer/i,
-      /^int/i,
-      /^int4/i,
-      /^interval/i,
-      /^line/i,
-      /^json/i,
-      /^macaddr/i,
-      /^jsonb/i,
-      /^money/i,
-      /^lseg/i,
-      /^decimal/i,
-      /^macaddr8/i,
-      /^pg_lsn/i,
-      /^numeric/i,
-      /^point/i,
-      /^path/i,
-      /^real/i,
-      /^pg_snapshot/i,
-      /^smallint/i,
-      /^polygon/i,
-      /^smallserial/i,
-      /^float4/i,
-      /^serial/i,
-      /^int2/i,
-      /^text/i,
-      /^serial2/i,
-      /^timetz/i,
-      /^serial4/i,
-      /^tsquery/i,
-      /^time/i,
-      /^txid_snapshot/i,
-      /^timestamp/i,
-      /^xml/i,
-      /^tsvector/i,
-      /^uuid/i,
-    ];
-  }
-
-  async findEnumeratorColumns(
-    tableName: string,
-    columns: Column[],
-  ): Promise<{ column: string; values: string[] }[]> {
-    const enumColumns = columns
-      .filter(col => !this.genericTypes().some(p => p.test(col.data_type)))
-      .map(c => c.name);
-
-    if (enumColumns.length) {
-      const query = this.knex({
-        e: 'pg_enum',
+  async getEnumerators(): Promise<IFacts['enumerators']> {
+    const query = this.knex({
+      e: 'pg_enum',
+    })
+      .select({
+        table: 'c.table_name',
+        type: 't.typname',
+        value: 'e.enumlabel',
+        column: 'c.column_name',
       })
-        .select({
-          type: 't.typname',
-          value: 'e.enumlabel',
-          column: 'c.column_name',
-        })
-        .join(
-          {
-            t: 'pg_type',
-          },
-          {
-            't.oid': 'e.enumtypid',
-          },
-        )
-        .join(
-          {
-            c: 'information_schema.columns',
-          },
-          {
-            't.typname': 'c.udt_name',
-          },
-        )
-        .where({
-          'c.table_name': tableName,
-        })
-        .whereIn('c.column_name', enumColumns)
-        .groupBy(['e.enumlabel', 't.typname', 'c.column_name']);
+      .join(
+        {
+          t: 'pg_type',
+        },
+        {
+          't.oid': 'e.enumtypid',
+        },
+      )
+      .join(
+        {
+          c: 'information_schema.columns',
+        },
+        {
+          't.typname': 'c.udt_name',
+        },
+      )
+      .orderBy('e.enumsortorder', 'asc');
 
-      const rows: { type: string; value: string; column: string }[] =
-        await query;
-      const enums = new Map<string, string[]>(enumColumns.map(n => [n, []]));
+    const rows: {
+      table: string;
+      type: string;
+      value: string;
+      column: string;
+    }[] = await query;
 
-      for (const row of rows) {
-        enums.get(row.column)!.push(row.value);
+    const fact: IFacts['enumerators'] = {};
+
+    for (const row of rows) {
+      if (!fact.hasOwnProperty(row.table)) {
+        fact[row.table] = {};
       }
 
-      return Array.from(enums.entries()).map(([column, values]) => ({
-        column,
-        values,
-      }));
+      if (!fact[row.table].hasOwnProperty(row.column)) {
+        fact[row.table][row.column] = {
+          nativeType: row.type,
+          values: [],
+        };
+      }
+
+      fact[row.table][row.column].values.push(row.value);
     }
 
-    return [];
+    return fact;
   }
 
   async getRelations(): Promise<IFacts['relations']> {
@@ -451,7 +382,7 @@ export class PostgresFactSource extends BaseAdapter implements IFactSource {
     return fact;
   }
 
-  async getDefaultValues(): Promise<IFacts['defaultValues']> {
+  async getColumnValues(): Promise<IFacts['columnValues']> {
     const query = this.knex({
       a: 'pg_catalog.pg_attribute',
     })
@@ -460,6 +391,7 @@ export class PostgresFactSource extends BaseAdapter implements IFactSource {
         column: 'a.attname',
         isNotNull: 'attnotnull',
         defaultValue: this.knex.raw('pg_get_expr(d.adbin, d.adrelid)'),
+        typeName: this.knex.raw('ty.typname::regtype::text'),
       })
       .leftJoin(
         {
@@ -485,6 +417,14 @@ export class PostgresFactSource extends BaseAdapter implements IFactSource {
           'pn.oid': 'pc.relnamespace',
         },
       )
+      .join(
+        {
+          ty: 'pg_catalog.pg_type',
+        },
+        {
+          'ty.oid': 'a.atttypid',
+        },
+      )
       .whereNot('a.attisdropped', true)
       .andWhere('a.attnum', '>', 0)
       .andWhere({
@@ -492,12 +432,13 @@ export class PostgresFactSource extends BaseAdapter implements IFactSource {
         //'pc.relname': tableName,
       });
 
-    const facts: IFacts['defaultValues'] = {};
+    const facts: IFacts['columnValues'] = {};
     const rows: {
       tableName: string;
       column: string;
       isNotNull: string;
       defaultValue: string;
+      typeName: string;
     }[] = await query;
 
     for (const row of rows) {
@@ -505,7 +446,7 @@ export class PostgresFactSource extends BaseAdapter implements IFactSource {
         facts[row.tableName] = {};
       }
 
-      facts[row.tableName][row.column] =
+      const defaultValue =
         row.defaultValue === null
           ? row.isNotNull
             ? undefined
@@ -519,6 +460,12 @@ export class PostgresFactSource extends BaseAdapter implements IFactSource {
             ].includes(row.defaultValue)
           ? null
           : row.defaultValue.replace(/^'(.+)'::.+$/, '$1');
+
+      facts[row.tableName][row.column] = {
+        defaultValue,
+        isNullable: !row.isNotNull,
+        typeName: row.typeName,
+      };
     }
 
     return facts;
