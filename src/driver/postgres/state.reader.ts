@@ -1,4 +1,4 @@
-import { ColumnTools } from '../../../component/column-tools';
+import { ColumnTools } from '../../component/column-tools';
 import {
   ColumnKind,
   IBlueprint,
@@ -6,9 +6,9 @@ import {
   IFactCollector,
   PostgresColumnType,
   PostgresIndexType,
-} from '../../../interface';
-import { createBlueprint } from '../../../util/create-blueprint';
-import { PostgresValidator } from '../postgres.validator';
+} from '../../interface';
+import { createBlueprint } from '../../util/create-blueprint';
+import { PostgresValidator } from './postgres.validator';
 
 export class PostgresStateReader {
   constructor(protected facts: IFactCollector) {}
@@ -20,10 +20,8 @@ export class PostgresStateReader {
     blueprint.indexes = this.facts.getTableIndexes(tableName);
 
     const compositePrimaryKeys = this.facts.getTablePrimaryKeys(tableName);
-    const defaultValues = this.facts.getTableColumnValues(tableName);
+    const columns = this.facts.getTableColumnInfo(tableName);
     const enumerators = this.facts.getTableEnumerators(tableName);
-
-    const columns = await this.facts.getTableColumns(tableName);
 
     const singleColumnIndexes = new Map<string, PostgresIndexType>();
     const singleColumnUniques = new Set<string>();
@@ -53,19 +51,18 @@ export class PostgresStateReader {
       }
     }
 
-    for (const column of columns) {
-      const columnName = column.name;
-      const valueDef = defaultValues[columnName];
+    for (const columnName of Object.keys(columns)) {
+      const columnInfo = columns[columnName];
       const columnDef: IColumn = {
         type: {
-          name: valueDef.typeName,
+          name: columnInfo.typeName,
         } as IColumn['type'],
         kind: ColumnKind.COLUMN,
-        isNullable: valueDef.isNullable,
+        isNullable: columnInfo.isNullable,
         isUnique: singleColumnUniques.has(columnName),
         isPrimary: compositePrimaryKeys.includes(columnName),
         isIndexed: false,
-        defaultValue: valueDef.defaultValue,
+        defaultValue: columnInfo.defaultValue,
       };
 
       columnDef.isIndexed = singleColumnIndexes.has(columnName)
@@ -109,27 +106,27 @@ export class PostgresStateReader {
 
       // Check for precision
       if (ColumnTools.postgres.isTypeRequiresPrecision(columnDef.type.name)) {
-        (columnDef.type as any).precision = column.numeric_precision;
+        (columnDef.type as any).precision = columnInfo.precision;
       }
       // Check for scale
       if (ColumnTools.postgres.isTypeRequiresScale(columnDef.type.name)) {
-        (columnDef.type as any).scale = column.numeric_scale;
+        (columnDef.type as any).scale = columnInfo.scale;
       }
       // Check for length
       if (ColumnTools.postgres.isTypeRequiresLength(columnDef.type.name)) {
-        (columnDef.type as any).length = column.max_length;
+        (columnDef.type as any).length = columnInfo.maxLength;
       }
 
       // Numeric can have precision and scale
       if (PostgresColumnType.NUMERIC === columnDef.type.name) {
         // Check if the precision is set
-        if (column.numeric_precision !== null) {
-          (columnDef.type as any).precision = column.numeric_precision;
+        if (columnInfo.precision !== null) {
+          (columnDef.type as any).precision = columnInfo.precision;
         }
 
         // Check if the scale is set
-        if (column.numeric_scale !== null) {
-          (columnDef.type as any).scale = column.numeric_scale;
+        if (columnInfo.scale !== null) {
+          (columnDef.type as any).scale = columnInfo.scale;
         }
       }
 

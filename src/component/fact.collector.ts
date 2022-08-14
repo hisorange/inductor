@@ -1,4 +1,3 @@
-import { Column } from 'knex-schema-inspector/dist/types/column';
 import { IBlueprint } from '../interface/blueprint/blueprint.interface';
 import { IRelation } from '../interface/blueprint/relation.interface';
 import { IFactCollector } from '../interface/fact/fact-collector.interface';
@@ -46,7 +45,7 @@ export class FactCollector implements IFactCollector {
       columnValues,
       enumerators,
     ] = await Promise.all([
-      this.factSource.tables(),
+      this.factSource.getTables(),
       this.factSource.getDefinedTypes(),
       this.factSource.getUniqueConstraints(),
       this.factSource.getRelations(),
@@ -109,7 +108,7 @@ export class FactCollector implements IFactCollector {
       : {};
   }
 
-  getTableColumnValues(table: string) {
+  getTableColumnInfo(table: string) {
     return this.facts.columnValues.hasOwnProperty(table)
       ? this.facts.columnValues[table]
       : {};
@@ -138,10 +137,6 @@ export class FactCollector implements IFactCollector {
     }
 
     this.facts.relations[table][name] = definition;
-  }
-
-  async getTableColumns(table: string): Promise<Column[]> {
-    return this.factSource.columnInfo(table);
   }
 
   isTableExists(table: string): boolean {

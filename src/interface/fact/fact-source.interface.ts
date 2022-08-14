@@ -1,9 +1,7 @@
-import { Column } from 'knex-schema-inspector/dist/types/column';
 import { IFacts } from './facts.interface';
 
 export interface IFactSource {
-  tables(): Promise<string[]>;
-  columnInfo(table: string): Promise<Column[]>;
+  getTables(): Promise<string[]>;
   getEnumerators(): Promise<IFacts['enumerators']>;
   getRelations(): Promise<IFacts['relations']>;
   getUniqueConstraints(): Promise<string[]>;

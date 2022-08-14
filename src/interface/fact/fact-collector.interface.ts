@@ -1,4 +1,3 @@
-import { Column } from 'knex-schema-inspector/dist/types/column';
 import { IColumn } from '../blueprint';
 import { IBlueprint } from '../blueprint/blueprint.interface';
 import { IRelation } from '../blueprint/relation.interface';
@@ -15,15 +14,18 @@ export interface IFactCollector {
   getTables(filters: string[]): string[];
 
   // Reverse calls
-  getTableColumns(tableName: string): Promise<Column[]>;
   getTablePrimaryKeys(tableName: string): string[];
   getTableUniques(tableName: string): IBlueprint['uniques'];
   getTableIndexes(tableName: string): IBlueprint['indexes'];
-  getTableColumnValues(tableName: string): {
+  getTableColumnInfo(tableName: string): {
     [columnName: string]: {
       defaultValue: IColumn['defaultValue'];
       isNullable: boolean;
       typeName: string;
+      maxLength: number | null;
+      precision: number | null;
+      scale: number | null;
+      comment: string | null;
     };
   };
 

@@ -8,8 +8,8 @@ import {
   MigrationRisk,
   PostgresColumnType,
 } from '../../../interface';
+import { PostgresStateReader } from '../state.reader';
 import { createColumn } from './create.column';
-import { PostgresStateReader } from './state.reader';
 import { getTypeName } from './util/get-type-name';
 
 export class PostgresAlterPlanner {

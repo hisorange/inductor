@@ -25,6 +25,10 @@ export interface IFacts {
         defaultValue: IColumn['defaultValue'];
         isNullable: boolean;
         typeName: string;
+        maxLength: number | null;
+        precision: number | null;
+        scale: number | null;
+        comment: string | null;
       };
     };
   };

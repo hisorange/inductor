@@ -1,4 +1,4 @@
-import BaseAdapter from 'knex-schema-inspector/dist/dialects/postgres';
+import { Knex } from 'knex';
 import { PostgresForeignAction } from '../../interface/blueprint/postgres/postgres.foreign-action';
 import { IFactSource } from '../../interface/fact/fact-source.interface';
 import { IFacts } from '../../interface/fact/facts.interface';
@@ -6,7 +6,24 @@ import { IFacts } from '../../interface/fact/facts.interface';
 /**
  * Reads the connection's database into a set of structure
  */
-export class PostgresFactSource extends BaseAdapter implements IFactSource {
+export class PostgresFactSource implements IFactSource {
+  constructor(private knex: Knex) {}
+
+  async getTables(): Promise<string[]> {
+    return (
+      await this.knex({
+        rel: 'pg_class',
+      })
+        .select({
+          tableName: 'rel.relname',
+        })
+        .where({
+          'rel.relkind': 'r',
+          'rel.relnamespace': this.knex.raw('current_schema::regnamespace'),
+        })
+    ).map(r => r.tableName);
+  }
+
   async isTableHasRows(tableName: string): Promise<boolean> {
     const countResult = await this.knex
       .select()
@@ -392,6 +409,9 @@ export class PostgresFactSource extends BaseAdapter implements IFactSource {
         isNotNull: 'attnotnull',
         defaultValue: this.knex.raw('pg_get_expr(d.adbin, d.adrelid)'),
         typeName: this.knex.raw('ty.typname::regtype::text'),
+        comment: 'de.description',
+        atttypid: 'a.atttypid',
+        atttypmod: this.knex.raw('a.atttypmod::int4'),
       })
       .leftJoin(
         {
@@ -425,6 +445,16 @@ export class PostgresFactSource extends BaseAdapter implements IFactSource {
           'ty.oid': 'a.atttypid',
         },
       )
+      .leftJoin(
+        {
+          de: 'pg_description',
+        },
+        join => {
+          join.on(
+            this.knex.raw('(a.attrelid, a.attnum)=(de.objoid, de.objsubid)'),
+          );
+        },
+      )
       .whereNot('a.attisdropped', true)
       .andWhere('a.attnum', '>', 0)
       .andWhere({
@@ -439,7 +469,12 @@ export class PostgresFactSource extends BaseAdapter implements IFactSource {
       isNotNull: string;
       defaultValue: string;
       typeName: string;
+      comment: string;
+      atttypid: number;
+      atttypmod: number;
     }[] = await query;
+
+    console.log(rows);
 
     for (const row of rows) {
       if (!facts.hasOwnProperty(row.tableName)) {
@@ -461,10 +496,76 @@ export class PostgresFactSource extends BaseAdapter implements IFactSource {
           ? null
           : row.defaultValue.replace(/^'(.+)'::.+$/, '$1');
 
+      let maxLength = null;
+
+      console.log(row);
+
+      switch (row.atttypid) {
+        case 1042:
+        case 1043:
+          maxLength = row.atttypmod - 4;
+          break;
+
+        case 1560:
+        case 1562:
+          maxLength = row.atttypmod;
+          break;
+      }
+
+      let precision = null;
+
+      switch (row.atttypid) {
+        case 21:
+          precision = 16;
+          break;
+        case 23:
+          precision = 32;
+          break;
+        case 20:
+          precision = 64;
+          break;
+        case 700:
+          precision = 24;
+          break;
+        case 701:
+          precision = 53;
+          break;
+        case 1700:
+          if (row.atttypmod == -1) {
+            precision = null;
+          } else {
+            precision = ((row.atttypmod - 4) >> 16) & 65535;
+          }
+          break;
+      }
+
+      let scale = null;
+
+      switch (row.atttypid) {
+        case 20:
+        case 21:
+        case 23:
+          scale = 0;
+          break;
+        case 1700:
+          if (row.atttypmod == -1) {
+            scale = null;
+          } else {
+            scale = (row.atttypmod - 4) & 65535;
+          }
+          break;
+      }
+
+      console.log({ maxLength, scale, precision });
+
       facts[row.tableName][row.column] = {
         defaultValue,
         isNullable: !row.isNotNull,
         typeName: row.typeName,
+        maxLength,
+        precision,
+        scale,
+        comment: row.comment,
       };
     }
 

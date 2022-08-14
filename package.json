@@ -47,7 +47,6 @@
   },
   "optionalDependencies": {
     "knex": "^2.2.0",
-    "knex-schema-inspector": "^2.0.3",
     "objection": "^3.0.1",
     "pg": "^8.7.3"
   }

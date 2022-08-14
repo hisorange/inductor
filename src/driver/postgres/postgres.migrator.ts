@@ -9,7 +9,7 @@ import { IMigrationPlan } from '../../interface/migration/migration-plan.interfa
 import { IMigrator } from '../../interface/migrator.interface';
 import { PostgresAlterPlanner } from './migrator/alter.planner';
 import { PostgresCreatePlanner } from './migrator/create.planner';
-import { PostgresStateReader } from './migrator/state.reader';
+import { PostgresStateReader } from './state.reader';
 
 // Calculates and applies the changes on the database
 export class PostgresMigrationPlanner implements IMigrator {
