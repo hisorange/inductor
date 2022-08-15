@@ -1,14 +1,17 @@
 import cloneDeep from 'lodash.clonedeep';
-import { ColumnTools } from '../src';
-import { PostgresColumnType } from '../src/interface/blueprint/postgres/postgres.column-type';
-import { PostgresIndexType } from '../src/interface/blueprint/postgres/postgres.index-type';
-import { createBlueprint } from '../src/util/create-blueprint';
-import { allColumn, createColumnWithType } from './util/all-column';
-import { createTestInstance } from './util/create-connection';
+import { ColumnTools } from '../../src';
+import { PostgresColumnType } from '../../src/interface/blueprint/postgres/postgres.column-type';
+import { PostgresIndexType } from '../../src/interface/blueprint/postgres/postgres.index-type';
+import { createBlueprint } from '../../src/util/create-blueprint';
+import {
+  createPostgresColumnWithType,
+  PostgresAllColumn,
+} from './util/all-column';
+import { createPostgresTestInstance } from './util/create-connection';
 
-describe('Primary Constraint', () => {
-  const inductor = createTestInstance();
-  const primaryColumns = cloneDeep(allColumn);
+describe('[Postgres] Primary Constraint', () => {
+  const inductor = createPostgresTestInstance();
+  const primaryColumns = cloneDeep(PostgresAllColumn);
 
   // Remove the non primary able columns
   for (const col in primaryColumns) {
@@ -70,11 +73,11 @@ describe('Primary Constraint', () => {
       const blueprintRV1 = createBlueprint(tableName);
       blueprintRV1.columns = {
         prefix: {
-          ...createColumnWithType(PostgresColumnType.INTEGER),
+          ...createPostgresColumnWithType(PostgresColumnType.INTEGER),
         },
-        [colName]: allColumn[colName],
+        [colName]: PostgresAllColumn[colName],
         createdAt: {
-          ...createColumnWithType(PostgresColumnType.DATE),
+          ...createPostgresColumnWithType(PostgresColumnType.DATE),
           isIndexed: PostgresIndexType.BRIN,
         },
       };
@@ -112,7 +115,7 @@ describe('Primary Constraint', () => {
     const blueprintRV1 = createBlueprint(tableName);
     blueprintRV1.columns = {
       first: {
-        ...createColumnWithType(PostgresColumnType.INTEGER),
+        ...createPostgresColumnWithType(PostgresColumnType.INTEGER),
         isPrimary: true,
       },
     };
@@ -125,7 +128,7 @@ describe('Primary Constraint', () => {
     // Extend the primary
     const blueprintRV2 = cloneDeep(blueprintRV1);
     blueprintRV2.columns.second = {
-      ...createColumnWithType(PostgresColumnType.INTEGER),
+      ...createPostgresColumnWithType(PostgresColumnType.INTEGER),
       isPrimary: true,
     };
     await inductor.migrate([blueprintRV2]);
@@ -137,7 +140,7 @@ describe('Primary Constraint', () => {
     // Add the third primary column
     const blueprintRV3 = cloneDeep(blueprintRV2);
     blueprintRV3.columns.third = {
-      ...createColumnWithType(PostgresColumnType.INTEGER),
+      ...createPostgresColumnWithType(PostgresColumnType.INTEGER),
       isPrimary: true,
     };
     await inductor.migrate([blueprintRV3]);

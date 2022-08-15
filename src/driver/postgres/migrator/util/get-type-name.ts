@@ -1,7 +1,7 @@
 import { IColumn } from '../../../../interface/blueprint/column.interface';
 import { PostgresColumnType } from '../../../../interface/blueprint/postgres/postgres.column-type';
 
-export const getTypeName = (column: IColumn): string => {
+export const getPostgresTypeName = (column: IColumn): string => {
   let typeName: string = '';
   let isPrecisionDefined: boolean;
   let isScaleDefined: boolean;

@@ -2,11 +2,11 @@ import cloneDeep from 'lodash.clonedeep';
 import { PostgresColumnType } from '../../src';
 import { ImpossibleMigration } from '../../src/exception/impossible-migration.exception';
 import { createBlueprint } from '../../src/util/create-blueprint';
-import { createColumnWithType } from '../util/all-column';
-import { createTestInstance } from '../util/create-connection';
+import { createPostgresColumnWithType } from './util/all-column';
+import { createPostgresTestInstance } from './util/create-connection';
 
 describe('[Postgres] Able to handle new column risks', () => {
-  const inductor = createTestInstance();
+  const inductor = createPostgresTestInstance();
   afterAll(() => inductor.close());
 
   test('should be able to create a new column with default value', async () => {
@@ -14,10 +14,10 @@ describe('[Postgres] Able to handle new column risks', () => {
     const blueprintRV1 = createBlueprint(tableName);
     blueprintRV1.columns = {
       id: {
-        ...createColumnWithType(PostgresColumnType.SERIAL),
+        ...createPostgresColumnWithType(PostgresColumnType.SERIAL),
         isPrimary: true,
       },
-      name: createColumnWithType(PostgresColumnType.TEXT),
+      name: createPostgresColumnWithType(PostgresColumnType.TEXT),
     };
 
     await inductor.migrate([blueprintRV1]);
@@ -31,7 +31,7 @@ describe('[Postgres] Able to handle new column risks', () => {
 
     const blueprintRV2 = cloneDeep(blueprintRV1);
     blueprintRV2.columns['new_column'] = {
-      ...createColumnWithType(PostgresColumnType.INTEGER),
+      ...createPostgresColumnWithType(PostgresColumnType.INTEGER),
       defaultValue: 42,
     };
 
@@ -49,10 +49,10 @@ describe('[Postgres] Able to handle new column risks', () => {
     const blueprintRV1 = createBlueprint(tableName);
     blueprintRV1.columns = {
       id: {
-        ...createColumnWithType(PostgresColumnType.SERIAL),
+        ...createPostgresColumnWithType(PostgresColumnType.SERIAL),
         isPrimary: true,
       },
-      name: createColumnWithType(PostgresColumnType.TEXT),
+      name: createPostgresColumnWithType(PostgresColumnType.TEXT),
     };
 
     await inductor.migrate([blueprintRV1]);
@@ -62,9 +62,8 @@ describe('[Postgres] Able to handle new column risks', () => {
     );
 
     const blueprintRV2 = cloneDeep(blueprintRV1);
-    blueprintRV2.columns['new_column_without_defv'] = createColumnWithType(
-      PostgresColumnType.INTEGER,
-    );
+    blueprintRV2.columns['new_column_without_defv'] =
+      createPostgresColumnWithType(PostgresColumnType.INTEGER);
 
     await expect(inductor.migrate([blueprintRV2])).resolves.not.toThrow();
   });
@@ -74,10 +73,10 @@ describe('[Postgres] Able to handle new column risks', () => {
     const blueprintRV1 = createBlueprint(tableName);
     blueprintRV1.columns = {
       id: {
-        ...createColumnWithType(PostgresColumnType.SERIAL),
+        ...createPostgresColumnWithType(PostgresColumnType.SERIAL),
         isPrimary: true,
       },
-      name: createColumnWithType(PostgresColumnType.TEXT),
+      name: createPostgresColumnWithType(PostgresColumnType.TEXT),
     };
 
     await inductor.migrate([blueprintRV1]);
@@ -90,9 +89,8 @@ describe('[Postgres] Able to handle new column risks', () => {
     await modelRV1.query().insert({ name: 'poc' });
 
     const blueprintRV2 = cloneDeep(blueprintRV1);
-    blueprintRV2.columns['new_column_without_defv'] = createColumnWithType(
-      PostgresColumnType.INTEGER,
-    );
+    blueprintRV2.columns['new_column_without_defv'] =
+      createPostgresColumnWithType(PostgresColumnType.INTEGER);
 
     await expect(inductor.migrate([blueprintRV2])).rejects.toBeInstanceOf(
       ImpossibleMigration,

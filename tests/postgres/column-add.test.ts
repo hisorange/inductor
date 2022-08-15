@@ -1,15 +1,15 @@
 import { ColumnTools, IColumn, PostgresColumnType } from '../../src';
 import { createBlueprint } from '../../src/util/create-blueprint';
-import { createColumnWithType } from '../util/all-column';
-import { createTestInstance } from '../util/create-connection';
+import { createPostgresColumnWithType } from './util/all-column';
+import { createPostgresTestInstance } from './util/create-connection';
 
 describe('[Postgres] Column Adding', () => {
-  const inductor = createTestInstance();
+  const inductor = createPostgresTestInstance();
   const cases: [string, IColumn][] = (
     ColumnTools.postgres.listColumnTypes() as PostgresColumnType[]
   )
     .filter(type => type !== PostgresColumnType.BIT_VARYING)
-    .map(type => [type, createColumnWithType(type)]);
+    .map(type => [type, createPostgresColumnWithType(type)]);
 
   afterAll(() => inductor.close());
 
@@ -23,7 +23,7 @@ describe('[Postgres] Column Adding', () => {
       const blueprint = createBlueprint(tableName);
       blueprint.columns = {
         primary_column: {
-          ...createColumnWithType(PostgresColumnType.SERIAL),
+          ...createPostgresColumnWithType(PostgresColumnType.SERIAL),
           isPrimary: true,
         },
         [columnName]: columnDef,

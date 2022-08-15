@@ -1,7 +1,7 @@
 {
   "name": "@hisorange/inductor",
   "version": "1.5.1",
-  "description": "Bidirectonal PostgreSQL specialized database manager.",
+  "description": "Bidirectonal database manager.",
   "keywords": [
     "data-model",
     "database",
@@ -9,6 +9,7 @@
     "orm",
     "postgres",
     "postgresql",
+    "mysql",
     "schema"
   ],
   "main": "build/index.js",
@@ -22,7 +23,7 @@
     "build": "tsc --build ./tsconfig.build.json",
     "db:logs": "docker-compose logs --no-log-prefix --tail 100 -f",
     "db:reset": "yarn db:stop && yarn db:start",
-    "db:start": "docker-compose up -d --renew-anon-volumes",
+    "db:start": "docker-compose up -d --renew-anon-volumes inductor-pg",
     "db:stop": "docker-compose down",
     "test:types": "tsc --noEmit",
     "test": "jest -i",

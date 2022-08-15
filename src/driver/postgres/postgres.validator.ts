@@ -2,13 +2,11 @@ import { InvalidBlueprint } from '../../exception/invalid-blueprint.exception';
 import { IBlueprint } from '../../interface/blueprint/blueprint.interface';
 import { PostgresColumnType } from '../../interface/blueprint/postgres/postgres.column-type';
 import { PostgresIndexType } from '../../interface/blueprint/postgres/postgres.index-type';
+import { BaseValidator } from '../base.validator';
 import { PostgresColumnTools } from './postgres.column-tools';
 
 export const PostgresValidator = (blueprint: IBlueprint): void => {
-  // Validate the table name, or it's just spaces
-  if (!blueprint.tableName || blueprint.tableName.trim().length === 0) {
-    throw new InvalidBlueprint('Missing table name');
-  }
+  BaseValidator(blueprint);
 
   // Validate for invalid table names
   if (blueprint.tableName.length > 63) {
@@ -18,11 +16,6 @@ export const PostgresValidator = (blueprint: IBlueprint): void => {
   // Validate for invalid table names characters
   if (!blueprint.tableName.match(/^[_]?[a-zA-Z0-9_]*$/)) {
     throw new InvalidBlueprint('Table name format is invalid');
-  }
-
-  // Has to have at least one column
-  if (!Object.keys(blueprint.columns).length) {
-    throw new InvalidBlueprint('Mininum one column is required');
   }
 
   for (const name in blueprint.columns) {
@@ -109,12 +102,6 @@ export const PostgresValidator = (blueprint: IBlueprint): void => {
 
   // Validate composite indexes
   for (const [name, compositeIndex] of Object.entries(blueprint.indexes)) {
-    if (compositeIndex.columns.length < 2) {
-      throw new InvalidBlueprint(
-        `Composite index [${name}] must have at least 2 columns`,
-      );
-    }
-
     // Cannot have the type hash or spgist
     if (
       compositeIndex.type === PostgresIndexType.HASH ||

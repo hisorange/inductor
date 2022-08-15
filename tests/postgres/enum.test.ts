@@ -2,11 +2,11 @@ import cloneDeep from 'lodash.clonedeep';
 import { EnumColumnType, IColumn, PostgresColumnType } from '../../src';
 import { ColumnKind } from '../../src/interface/blueprint';
 import { createBlueprint } from '../../src/util/create-blueprint';
-import { createColumnWithType } from '../util/all-column';
-import { createTestInstance } from '../util/create-connection';
+import { createPostgresColumnWithType } from './util/all-column';
+import { createPostgresTestInstance } from './util/create-connection';
 
 describe('[Postgres] Enumerated Column', () => {
-  const inductor = createTestInstance();
+  const inductor = createPostgresTestInstance();
 
   afterAll(() => inductor.close());
 
@@ -23,11 +23,11 @@ describe('[Postgres] Enumerated Column', () => {
       const blueprint = createBlueprint(tableName);
       blueprint.columns = {
         primary_column: {
-          ...createColumnWithType(PostgresColumnType.SERIAL),
+          ...createPostgresColumnWithType(PostgresColumnType.SERIAL),
           isPrimary: true,
         },
         [columnName]: {
-          ...createColumnWithType(PostgresColumnType.ENUM, {
+          ...createPostgresColumnWithType(PostgresColumnType.ENUM, {
             values: setValues,
           }),
         } as IColumn,
@@ -50,7 +50,7 @@ describe('[Postgres] Enumerated Column', () => {
     const blueprintV1 = createBlueprint(tableName);
     blueprintV1.columns = {
       primary_column: {
-        ...createColumnWithType(PostgresColumnType.SERIAL),
+        ...createPostgresColumnWithType(PostgresColumnType.SERIAL),
       },
       enum_column: {
         kind: ColumnKind.COLUMN,

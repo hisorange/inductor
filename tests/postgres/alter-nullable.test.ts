@@ -1,15 +1,17 @@
 import { ColumnTools, IColumn, PostgresColumnType } from '../../src';
 import { createBlueprint } from '../../src/util/create-blueprint';
-import { createColumnWithType } from '../util/all-column';
-import { createTestInstance } from '../util/create-connection';
+import { createPostgresColumnWithType } from './util/all-column';
+import { createPostgresTestInstance } from './util/create-connection';
 
 describe('[Postgres] Alter Nullable', () => {
-  const inductor = createTestInstance();
+  const inductor = createPostgresTestInstance();
 
   const cases: [string, IColumn][] = (
     ColumnTools.postgres.listColumnTypes() as PostgresColumnType[]
   )
-    .map(type => [type, createColumnWithType(type)] as [string, IColumn])
+    .map(
+      type => [type, createPostgresColumnWithType(type)] as [string, IColumn],
+    )
     .filter(([type, col]) => !ColumnTools.postgres.isSerialType(col))
     .filter(
       ([type, col]) => ![PostgresColumnType.BIT_VARYING].includes(type as any),
@@ -27,7 +29,7 @@ describe('[Postgres] Alter Nullable', () => {
       const blueprintRV1 = createBlueprint(tableName);
       blueprintRV1.columns = {
         primary_column: {
-          ...createColumnWithType(PostgresColumnType.SERIAL),
+          ...createPostgresColumnWithType(PostgresColumnType.SERIAL),
           isPrimary: true,
         },
         [columnName]: columnDef,

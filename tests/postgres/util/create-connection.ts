@@ -1,8 +1,8 @@
-import { Inductor } from '../../src/inductor';
-import { IDatabase } from '../../src/interface/database/database.interface';
-import { DatabaseProvider } from '../../src/interface/database/database.provider';
+import { Inductor } from '../../../src/inductor';
+import { IDatabase } from '../../../src/interface/database/database.interface';
+import { DatabaseProvider } from '../../../src/interface/database/database.provider';
 
-export const createTestInstance = (filters: string[] = []) => {
+export const createPostgresTestInstance = (filters: string[] = []) => {
   const database: IDatabase = {
     connection: {
       host: 'localhost',

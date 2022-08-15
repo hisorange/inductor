@@ -1,7 +1,10 @@
 import { IBlueprint } from './blueprint/blueprint.interface';
+import { IFactCollector } from './fact';
 import { IMigrationPlan } from './migration/migration-plan.interface';
 
 export interface IMigrator {
+  readonly facts: IFactCollector;
+
   /**
    * Drop the blueprint from the database.
    */

@@ -1,11 +1,11 @@
 import { PostgresColumnType } from '../../src';
 import { PostgresForeignAction } from '../../src/interface/blueprint/postgres/postgres.foreign-action';
 import { createBlueprint } from '../../src/util/create-blueprint';
-import { createColumnWithType } from '../util/all-column';
-import { createTestInstance } from '../util/create-connection';
+import { createPostgresColumnWithType } from './util/all-column';
+import { createPostgresTestInstance } from './util/create-connection';
 
 describe('[Postgres] Relations', () => {
-  const inductor = createTestInstance();
+  const inductor = createPostgresTestInstance();
 
   afterAll(() => inductor.close());
 
@@ -16,11 +16,11 @@ describe('[Postgres] Relations', () => {
     const blueprintA = createBlueprint(tableNameA);
     blueprintA.columns = {
       a_id_1: {
-        ...createColumnWithType(PostgresColumnType.UUID),
+        ...createPostgresColumnWithType(PostgresColumnType.UUID),
         isPrimary: true,
       },
       a_id_2: {
-        ...createColumnWithType(PostgresColumnType.TEXT),
+        ...createPostgresColumnWithType(PostgresColumnType.TEXT),
         isPrimary: true,
       },
     };
@@ -41,11 +41,11 @@ describe('[Postgres] Relations', () => {
 
     blueprintB.columns = {
       b_id_1: {
-        ...createColumnWithType(PostgresColumnType.UUID),
+        ...createPostgresColumnWithType(PostgresColumnType.UUID),
         isPrimary: true,
       },
       b_id_2: {
-        ...createColumnWithType(PostgresColumnType.TEXT),
+        ...createPostgresColumnWithType(PostgresColumnType.TEXT),
         isPrimary: true,
       },
     };

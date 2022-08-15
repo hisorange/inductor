@@ -4,7 +4,7 @@ import { IBlueprint } from '../../../interface/blueprint/blueprint.interface';
 import { IColumn } from '../../../interface/blueprint/column.interface';
 import { PostgresColumnType } from '../../../interface/blueprint/postgres/postgres.column-type';
 import { IFactCollector } from '../../../interface/fact/fact-collector.interface';
-import { getTypeName } from './util/get-type-name';
+import { getPostgresTypeName } from './util/get-type-name';
 
 export const createColumn = (
   tableBuilder: Knex.CreateTableBuilder,
@@ -32,7 +32,10 @@ export const createColumn = (
   } else if (column.type.name === PostgresColumnType.JSONB) {
     columnBuilder = tableBuilder.jsonb(name);
   } else {
-    columnBuilder = tableBuilder.specificType(name, getTypeName(column));
+    columnBuilder = tableBuilder.specificType(
+      name,
+      getPostgresTypeName(column),
+    );
   }
 
   // Add nullable constraint

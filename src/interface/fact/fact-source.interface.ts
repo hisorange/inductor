@@ -1,6 +1,9 @@
+import { Knex } from 'knex';
 import { IFacts } from './facts.interface';
 
 export interface IFactSource {
+  readonly knex: Knex;
+
   getTables(): Promise<string[]>;
   getEnumerators(): Promise<IFacts['enumerators']>;
   getRelations(): Promise<IFacts['relations']>;

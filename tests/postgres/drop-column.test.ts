@@ -1,13 +1,13 @@
 import cloneDeep from 'lodash.clonedeep';
-import { IBlueprint } from '../src/interface/blueprint/blueprint.interface';
-import { PostgresColumnType } from '../src/interface/blueprint/postgres/postgres.column-type';
-import { PostgresIndexType } from '../src/interface/blueprint/postgres/postgres.index-type';
-import { createBlueprint } from '../src/util/create-blueprint';
-import { createColumnWithType } from './util/all-column';
-import { createTestInstance } from './util/create-connection';
+import { IBlueprint } from '../../src/interface/blueprint/blueprint.interface';
+import { PostgresColumnType } from '../../src/interface/blueprint/postgres/postgres.column-type';
+import { PostgresIndexType } from '../../src/interface/blueprint/postgres/postgres.index-type';
+import { createBlueprint } from '../../src/util/create-blueprint';
+import { createPostgresColumnWithType } from './util/all-column';
+import { createPostgresTestInstance } from './util/create-connection';
 
-describe('Drop Column', () => {
-  const inductor = createTestInstance();
+describe('[Postgres] Drop Column', () => {
+  const inductor = createPostgresTestInstance();
   const clearTables = () =>
     Promise.all(
       testTables.map(name => inductor.driver.migrator.dropTable(name)),
@@ -15,20 +15,20 @@ describe('Drop Column', () => {
 
   const columns: IBlueprint['columns'] = {
     col_var_1: {
-      ...createColumnWithType(PostgresColumnType.INTEGER),
+      ...createPostgresColumnWithType(PostgresColumnType.INTEGER),
       isPrimary: true,
     },
     col_var_2: {
-      ...createColumnWithType(PostgresColumnType.INTEGER),
+      ...createPostgresColumnWithType(PostgresColumnType.INTEGER),
       isNullable: true,
       defaultValue: null,
     },
     col_var_3: {
-      ...createColumnWithType(PostgresColumnType.INTEGER),
+      ...createPostgresColumnWithType(PostgresColumnType.INTEGER),
       isUnique: true,
     },
     col_var_4: {
-      ...createColumnWithType(PostgresColumnType.INTEGER),
+      ...createPostgresColumnWithType(PostgresColumnType.INTEGER),
       isIndexed: PostgresIndexType.BTREE,
     },
   };

@@ -1,13 +1,15 @@
 import { Knex } from 'knex';
 import { PostgresForeignAction } from '../../interface/blueprint/postgres/postgres.foreign-action';
-import { IFactSource } from '../../interface/fact/fact-source.interface';
 import { IFacts } from '../../interface/fact/facts.interface';
+import { BaseFactSource } from '../base.fact-source';
 
 /**
  * Reads the connection's database into a set of structure
  */
-export class PostgresFactSource implements IFactSource {
-  constructor(private knex: Knex) {}
+export class PostgresFactSource extends BaseFactSource {
+  constructor(knex: Knex) {
+    super(knex);
+  }
 
   async getTables(): Promise<string[]> {
     return (
@@ -22,20 +24,6 @@ export class PostgresFactSource implements IFactSource {
           'rel.relnamespace': this.knex.raw('current_schema::regnamespace'),
         })
     ).map(r => r.tableName);
-  }
-
-  async isTableHasRows(tableName: string): Promise<boolean> {
-    const countResult = await this.knex
-      .select()
-      .from(tableName)
-      .limit(1)
-      .count('* as count');
-
-    if (countResult[0].count > 0) {
-      return true;
-    }
-
-    return false;
   }
 
   async getDefinedTypes(): Promise<string[]> {

@@ -8,11 +8,12 @@ import {
   MigrationRisk,
   PostgresColumnType,
 } from '../../../interface';
-import { PostgresStateReader } from '../state.reader';
+import { IAlterPlanner } from '../../../interface/migration/alter-planner.interface';
+import { PostgresStateReader } from '../postgres.state-reader';
 import { createColumn } from './create.column';
-import { getTypeName } from './util/get-type-name';
+import { getPostgresTypeName } from './util/get-type-name';
 
-export class PostgresAlterPlanner {
+export class PostgresAlterPlanner implements IAlterPlanner {
   protected reader: PostgresStateReader;
 
   constructor(protected ctx: IMigrationContext) {
@@ -20,7 +21,7 @@ export class PostgresAlterPlanner {
   }
 
   async alterTable(targetState: IBlueprint) {
-    const currentState = await this.reader.reverse(targetState.tableName);
+    const currentState = this.reader.reverse(targetState.tableName);
     const difference = diff(currentState, targetState);
     // Track the primary keys change, since it may has to be altered after the columns
     let isPrimaryChanged = false;
@@ -342,7 +343,7 @@ export class PostgresAlterPlanner {
     } else {
       columnBuilder = builder.specificType(
         columnName,
-        getTypeName(columnDefinition),
+        getPostgresTypeName(columnDefinition),
       );
     }
 

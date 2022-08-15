@@ -1,14 +1,17 @@
 import cloneDeep from 'lodash.clonedeep';
-import { ColumnTools } from '../src';
-import { PostgresColumnType } from '../src/interface/blueprint/postgres/postgres.column-type';
-import { createBlueprint } from '../src/util/create-blueprint';
-import { allColumn, createColumnWithType } from './util/all-column';
-import { createTestInstance } from './util/create-connection';
+import { ColumnTools } from '../../src';
+import { PostgresColumnType } from '../../src/interface/blueprint/postgres/postgres.column-type';
+import { createBlueprint } from '../../src/util/create-blueprint';
+import {
+  createPostgresColumnWithType,
+  PostgresAllColumn,
+} from './util/all-column';
+import { createPostgresTestInstance } from './util/create-connection';
 
-describe('Unique Constraint', () => {
-  const inductor = createTestInstance();
+describe('[Postgres] Unique Constraint', () => {
+  const inductor = createPostgresTestInstance();
 
-  const uniqueCols = cloneDeep(allColumn);
+  const uniqueCols = cloneDeep(PostgresAllColumn);
 
   // Remove the non primary able columns
   for (const col in uniqueCols) {
@@ -48,11 +51,11 @@ describe('Unique Constraint', () => {
       const blueprintRV1 = createBlueprint(tableName);
       blueprintRV1.columns = {
         id: {
-          ...createColumnWithType(PostgresColumnType.INTEGER),
+          ...createPostgresColumnWithType(PostgresColumnType.INTEGER),
           isPrimary: true,
         },
         [colName]: uniqueCols[colName],
-        createdAt: createColumnWithType(PostgresColumnType.DATE),
+        createdAt: createPostgresColumnWithType(PostgresColumnType.DATE),
       };
       // Set unique to false
       blueprintRV1.columns[colName].isUnique = false;
@@ -93,7 +96,7 @@ describe('Unique Constraint', () => {
       blueprint.columns = {
         [columnKey]: uniqueCols[columnKey],
         pair_for_comp: {
-          ...createColumnWithType(PostgresColumnType.BIGINT),
+          ...createPostgresColumnWithType(PostgresColumnType.BIGINT),
         },
       };
 
@@ -117,10 +120,10 @@ describe('Unique Constraint', () => {
     const blueprintRV1 = createBlueprint(tableName);
     blueprintRV1.columns = {
       col_1: {
-        ...createColumnWithType(PostgresColumnType.INTEGER),
+        ...createPostgresColumnWithType(PostgresColumnType.INTEGER),
         isUnique: true,
       },
-      col_2: createColumnWithType(PostgresColumnType.INTEGER),
+      col_2: createPostgresColumnWithType(PostgresColumnType.INTEGER),
     };
     await inductor.migrate([blueprintRV1]);
 
@@ -144,7 +147,7 @@ describe('Unique Constraint', () => {
 
     // Create a new column and add it to the composite unique
     const blueprintRV3 = cloneDeep(blueprintRV2);
-    blueprintRV3.columns.col_3 = createColumnWithType(
+    blueprintRV3.columns.col_3 = createPostgresColumnWithType(
       PostgresColumnType.INTEGER,
     );
     blueprintRV3.uniques.test_cmp_1.columns.push('col_3');

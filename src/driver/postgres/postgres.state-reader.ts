@@ -7,13 +7,14 @@ import {
   PostgresColumnType,
   PostgresIndexType,
 } from '../../interface';
+import { IStateReader } from '../../interface/state-reader.interface';
 import { createBlueprint } from '../../util/create-blueprint';
 import { PostgresValidator } from './postgres.validator';
 
-export class PostgresStateReader {
+export class PostgresStateReader implements IStateReader {
   constructor(protected facts: IFactCollector) {}
 
-  async reverse(tableName: string): Promise<IBlueprint> {
+  reverse(tableName: string): IBlueprint {
     const blueprint = createBlueprint(tableName);
     blueprint.relations = this.facts.getTableForeignKeys(tableName);
     blueprint.uniques = this.facts.getTableUniques(tableName);

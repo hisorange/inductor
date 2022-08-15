@@ -17,7 +17,6 @@ export interface IDriver {
    * Migration planner / executer instance
    */
   readonly migrator: IMigrator;
-
   readonly factCollector: IFactCollector;
 
   /**

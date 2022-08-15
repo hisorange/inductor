@@ -1,10 +1,10 @@
 import { PostgresColumnType } from '../../src';
 import { createBlueprint } from '../../src/util/create-blueprint';
-import { createColumnWithType } from '../util/all-column';
-import { createTestInstance } from '../util/create-connection';
+import { createPostgresColumnWithType } from './util/all-column';
+import { createPostgresTestInstance } from './util/create-connection';
 
 describe('[Postgres] Default Value', () => {
-  const inductor = createTestInstance();
+  const inductor = createPostgresTestInstance();
 
   afterAll(() => inductor.close());
 
@@ -44,7 +44,7 @@ describe('[Postgres] Default Value', () => {
       const blueprint = createBlueprint(tableName);
       blueprint.columns = {
         test_column: {
-          ...createColumnWithType(columnType),
+          ...createPostgresColumnWithType(columnType),
           defaultValue,
           isNullable: defaultValue === null,
         },

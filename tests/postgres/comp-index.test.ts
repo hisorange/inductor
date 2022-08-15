@@ -1,11 +1,11 @@
 import { PostgresColumnType } from '../../src';
 import { PostgresIndexType } from '../../src/interface/blueprint/postgres/postgres.index-type';
 import { createBlueprint } from '../../src/util/create-blueprint';
-import { createColumnWithType } from '../util/all-column';
-import { createTestInstance } from '../util/create-connection';
+import { createPostgresColumnWithType } from './util/all-column';
+import { createPostgresTestInstance } from './util/create-connection';
 
 describe('[Postgres] Composite Indexing', () => {
-  const inductor = createTestInstance();
+  const inductor = createPostgresTestInstance();
 
   afterAll(() => inductor.close());
 
@@ -43,22 +43,22 @@ describe('[Postgres] Composite Indexing', () => {
 
       blueprint.columns = {
         primary_column: {
-          ...createColumnWithType(PostgresColumnType.SERIAL),
+          ...createPostgresColumnWithType(PostgresColumnType.SERIAL),
           isPrimary: true,
         },
         unique_column: {
-          ...createColumnWithType(PostgresColumnType.TEXT),
+          ...createPostgresColumnWithType(PostgresColumnType.TEXT),
           isUnique: true,
         },
         idx2_column: {
-          ...createColumnWithType(PostgresColumnType.TEXT),
+          ...createPostgresColumnWithType(PostgresColumnType.TEXT),
           isIndexed: PostgresIndexType.BTREE,
         },
         pair_column: {
-          ...createColumnWithType(columnType),
+          ...createPostgresColumnWithType(columnType),
         },
         [`${columnSafeType}_column`]: {
-          ...createColumnWithType(columnType),
+          ...createPostgresColumnWithType(columnType),
         },
       };
 

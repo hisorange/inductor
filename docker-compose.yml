@@ -1,14 +1,27 @@
 version: '3.6'
 
 services:
-  inductor-db:
+  inductor-pg:
     image: postgres:14-alpine
-    hostname: inductor-db
-    container_name: inductor-db
+    hostname: inductor-pg
+    container_name: inductor-pg
     ports:
       - 9999:5432
     environment:
       POSTGRES_PASSWORD: inductor
       POSTGRES_USER: inductor
       POSTGRES_DB: inductor
+    mem_limit: 200m
+
+  inductor-mysql:
+    image: mysql:8
+    hostname: inductor-mysql
+    container_name: inductor-mysql
+    ports:
+      - 9998:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: inductor
+      MYSQL_PASSWORD: inductor
+      MYSQL_USER: inductor
+      MYSQL_DB: inductor
     mem_limit: 200m

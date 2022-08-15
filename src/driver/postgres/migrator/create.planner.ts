@@ -4,9 +4,10 @@ import {
   IMigrationContext,
   MigrationRisk,
 } from '../../../interface';
+import { ICreatePlanner } from '../../../interface/migration/create-planner.interface';
 import { createColumn } from './create.column';
 
-export class PostgresCreatePlanner {
+export class PostgresCreatePlanner implements ICreatePlanner {
   constructor(protected ctx: IMigrationContext) {}
 
   async createTable(blueprint: IBlueprint) {
