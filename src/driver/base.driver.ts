@@ -13,13 +13,16 @@ import {
 import { DatabaseProvider } from '../interface/database/database.provider';
 
 export abstract class BaseDriver implements IDriver {
-  abstract readonly migrator: IMigrator;
-  abstract readonly logger: Logger;
-  abstract readonly factCollector: IFactCollector;
+  readonly migrator: IMigrator;
+  readonly factCollector: IFactCollector;
   readonly connection: Knex;
+
+  abstract createMigrator(): IMigrator;
+  abstract createFactCollector(): IFactCollector;
 
   constructor(
     id: string,
+    readonly logger: Logger,
     readonly database: IDatabase,
     readonly event: EventEmitter2,
   ) {
@@ -40,12 +43,17 @@ export abstract class BaseDriver implements IDriver {
       this.event.emit('query', query);
       //console.log(query.sql);
     });
+
+    this.factCollector = this.createFactCollector();
+    this.migrator = this.createMigrator();
   }
 
   protected getClientString(): string {
     switch (this.database.provider) {
       case DatabaseProvider.POSTGRES:
         return 'pg';
+      case DatabaseProvider.MYSQL:
+        return 'mysql';
       default:
         throw new Error(`Unknown provider: ${this.database.provider}`);
     }

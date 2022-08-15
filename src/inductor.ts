@@ -2,6 +2,7 @@ import EventEmitter2 from 'eventemitter2';
 import { Model, ModelClass } from 'objection';
 import pino, { Logger } from 'pino';
 import { v4 } from 'uuid';
+import { MySQLDriver } from './driver/mysql/mysql.driver';
 import { PostgresDriver } from './driver/postgres/postgres.driver';
 import { ModelNotFound, UnsupportedProvider } from './exception';
 import {
@@ -43,6 +44,8 @@ export class Inductor implements IInductor {
     switch (database.provider) {
       case DatabaseProvider.POSTGRES:
         return new PostgresDriver(this.id, this.logger, database, this.event);
+      case DatabaseProvider.MYSQL:
+        return new MySQLDriver(this.id, this.logger, database, this.event);
       default:
         throw new UnsupportedProvider(database.provider);
     }

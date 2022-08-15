@@ -23,11 +23,13 @@
     "build": "tsc --build ./tsconfig.build.json",
     "db:logs": "docker-compose logs --no-log-prefix --tail 100 -f",
     "db:reset": "yarn db:stop && yarn db:start",
-    "db:start": "docker-compose up -d --renew-anon-volumes inductor-pg",
+    "db:start": "docker-compose up -d --renew-anon-volumes",
     "db:stop": "docker-compose down",
     "test:types": "tsc --noEmit",
     "test": "jest -i",
-    "gen:pg-test": "hygen pg-test new"
+    "gen:pg-test": "hygen pg-test new",
+    "test:pg": "clear && yarn db:stop && yarn db:start inductor-pg && yarn test tests/postgres",
+    "test:mysql": "clear && yarn db:stop && yarn db:start inductor-mysql && yarn test tests/mysql"
   },
   "devDependencies": {
     "@types/jest": "^28.0.0",
@@ -48,6 +50,7 @@
   },
   "optionalDependencies": {
     "knex": "^2.2.0",
+    "mysql": "^2.18.1",
     "objection": "^3.0.1",
     "pg": "^8.7.3"
   }

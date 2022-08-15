@@ -1,23 +1,7 @@
-import { Knex } from 'knex';
-import { IFacts, IFactSource } from '../interface';
+import { IFacts } from '../../interface';
+import { BaseFactSource } from '../base.fact-source';
 
-export abstract class BaseFactSource implements IFactSource {
-  constructor(readonly knex: Knex) {}
-
-  async isTableHasRows(tableName: string): Promise<boolean> {
-    const countResult = await this.knex
-      .select()
-      .from(tableName)
-      .limit(1)
-      .count('* as count');
-
-    if (countResult[0].count > 0) {
-      return true;
-    }
-
-    return false;
-  }
-
+export class MySQLFactSource extends BaseFactSource {
   async getTables(): Promise<string[]> {
     return [];
   }
