@@ -2,15 +2,15 @@ import EventEmitter2 from 'eventemitter2';
 import knex, { Knex } from 'knex';
 import { Model, ModelClass, Pojo } from 'objection';
 import { Logger } from 'pino';
-import { ColumnTools } from '../component/column-tools';
+import { ColumnTools } from '../../component/column-tools';
 import {
   IBlueprint,
   IDatabase,
   IDriver,
   IFactCollector,
   IMigrator,
-} from '../interface';
-import { DatabaseProvider } from '../interface/database/database.provider';
+} from '../../interface';
+import { DatabaseProvider } from '../../interface/database/database.provider';
 
 export abstract class BaseDriver implements IDriver {
   readonly migrator: IMigrator;
@@ -26,18 +26,7 @@ export abstract class BaseDriver implements IDriver {
     readonly database: IDatabase,
     readonly event: EventEmitter2,
   ) {
-    this.connection = knex({
-      client: this.getClientString(),
-      connection: {
-        application_name: `inductor.${id}`,
-        ...this.database.connection,
-      },
-      pool: {
-        max: 50,
-        min: 0,
-        idleTimeoutMillis: 5_000,
-      },
-    });
+    this.connection = knex(this.getClientConfig(id));
 
     this.connection.on('query', query => {
       this.event.emit('query', query);
@@ -48,12 +37,31 @@ export abstract class BaseDriver implements IDriver {
     this.migrator = this.createMigrator();
   }
 
-  protected getClientString(): string {
+  protected getClientConfig(id: string): Knex.Config {
     switch (this.database.provider) {
       case DatabaseProvider.POSTGRES:
-        return 'pg';
+        return {
+          client: 'pg',
+          connection: {
+            application_name: `inductor.${id}`,
+            ...this.database.connection,
+          } as Knex.PgConnectionConfig,
+          pool: {
+            max: 50,
+            min: 0,
+            idleTimeoutMillis: 5_000,
+          },
+        };
       case DatabaseProvider.MYSQL:
-        return 'mysql';
+        return {
+          client: 'mysql2',
+          connection: this.database.connection as Knex.MySql2ConnectionConfig,
+          pool: {
+            max: 50,
+            min: 0,
+            idleTimeoutMillis: 5_000,
+          },
+        };
       default:
         throw new Error(`Unknown provider: ${this.database.provider}`);
     }

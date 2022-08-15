@@ -1,5 +1,5 @@
-import { InvalidBlueprint } from '../exception';
-import { IBlueprint } from '../interface';
+import { InvalidBlueprint } from '../../exception';
+import { IBlueprint } from '../../interface';
 
 export const BaseValidator = (blueprint: IBlueprint): void => {
   // Validate the table name, or it's just spaces

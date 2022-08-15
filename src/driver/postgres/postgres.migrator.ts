@@ -1,7 +1,7 @@
 import { IMigrationContext } from '../../interface';
 import { IMigrator } from '../../interface/migrator.interface';
 import { IStateReader } from '../../interface/state-reader.interface';
-import { BaseMigrator } from '../base.migrator';
+import { BaseMigrator } from '../abstract/base.migrator';
 import { PostgresAlterPlanner } from './migrator/alter.planner';
 import { PostgresCreatePlanner } from './migrator/create.planner';
 import { PostgresStateReader } from './postgres.state-reader';

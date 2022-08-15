@@ -1,3 +1,4 @@
+export * from './mysql';
 export * from './postgres';
 export * from './blueprint.interface';
 export * from './blueprint.kind';

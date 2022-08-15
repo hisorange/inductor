@@ -1,3 +1,4 @@
+import { ColumnType } from '../../interface/blueprint/column-union.type';
 import { IColumn } from '../../interface/blueprint/column.interface';
 import { PostgresColumnType } from '../../interface/blueprint/postgres/postgres.column-type';
 import { PostgresIndexType } from '../../interface/blueprint/postgres/postgres.index-type';
@@ -14,7 +15,7 @@ const CannotBePrimary = [
   PostgresColumnType.POLYGON,
   PostgresColumnType.TXID_SNAPSHOT,
   PostgresColumnType.XML,
-];
+] as ColumnType[];
 
 const CannotBeUnique = [
   PostgresColumnType.BOX,
@@ -33,19 +34,19 @@ const CannotBeUnique = [
   PostgresColumnType.SMALLSERIAL,
   PostgresColumnType.SERIAL,
   PostgresColumnType.BIGSERIAL,
-];
+] as ColumnType[];
 
 const SerialTypes = [
   PostgresColumnType.BIGSERIAL,
   PostgresColumnType.SERIAL,
   PostgresColumnType.SMALLSERIAL,
-];
+] as ColumnType[];
 
 const IntegerTypes = [
   PostgresColumnType.BIGINT,
   PostgresColumnType.INTEGER,
   PostgresColumnType.SMALLINT,
-];
+] as ColumnType[];
 
 const FloatTypes = [
   PostgresColumnType.MONEY,
@@ -53,16 +54,16 @@ const FloatTypes = [
   PostgresColumnType.REAL,
   PostgresColumnType.MONEY,
   PostgresColumnType.NUMERIC,
-];
+] as ColumnType[];
 
 const LengthRequiredTypes = [
   PostgresColumnType.BIT_VARYING,
   PostgresColumnType.CHAR_VARYING,
-];
+] as ColumnType[];
 
-const PrecisionRequiredTypes = [PostgresColumnType.NUMERIC];
+const PrecisionRequiredTypes = [PostgresColumnType.NUMERIC] as ColumnType[];
 
-const ScaleRequiredTypes = [PostgresColumnType.NUMERIC];
+const ScaleRequiredTypes = [PostgresColumnType.NUMERIC] as ColumnType[];
 
 export const PostgresColumnTools = {
   /**
@@ -100,21 +101,21 @@ export const PostgresColumnTools = {
   /**
    * Type requires a length definition
    */
-  isTypeRequiresLength(type: PostgresColumnType): boolean {
+  isTypeRequiresLength(type: ColumnType): boolean {
     return LengthRequiredTypes.includes(type);
   },
 
   /**
    * Type requires a precision definition
    */
-  isTypeRequiresPrecision(type: PostgresColumnType): boolean {
+  isTypeRequiresPrecision(type: ColumnType): boolean {
     return PrecisionRequiredTypes.includes(type);
   },
 
   /**
    * Type requires a precision definition
    */
-  isTypeRequiresScale(type: PostgresColumnType): boolean {
+  isTypeRequiresScale(type: ColumnType): boolean {
     return ScaleRequiredTypes.includes(type);
   },
 

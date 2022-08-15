@@ -1,5 +1,6 @@
 import { Pojo } from 'objection';
 import { ColumnKind } from './column.kind';
+import { MySQLColumnType } from './mysql';
 import { PostgresColumnType } from './postgres/postgres.column-type';
 import { PostgresIndexType } from './postgres/postgres.index-type';
 
@@ -89,7 +90,10 @@ export interface IColumn<ColumnMeta = unknown> {
     | BasicColumnType
     | ScalableColumnType
     | EnumColumnType
-    | VariableLengthColumnType;
+    | VariableLengthColumnType
+    | {
+        name: MySQLColumnType;
+      };
 
   /**
    * Nullable constraint.

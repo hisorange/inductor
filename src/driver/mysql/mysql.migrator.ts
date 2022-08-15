@@ -2,7 +2,7 @@ import { IMigrationContext } from '../../interface';
 import { IAlterPlanner } from '../../interface/migration/alter-planner.interface';
 import { ICreatePlanner } from '../../interface/migration/create-planner.interface';
 import { IStateReader } from '../../interface/state-reader.interface';
-import { BaseMigrator } from '../base.migrator';
+import { BaseMigrator } from '../abstract/base.migrator';
 import { MySQLAlterPlanner } from './mysql.alter-planner';
 import { MySQLCreatePlanner } from './mysql.create-planner';
 import { MySQLStateReader } from './mysql.state-reader';
@@ -13,7 +13,7 @@ export class MySQLMigrator extends BaseMigrator {
   }
 
   createCreatePlanner(ctx: IMigrationContext): ICreatePlanner {
-    return new MySQLCreatePlanner();
+    return new MySQLCreatePlanner(ctx);
   }
 
   createAlterPlanner(ctx: IMigrationContext): IAlterPlanner {

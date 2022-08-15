@@ -1,5 +1,5 @@
 import { Knex } from 'knex';
-import { IFacts, IFactSource } from '../interface';
+import { IFacts, IFactSource } from '../../interface';
 
 export abstract class BaseFactSource implements IFactSource {
   constructor(readonly knex: Knex) {}

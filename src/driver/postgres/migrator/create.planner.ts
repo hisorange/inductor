@@ -1,25 +1,11 @@
 import { ColumnTools } from '../../../component/column-tools';
-import {
-  IBlueprint,
-  IMigrationContext,
-  MigrationRisk,
-} from '../../../interface';
-import { ICreatePlanner } from '../../../interface/migration/create-planner.interface';
+import { IBlueprint, MigrationRisk } from '../../../interface';
+import { BaseCreatePlanner } from '../../abstract/base.create-planner';
 import { createColumn } from './create.column';
 
-export class PostgresCreatePlanner implements ICreatePlanner {
-  constructor(protected ctx: IMigrationContext) {}
-
+export class PostgresCreatePlanner extends BaseCreatePlanner {
   async createTable(blueprint: IBlueprint) {
-    this.ctx.plan.steps.push({
-      query: this.ctx.knex.schema.createTable(blueprint.tableName, () => {}),
-      risk: MigrationRisk.NONE,
-      description: `Create table [${blueprint.tableName}]`,
-      phase: 0,
-    });
-
-    // Register the fact that the table exits
-    this.ctx.facts.addTable(blueprint.tableName);
+    this._createTable(blueprint);
 
     await Promise.all([
       this.createColumn(blueprint),

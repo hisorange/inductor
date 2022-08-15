@@ -1,6 +1,6 @@
 import { Knex } from 'knex';
 import { Logger } from 'pino';
-import { MigrationPlan } from '../component/migration.plan';
+import { MigrationPlan } from '../../component/migration.plan';
 import {
   BlueprintKind,
   IBlueprint,
@@ -8,10 +8,10 @@ import {
   IMigrationContext,
   IMigrationPlan,
   IMigrator,
-} from '../interface';
-import { IAlterPlanner } from '../interface/migration/alter-planner.interface';
-import { ICreatePlanner } from '../interface/migration/create-planner.interface';
-import { IStateReader } from '../interface/state-reader.interface';
+} from '../../interface';
+import { IAlterPlanner } from '../../interface/migration/alter-planner.interface';
+import { ICreatePlanner } from '../../interface/migration/create-planner.interface';
+import { IStateReader } from '../../interface/state-reader.interface';
 
 export abstract class BaseMigrator implements IMigrator {
   constructor(

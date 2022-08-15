@@ -1,5 +1,5 @@
 import { IFacts } from '../../interface';
-import { BaseFactSource } from '../base.fact-source';
+import { BaseFactSource } from '../abstract/base.fact-source';
 
 export class MySQLFactSource extends BaseFactSource {
   async getTables(): Promise<string[]> {

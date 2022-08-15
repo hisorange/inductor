@@ -1,6 +1,6 @@
 import { FactCollector } from '../../component/fact.collector';
 import { IBlueprint } from '../../interface';
-import { BaseDriver } from '../base.driver';
+import { BaseDriver } from '../abstract/base.driver';
 import { MySQLFactSource } from './mysql.fact-source';
 import { MySQLMigrator } from './mysql.migrator';
 
