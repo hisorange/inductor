@@ -9,7 +9,6 @@
     "orm",
     "postgres",
     "postgresql",
-    "mysql",
     "schema"
   ],
   "main": "build/index.js",
@@ -27,16 +26,13 @@
     "db:stop": "docker-compose down",
     "test:types": "tsc --noEmit",
     "test": "jest -i",
-    "gen:pg-test": "hygen pg-test new",
-    "test:pg": "clear && yarn db:stop && yarn db:start inductor-pg && yarn test tests/postgres",
-    "test:mysql": "clear && yarn db:stop && yarn db:start inductor-mysql && yarn test tests/mysql"
+    "gen:test": "hygen pg-test new"
   },
   "devDependencies": {
     "@types/jest": "^28.0.0",
     "@types/lodash.clonedeep": "^4.5.7",
     "@types/node": "^16.0.0",
     "@types/uuid": "^8.3.4",
-    "hygen": "^6.2.8",
     "jest": "^28.0.0",
     "lodash.clonedeep": "^4.5.0",
     "ts-jest": "^28.0.0",
@@ -45,13 +41,10 @@
   "dependencies": {
     "eventemitter2": "^6.4.7",
     "just-diff": "^5.0.1",
+    "knex": "^2.2.0",
+    "objection": "^3.0.1",
+    "pg": "^8.7.3",
     "pino": "^7.11.0",
     "uuid": "^8.3.2"
-  },
-  "optionalDependencies": {
-    "knex": "^2.2.0",
-    "mysql2": "^2.3.3",
-    "objection": "^3.0.1",
-    "pg": "^8.7.3"
   }
 }

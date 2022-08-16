@@ -23,7 +23,6 @@ yarn add @hisorange/inductor
 import { createDriver } from '@hisorange/inductor';
 
 const driver = createDriver({
-  provider: DatabaseProvider.POSTGRES,
   connection: {
     host: 'localhost',
     port: 5432,
@@ -44,7 +43,7 @@ await driver.migrate([
       id: {
         kind: ColumnKind.COLUMN,
         type: {
-          name: PostgresColumnType.INTEGER,
+          name: ColumnType.INTEGER,
         },
         isNullable: false,
         isUnique: false,
@@ -53,17 +52,17 @@ await driver.migrate([
       smth: {
         kind: ColumnKind.COLUMN,
         type: {
-          name: PostgresColumnType.TEXT,
+          name: ColumnType.TEXT,
         },
         isNullable: false,
         isUnique: false,
         isPrimary: false,
-        isIndexed: PostgresIndexType.BTREE,
+        isIndexed: IndexType.BTREE,
       },
       decision: {
         kind: ColumnKind.COLUMN,
         type: {
-          name: PostgresColumnType.ENUM,
+          name: ColumnType.ENUM,
           values: ['Yes', 'No', 'Maybe'],
           nativeName: 'enum_ind_51d6e671dcb9db93bb8de6c453e975f8089d6535',
         },
@@ -74,7 +73,7 @@ await driver.migrate([
       createdAt: {
         kind: ColumnKind.COLUMN,
         type: {
-          name: PostgresColumnType.DATE,
+          name: ColumnType.DATE,
         },
         isNullable: true,
         isUnique: false,
@@ -93,7 +92,7 @@ await driver.migrate([
     indexes: {
       comp_idx: {
         columns: ['createdAt', 'id'],
-        type: PostgresIndexType.HASH,
+        type: IndexType.HASH,
       },
     },
     relations: {
@@ -105,8 +104,8 @@ await driver.migrate([
           columns: ['user_id'],
         },
         isLocalUnique: true,
-        onDelete: PostgresForeignAction.SET_NULL,
-        onUpdate: PostgresForeignAction.CASCADE,
+        onDelete: ForeignAction.SET_NULL,
+        onUpdate: ForeignAction.CASCADE,
       },
     },
   },

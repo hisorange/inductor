@@ -12,21 +12,3 @@ services:
       POSTGRES_USER: inductor
       POSTGRES_DB: inductor
     mem_limit: 200m
-
-  inductor-mysql:
-    image: mysql:8
-    hostname: inductor-mysql
-    container_name: inductor-mysql
-    ports:
-      - 9998:3306
-    environment:
-      MYSQL_ROOT_PASSWORD: inductor
-      MYSQL_PASSWORD: inductor
-      MYSQL_USER: inductor
-      MYSQL_DATABASE: inductor
-      MYSQL_ALLOW_EMPTY_PASSWORD: 1
-    mem_limit: 200m
-    healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
