@@ -1,8 +1,8 @@
 import { ColumnTools } from '../../component/column-tools';
 import { IBlueprint, MigrationRisk } from '../../interface';
-import { BaseCreatePlanner } from '../abstract/base.create-planner';
+import { SQLBaseCreatePlanner } from '../abstract/base.create-planner';
 
-export class MySQLCreatePlanner extends BaseCreatePlanner {
+export class MySQLCreatePlanner extends SQLBaseCreatePlanner {
   async createTable(blueprint: IBlueprint): Promise<void> {
     this.ctx.plan.steps.push({
       query: this.ctx.knex.schema.createTable(blueprint.tableName, builder => {

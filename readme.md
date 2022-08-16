@@ -20,10 +20,10 @@ yarn add @hisorange/inductor
 ### Create the connection
 
 ```typescript
-import { Inductor } from '@hisorange/inductor';
+import { createDriver } from '@hisorange/inductor';
 
-const inductor = new Inductor({
-  id: 'test_database',
+const driver = createDriver({
+  provider: DatabaseProvider.POSTGRES,
   connection: {
     host: 'localhost',
     port: 5432,
@@ -31,14 +31,12 @@ const inductor = new Inductor({
     user: 'inductor',
     password: 'inductor',
   },
-  provider: 'postgres',
   isReadOnly: false,
-  blueprints: {},
   filters: ['my_.+', 'wp_.+'],
 });
 
 // Apply the desired state, and the library will create or modify the databse to match the given blueprint
-await inductor.migrate([
+await driver.migrate([
   {
     name: 'my_table',
     kind: BlueprintKind.TABLE,
@@ -46,7 +44,7 @@ await inductor.migrate([
       id: {
         kind: ColumnKind.COLUMN,
         type: {
-          name: ColumnType.INTEGER,
+          name: PostgresColumnType.INTEGER,
         },
         isNullable: false,
         isUnique: false,
@@ -55,7 +53,7 @@ await inductor.migrate([
       smth: {
         kind: ColumnKind.COLUMN,
         type: {
-          name: ColumnType.TEXT,
+          name: PostgresColumnType.TEXT,
         },
         isNullable: false,
         isUnique: false,
@@ -65,7 +63,7 @@ await inductor.migrate([
       decision: {
         kind: ColumnKind.COLUMN,
         type: {
-          name: ColumnType.ENUM,
+          name: PostgresColumnType.ENUM,
           values: ['Yes', 'No', 'Maybe'],
           nativeName: 'enum_ind_51d6e671dcb9db93bb8de6c453e975f8089d6535',
         },
@@ -76,7 +74,7 @@ await inductor.migrate([
       createdAt: {
         kind: ColumnKind.COLUMN,
         type: {
-          name: ColumnType.DATE,
+          name: PostgresColumnType.DATE,
         },
         isNullable: true,
         isUnique: false,

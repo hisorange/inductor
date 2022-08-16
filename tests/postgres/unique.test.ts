@@ -6,10 +6,10 @@ import {
   createPostgresColumnWithType,
   PostgresAllColumn,
 } from './util/all-column';
-import { createPostgresTestInstance } from './util/create-connection';
+import { createPostgresDriver } from './util/create-connection';
 
 describe('[Postgres] Unique Constraint', () => {
-  const inductor = createPostgresTestInstance();
+  const driver = createPostgresDriver();
 
   const uniqueCols = cloneDeep(PostgresAllColumn);
 
@@ -24,24 +24,20 @@ describe('[Postgres] Unique Constraint', () => {
 
   const testTables = Object.keys(uniqueCols);
   const cleanup = async () => {
-    await Promise.all([
-      inductor.driver.migrator.dropTable(`unique_test_upgrade`),
-    ]);
+    await Promise.all([driver.migrator.dropTable(`unique_test_upgrade`)]);
     await Promise.all(
-      testTables.map(name =>
-        inductor.driver.migrator.dropTable(`alter_unique_${name}`),
-      ),
+      testTables.map(name => driver.migrator.dropTable(`alter_unique_${name}`)),
     );
     await Promise.all(
       testTables.map(name =>
-        inductor.driver.migrator.dropTable(`unique_test_comp_${name}`),
+        driver.migrator.dropTable(`unique_test_comp_${name}`),
       ),
     );
   };
 
   afterAll(async () => {
     await cleanup();
-    await inductor.close();
+    await driver.close();
   });
 
   test.each(testTables)(
@@ -59,29 +55,29 @@ describe('[Postgres] Unique Constraint', () => {
       };
       // Set unique to false
       blueprintRV1.columns[colName].isUnique = false;
-      await inductor.migrate([blueprintRV1]);
+      await driver.migrate([blueprintRV1]);
 
       expect(blueprintRV1).toStrictEqual(
-        (await inductor.reverse([tableName]))[0],
+        (await driver.reverse([tableName]))[0],
       );
 
       const blueprintRV2 = cloneDeep(blueprintRV1);
       // Change the unique
       blueprintRV2.columns[colName].isUnique = true;
-      await inductor.migrate([blueprintRV2]);
+      await driver.migrate([blueprintRV2]);
 
       expect(blueprintRV2).toStrictEqual(
-        (await inductor.reverse([tableName]))[0],
+        (await driver.reverse([tableName]))[0],
       );
 
       const blueprintRV3 = cloneDeep(blueprintRV2);
       // Revert the unique
       blueprintRV3.columns[colName].isUnique = false;
 
-      await inductor.migrate([blueprintRV3]);
+      await driver.migrate([blueprintRV3]);
 
       expect(blueprintRV3).toStrictEqual(
-        (await inductor.reverse([tableName]))[0],
+        (await driver.reverse([tableName]))[0],
       );
     },
   );
@@ -109,9 +105,9 @@ describe('[Postgres] Unique Constraint', () => {
           columns: [columnKey, 'pair_for_comp'],
         },
       };
-      await inductor.migrate([blueprint]);
+      await driver.migrate([blueprint]);
 
-      expect(blueprint).toStrictEqual((await inductor.reverse([tableName]))[0]);
+      expect(blueprint).toStrictEqual((await driver.reverse([tableName]))[0]);
     },
   );
 
@@ -125,13 +121,11 @@ describe('[Postgres] Unique Constraint', () => {
       },
       col_2: createPostgresColumnWithType(PostgresColumnType.INTEGER),
     };
-    await inductor.migrate([blueprintRV1]);
+    await driver.migrate([blueprintRV1]);
 
-    console.log('READ STATE', (await inductor.reverse([tableName]))[0]);
+    console.log('READ STATE', (await driver.reverse([tableName]))[0]);
 
-    expect((await inductor.reverse([tableName]))[0]).toStrictEqual(
-      blueprintRV1,
-    );
+    expect((await driver.reverse([tableName]))[0]).toStrictEqual(blueprintRV1);
 
     // Set the second column as unique to convert the index into a composite one
     const blueprintRV2 = cloneDeep(blueprintRV1);
@@ -139,11 +133,9 @@ describe('[Postgres] Unique Constraint', () => {
     blueprintRV2.uniques.test_cmp_1 = {
       columns: ['col_1', 'col_2'],
     };
-    await inductor.migrate([blueprintRV2]);
+    await driver.migrate([blueprintRV2]);
 
-    expect(blueprintRV2).toStrictEqual(
-      (await inductor.reverse([tableName]))[0],
-    );
+    expect(blueprintRV2).toStrictEqual((await driver.reverse([tableName]))[0]);
 
     // Create a new column and add it to the composite unique
     const blueprintRV3 = cloneDeep(blueprintRV2);
@@ -151,19 +143,15 @@ describe('[Postgres] Unique Constraint', () => {
       PostgresColumnType.INTEGER,
     );
     blueprintRV3.uniques.test_cmp_1.columns.push('col_3');
-    await inductor.migrate([blueprintRV3]);
+    await driver.migrate([blueprintRV3]);
 
-    expect(blueprintRV3).toStrictEqual(
-      (await inductor.reverse([tableName]))[0],
-    );
+    expect(blueprintRV3).toStrictEqual((await driver.reverse([tableName]))[0]);
 
     // Remove the composite unique
     const blueprintRV4 = cloneDeep(blueprintRV3);
     delete blueprintRV4.uniques.test_cmp_1;
-    await inductor.migrate([blueprintRV4]);
+    await driver.migrate([blueprintRV4]);
 
-    expect(blueprintRV4).toStrictEqual(
-      (await inductor.reverse([tableName]))[0],
-    );
+    expect(blueprintRV4).toStrictEqual((await driver.reverse([tableName]))[0]);
   });
 });

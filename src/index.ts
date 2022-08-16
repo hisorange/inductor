@@ -1,5 +1,5 @@
 export * from './component/column-tools';
-export * from './inductor';
+export * from './driver.factory';
 export * from './interface/blueprint/blueprint.interface';
 export * from './interface/blueprint/column.interface';
 export * from './interface/blueprint/postgres/postgres.column-type';

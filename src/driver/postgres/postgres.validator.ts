@@ -2,11 +2,11 @@ import { InvalidBlueprint } from '../../exception/invalid-blueprint.exception';
 import { IBlueprint } from '../../interface/blueprint/blueprint.interface';
 import { PostgresColumnType } from '../../interface/blueprint/postgres/postgres.column-type';
 import { PostgresIndexType } from '../../interface/blueprint/postgres/postgres.index-type';
-import { BaseValidator } from '../abstract/base.validator';
+import { SQLBaseValidator } from '../abstract/base.validator';
 import { PostgresColumnTools } from './postgres.column-tools';
 
 export const PostgresValidator = (blueprint: IBlueprint): void => {
-  BaseValidator(blueprint);
+  SQLBaseValidator(blueprint);
 
   // Validate for invalid table names
   if (blueprint.tableName.length > 63) {

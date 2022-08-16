@@ -1,7 +1,7 @@
 import { InvalidBlueprint } from '../../exception';
 import { IBlueprint } from '../../interface';
 
-export const BaseValidator = (blueprint: IBlueprint): void => {
+export const SQLBaseValidator = (blueprint: IBlueprint): void => {
   // Validate the table name, or it's just spaces
   if (!blueprint.tableName || blueprint.tableName.trim().length === 0) {
     throw new InvalidBlueprint('Missing table name');

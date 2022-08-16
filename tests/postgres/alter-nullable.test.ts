@@ -1,10 +1,10 @@
 import { ColumnTools, IColumn, PostgresColumnType } from '../../src';
 import { createBlueprint } from '../../src/util/create-blueprint';
 import { createPostgresColumnWithType } from './util/all-column';
-import { createPostgresTestInstance } from './util/create-connection';
+import { createPostgresDriver } from './util/create-connection';
 
 describe('[Postgres] Alter Nullable', () => {
-  const inductor = createPostgresTestInstance();
+  const driver = createPostgresDriver();
 
   const cases: [string, IColumn][] = (
     ColumnTools.postgres.listColumnTypes() as PostgresColumnType[]
@@ -17,7 +17,7 @@ describe('[Postgres] Alter Nullable', () => {
       ([type, col]) => ![PostgresColumnType.BIT_VARYING].includes(type as any),
     );
 
-  afterAll(() => inductor.close());
+  afterAll(() => driver.close());
 
   test.each(cases)(
     'should alter nullable flag for [%s] type column',
@@ -36,33 +36,33 @@ describe('[Postgres] Alter Nullable', () => {
       };
 
       // Remove blueprint if exists from a previous test
-      await inductor.driver.migrator.dropTable(tableName);
-      await inductor.migrate([blueprintRV1]);
+      await driver.migrator.dropTable(tableName);
+      await driver.migrate([blueprintRV1]);
 
-      expect((await inductor.reverse([tableName]))[0]).toStrictEqual(
+      expect((await driver.reverse([tableName]))[0]).toStrictEqual(
         blueprintRV1,
       );
 
       // Continue with a true state
       blueprintRV1.columns[columnName].isNullable = true;
       blueprintRV1.columns[columnName].defaultValue = null;
-      await inductor.migrate([blueprintRV1]);
+      await driver.migrate([blueprintRV1]);
 
-      expect((await inductor.reverse([tableName]))[0]).toStrictEqual(
+      expect((await driver.reverse([tableName]))[0]).toStrictEqual(
         blueprintRV1,
       );
 
       // Continue with a false state
       blueprintRV1.columns[columnName].isNullable = false;
       blueprintRV1.columns[columnName].defaultValue = undefined;
-      await inductor.migrate([blueprintRV1]);
+      await driver.migrate([blueprintRV1]);
 
-      expect((await inductor.reverse([tableName]))[0]).toStrictEqual(
+      expect((await driver.reverse([tableName]))[0]).toStrictEqual(
         blueprintRV1,
       );
 
       // Cleanup
-      await inductor.driver.migrator.dropBlueprint(blueprintRV1);
+      await driver.migrator.dropBlueprint(blueprintRV1);
     },
   );
 });

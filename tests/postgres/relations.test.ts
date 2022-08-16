@@ -2,12 +2,12 @@ import { PostgresColumnType } from '../../src';
 import { PostgresForeignAction } from '../../src/interface/blueprint/postgres/postgres.foreign-action';
 import { createBlueprint } from '../../src/util/create-blueprint';
 import { createPostgresColumnWithType } from './util/all-column';
-import { createPostgresTestInstance } from './util/create-connection';
+import { createPostgresDriver } from './util/create-connection';
 
 describe('[Postgres] Relations', () => {
-  const inductor = createPostgresTestInstance();
+  const driver = createPostgresDriver();
 
-  afterAll(() => inductor.close());
+  afterAll(() => driver.close());
 
   test('should create a belongs to relation', async () => {
     const tableNameA = `relation_belongsto_a`;
@@ -51,17 +51,17 @@ describe('[Postgres] Relations', () => {
     };
 
     // Remove blueprint if exists from a previous test
-    await inductor.driver.migrator.dropBlueprint(blueprintB);
-    await inductor.driver.migrator.dropBlueprint(blueprintA);
+    await driver.migrator.dropBlueprint(blueprintB);
+    await driver.migrator.dropBlueprint(blueprintA);
 
     // Apply the new state
-    await inductor.migrate([blueprintA, blueprintB]);
+    await driver.migrate([blueprintA, blueprintB]);
 
-    expect(blueprintA).toStrictEqual((await inductor.reverse([tableNameA]))[0]);
-    expect(blueprintB).toStrictEqual((await inductor.reverse([tableNameB]))[0]);
+    expect(blueprintA).toStrictEqual((await driver.reverse([tableNameA]))[0]);
+    expect(blueprintB).toStrictEqual((await driver.reverse([tableNameB]))[0]);
 
     // Cleanup
-    await inductor.driver.migrator.dropBlueprint(blueprintB);
-    await inductor.driver.migrator.dropBlueprint(blueprintA);
+    await driver.migrator.dropBlueprint(blueprintB);
+    await driver.migrator.dropBlueprint(blueprintA);
   });
 });

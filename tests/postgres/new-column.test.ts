@@ -3,11 +3,11 @@ import { PostgresColumnType } from '../../src';
 import { ImpossibleMigration } from '../../src/exception/impossible-migration.exception';
 import { createBlueprint } from '../../src/util/create-blueprint';
 import { createPostgresColumnWithType } from './util/all-column';
-import { createPostgresTestInstance } from './util/create-connection';
+import { createPostgresDriver } from './util/create-connection';
 
 describe('[Postgres] Able to handle new column risks', () => {
-  const inductor = createPostgresTestInstance();
-  afterAll(() => inductor.close());
+  const driver = createPostgresDriver();
+  afterAll(() => driver.close());
 
   test('should be able to create a new column with default value', async () => {
     const tableName = `new_column_test`;
@@ -20,13 +20,11 @@ describe('[Postgres] Able to handle new column risks', () => {
       name: createPostgresColumnWithType(PostgresColumnType.TEXT),
     };
 
-    await inductor.migrate([blueprintRV1]);
+    await driver.migrate([blueprintRV1]);
 
-    expect((await inductor.reverse([tableName]))[0]).toStrictEqual(
-      blueprintRV1,
-    );
+    expect((await driver.reverse([tableName]))[0]).toStrictEqual(blueprintRV1);
 
-    const modelRV1 = inductor.model(tableName);
+    const modelRV1 = driver.model(tableName);
     await modelRV1.query().insert({ name: 'duckling' });
 
     const blueprintRV2 = cloneDeep(blueprintRV1);
@@ -35,13 +33,11 @@ describe('[Postgres] Able to handle new column risks', () => {
       defaultValue: 42,
     };
 
-    await inductor.migrate([blueprintRV2]);
-    const modelRV2 = inductor.model(tableName);
+    await driver.migrate([blueprintRV2]);
+    const modelRV2 = driver.model(tableName);
     await modelRV2.query().insert({ name: 'lama' });
 
-    expect((await inductor.reverse([tableName]))[0]).toStrictEqual(
-      blueprintRV2,
-    );
+    expect((await driver.reverse([tableName]))[0]).toStrictEqual(blueprintRV2);
   });
 
   test('should be possible to create new column without default value with zero rows', async () => {
@@ -55,17 +51,15 @@ describe('[Postgres] Able to handle new column risks', () => {
       name: createPostgresColumnWithType(PostgresColumnType.TEXT),
     };
 
-    await inductor.migrate([blueprintRV1]);
+    await driver.migrate([blueprintRV1]);
 
-    expect((await inductor.reverse([tableName]))[0]).toStrictEqual(
-      blueprintRV1,
-    );
+    expect((await driver.reverse([tableName]))[0]).toStrictEqual(blueprintRV1);
 
     const blueprintRV2 = cloneDeep(blueprintRV1);
     blueprintRV2.columns['new_column_without_defv'] =
       createPostgresColumnWithType(PostgresColumnType.INTEGER);
 
-    await expect(inductor.migrate([blueprintRV2])).resolves.not.toThrow();
+    await expect(driver.migrate([blueprintRV2])).resolves.not.toThrow();
   });
 
   test('should be impossible to create new column without default value with non-zero rows', async () => {
@@ -79,20 +73,18 @@ describe('[Postgres] Able to handle new column risks', () => {
       name: createPostgresColumnWithType(PostgresColumnType.TEXT),
     };
 
-    await inductor.migrate([blueprintRV1]);
+    await driver.migrate([blueprintRV1]);
 
-    expect((await inductor.reverse([tableName]))[0]).toStrictEqual(
-      blueprintRV1,
-    );
+    expect((await driver.reverse([tableName]))[0]).toStrictEqual(blueprintRV1);
 
-    const modelRV1 = inductor.model(tableName);
+    const modelRV1 = driver.model(tableName);
     await modelRV1.query().insert({ name: 'poc' });
 
     const blueprintRV2 = cloneDeep(blueprintRV1);
     blueprintRV2.columns['new_column_without_defv'] =
       createPostgresColumnWithType(PostgresColumnType.INTEGER);
 
-    await expect(inductor.migrate([blueprintRV2])).rejects.toBeInstanceOf(
+    await expect(driver.migrate([blueprintRV2])).rejects.toBeInstanceOf(
       ImpossibleMigration,
     );
   });

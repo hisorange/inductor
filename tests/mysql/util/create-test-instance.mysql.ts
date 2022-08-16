@@ -1,9 +1,12 @@
-import { Inductor } from '../../../src/inductor';
+import { createDriver } from '../../../src/driver.factory';
+import { IDriver } from '../../../src/interface';
 import { IDatabase } from '../../../src/interface/database/database.interface';
 import { DatabaseProvider } from '../../../src/interface/database/database.provider';
 
-export const createMySQLTestInstance = (filters: string[] = []) => {
-  const database: IDatabase = {
+export const createMySQLDriver = (
+  filters: string[] = [],
+): IDriver<DatabaseProvider.MYSQL> => {
+  const database: IDatabase<DatabaseProvider.MYSQL> = {
     connection: {
       host: 'localhost',
       port: 9998,
@@ -17,5 +20,5 @@ export const createMySQLTestInstance = (filters: string[] = []) => {
     filters: filters,
   };
 
-  return new Inductor(database);
+  return createDriver(database) as IDriver<DatabaseProvider.MYSQL>;
 };

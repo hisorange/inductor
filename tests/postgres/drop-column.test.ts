@@ -4,14 +4,12 @@ import { PostgresColumnType } from '../../src/interface/blueprint/postgres/postg
 import { PostgresIndexType } from '../../src/interface/blueprint/postgres/postgres.index-type';
 import { createBlueprint } from '../../src/util/create-blueprint';
 import { createPostgresColumnWithType } from './util/all-column';
-import { createPostgresTestInstance } from './util/create-connection';
+import { createPostgresDriver } from './util/create-connection';
 
 describe('[Postgres] Drop Column', () => {
-  const inductor = createPostgresTestInstance();
+  const driver = createPostgresDriver();
   const clearTables = () =>
-    Promise.all(
-      testTables.map(name => inductor.driver.migrator.dropTable(name)),
-    );
+    Promise.all(testTables.map(name => driver.migrator.dropTable(name)));
 
   const columns: IBlueprint['columns'] = {
     col_var_1: {
@@ -39,7 +37,7 @@ describe('[Postgres] Drop Column', () => {
 
   afterAll(async () => {
     await clearTables();
-    await inductor.close();
+    await driver.close();
   });
 
   test.each(Object.keys(columns))(
@@ -49,17 +47,17 @@ describe('[Postgres] Drop Column', () => {
 
       const blueprintRV1 = createBlueprint(tableName);
       blueprintRV1.columns = columns;
-      await inductor.migrate([blueprintRV1]);
+      await driver.migrate([blueprintRV1]);
 
-      expect((await inductor.reverse([tableName]))[0]).toStrictEqual(
+      expect((await driver.reverse([tableName]))[0]).toStrictEqual(
         blueprintRV1,
       );
 
       const blueprintRV2 = cloneDeep(blueprintRV1);
       delete blueprintRV2.columns[col];
-      await inductor.migrate([blueprintRV2]);
+      await driver.migrate([blueprintRV2]);
 
-      expect((await inductor.reverse([tableName]))[0]).toStrictEqual(
+      expect((await driver.reverse([tableName]))[0]).toStrictEqual(
         blueprintRV2,
       );
     },

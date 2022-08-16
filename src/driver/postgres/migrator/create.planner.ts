@@ -1,9 +1,9 @@
 import { ColumnTools } from '../../../component/column-tools';
 import { IBlueprint, MigrationRisk } from '../../../interface';
-import { BaseCreatePlanner } from '../../abstract/base.create-planner';
+import { SQLBaseCreatePlanner } from '../../abstract/base.create-planner';
 import { createColumn } from './create.column';
 
-export class PostgresCreatePlanner extends BaseCreatePlanner {
+export class PostgresCreatePlanner extends SQLBaseCreatePlanner {
   async createTable(blueprint: IBlueprint) {
     this._createTable(blueprint);
 

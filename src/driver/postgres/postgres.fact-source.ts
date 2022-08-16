@@ -1,12 +1,12 @@
 import { Knex } from 'knex';
 import { PostgresForeignAction } from '../../interface/blueprint/postgres/postgres.foreign-action';
 import { IFacts } from '../../interface/fact/facts.interface';
-import { BaseFactSource } from '../abstract/base.fact-source';
+import { SQLBaseFactSource } from '../abstract/base.fact-source';
 
 /**
  * Reads the connection's database into a set of structure
  */
-export class PostgresFactSource extends BaseFactSource {
+export class PostgresFactSource extends SQLBaseFactSource {
   constructor(knex: Knex) {
     super(knex);
   }

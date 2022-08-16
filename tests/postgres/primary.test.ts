@@ -7,10 +7,10 @@ import {
   createPostgresColumnWithType,
   PostgresAllColumn,
 } from './util/all-column';
-import { createPostgresTestInstance } from './util/create-connection';
+import { createPostgresDriver } from './util/create-connection';
 
 describe('[Postgres] Primary Constraint', () => {
-  const inductor = createPostgresTestInstance();
+  const driver = createPostgresDriver();
   const primaryColumns = cloneDeep(PostgresAllColumn);
 
   // Remove the non primary able columns
@@ -25,17 +25,17 @@ describe('[Postgres] Primary Constraint', () => {
   const testTables = Object.keys(primaryColumns);
 
   const clearTables = async () => {
-    await inductor.driver.migrator.dropTable(`alter_primary_extend`);
+    await driver.migrator.dropTable(`alter_primary_extend`);
 
     await Promise.all(
       testTables.map(name =>
-        inductor.driver.migrator.dropTable(`create_primary_${name}`),
+        driver.migrator.dropTable(`create_primary_${name}`),
       ),
     );
 
     await Promise.all(
       testTables.map(name =>
-        inductor.driver.migrator.dropTable(`alter_primary_${name}`),
+        driver.migrator.dropTable(`alter_primary_${name}`),
       ),
     );
   };
@@ -44,7 +44,7 @@ describe('[Postgres] Primary Constraint', () => {
 
   afterAll(async () => {
     await clearTables();
-    await inductor.close();
+    await driver.close();
   });
 
   test.each(testTables)(
@@ -58,10 +58,10 @@ describe('[Postgres] Primary Constraint', () => {
           isPrimary: true,
         },
       };
-      await inductor.migrate([testBlueprint]);
+      await driver.migrate([testBlueprint]);
 
       expect(testBlueprint).toStrictEqual(
-        (await inductor.reverse([tableName]))[0],
+        (await driver.reverse([tableName]))[0],
       );
     },
   );
@@ -83,28 +83,28 @@ describe('[Postgres] Primary Constraint', () => {
       };
 
       blueprintRV1.columns[colName].isPrimary = false;
-      await inductor.migrate([blueprintRV1]);
+      await driver.migrate([blueprintRV1]);
 
       expect(blueprintRV1).toStrictEqual(
-        (await inductor.reverse([tableName]))[0],
+        (await driver.reverse([tableName]))[0],
       );
 
       const blueprintRV2 = cloneDeep(blueprintRV1);
       blueprintRV2.columns[colName].isPrimary = true;
-      await inductor.migrate([blueprintRV2]);
+      await driver.migrate([blueprintRV2]);
 
       expect(blueprintRV2).toStrictEqual(
-        (await inductor.reverse([tableName]))[0],
+        (await driver.reverse([tableName]))[0],
       );
 
       const blueprintRV3 = cloneDeep(blueprintRV2);
       // Revert the nullable
       blueprintRV3.columns[colName].isPrimary = false;
 
-      await inductor.migrate([blueprintRV3]);
+      await driver.migrate([blueprintRV3]);
 
       expect(blueprintRV3).toStrictEqual(
-        (await inductor.reverse([tableName]))[0],
+        (await driver.reverse([tableName]))[0],
       );
     },
     5_000,
@@ -119,11 +119,9 @@ describe('[Postgres] Primary Constraint', () => {
         isPrimary: true,
       },
     };
-    await inductor.migrate([blueprintRV1]);
+    await driver.migrate([blueprintRV1]);
 
-    expect(blueprintRV1).toStrictEqual(
-      (await inductor.reverse([tableName]))[0],
-    );
+    expect(blueprintRV1).toStrictEqual((await driver.reverse([tableName]))[0]);
 
     // Extend the primary
     const blueprintRV2 = cloneDeep(blueprintRV1);
@@ -131,11 +129,9 @@ describe('[Postgres] Primary Constraint', () => {
       ...createPostgresColumnWithType(PostgresColumnType.INTEGER),
       isPrimary: true,
     };
-    await inductor.migrate([blueprintRV2]);
+    await driver.migrate([blueprintRV2]);
 
-    expect(blueprintRV2).toStrictEqual(
-      (await inductor.reverse([tableName]))[0],
-    );
+    expect(blueprintRV2).toStrictEqual((await driver.reverse([tableName]))[0]);
 
     // Add the third primary column
     const blueprintRV3 = cloneDeep(blueprintRV2);
@@ -143,28 +139,22 @@ describe('[Postgres] Primary Constraint', () => {
       ...createPostgresColumnWithType(PostgresColumnType.INTEGER),
       isPrimary: true,
     };
-    await inductor.migrate([blueprintRV3]);
+    await driver.migrate([blueprintRV3]);
 
-    expect(blueprintRV3).toStrictEqual(
-      (await inductor.reverse([tableName]))[0],
-    );
+    expect(blueprintRV3).toStrictEqual((await driver.reverse([tableName]))[0]);
 
     // Remove the third primary column
     const blueprintRV4 = cloneDeep(blueprintRV3);
     blueprintRV4.columns.third.isPrimary = false;
-    await inductor.migrate([blueprintRV4]);
+    await driver.migrate([blueprintRV4]);
 
-    expect(blueprintRV4).toStrictEqual(
-      (await inductor.reverse([tableName]))[0],
-    );
+    expect(blueprintRV4).toStrictEqual((await driver.reverse([tableName]))[0]);
 
     // Remove the second primary column
     const blueprintRV5 = cloneDeep(blueprintRV4);
     blueprintRV5.columns.second.isPrimary = false;
-    await inductor.migrate([blueprintRV5]);
+    await driver.migrate([blueprintRV5]);
 
-    expect(blueprintRV5).toStrictEqual(
-      (await inductor.reverse([tableName]))[0],
-    );
+    expect(blueprintRV5).toStrictEqual((await driver.reverse([tableName]))[0]);
   });
 });

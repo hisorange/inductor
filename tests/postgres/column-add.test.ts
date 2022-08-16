@@ -1,17 +1,17 @@
 import { ColumnTools, IColumn, PostgresColumnType } from '../../src';
 import { createBlueprint } from '../../src/util/create-blueprint';
 import { createPostgresColumnWithType } from './util/all-column';
-import { createPostgresTestInstance } from './util/create-connection';
+import { createPostgresDriver } from './util/create-connection';
 
 describe('[Postgres] Column Adding', () => {
-  const inductor = createPostgresTestInstance();
+  const driver = createPostgresDriver();
   const cases: [string, IColumn][] = (
     ColumnTools.postgres.listColumnTypes() as PostgresColumnType[]
   )
     .filter(type => type !== PostgresColumnType.BIT_VARYING)
     .map(type => [type, createPostgresColumnWithType(type)]);
 
-  afterAll(() => inductor.close());
+  afterAll(() => driver.close());
 
   test.each(cases)(
     'should add [%s] type column',
@@ -30,13 +30,13 @@ describe('[Postgres] Column Adding', () => {
       };
 
       // Remove blueprint if exists from a previous test
-      await inductor.driver.migrator.dropTable(tableName);
-      await inductor.migrate([blueprint]);
+      await driver.migrator.dropTable(tableName);
+      await driver.migrate([blueprint]);
 
-      expect((await inductor.reverse([tableName]))[0]).toStrictEqual(blueprint);
+      expect((await driver.reverse([tableName]))[0]).toStrictEqual(blueprint);
 
       // Cleanup
-      await inductor.driver.migrator.dropTable(tableName);
+      await driver.migrator.dropTable(tableName);
     },
   );
 });

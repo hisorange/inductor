@@ -1,9 +1,9 @@
 import { InvalidBlueprint } from '../../exception/invalid-blueprint.exception';
 import { IBlueprint } from '../../interface/blueprint/blueprint.interface';
-import { BaseValidator } from '../abstract/base.validator';
+import { SQLBaseValidator } from '../abstract/base.validator';
 
 export const MySQLValidator = (blueprint: IBlueprint): void => {
-  BaseValidator(blueprint);
+  SQLBaseValidator(blueprint);
 
   // Validate for invalid table names
   if (blueprint.tableName.length > 63) {

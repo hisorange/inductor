@@ -1,9 +1,9 @@
 import { ColumnKind, MySQLColumnType } from '../../src/interface';
 import { createBlueprint } from '../../src/util/create-blueprint';
-import { createMySQLTestInstance } from './util/create-test-instance.mysql';
+import { createMySQLDriver } from './util/create-test-instance.mysql';
 
 describe('[MySQL] Create Table', () => {
-  const inductor = createMySQLTestInstance();
+  const driver = createMySQLDriver();
 
   test.skip('should create blueprint', async () => {
     const tableName = 'test_create_table';
@@ -21,8 +21,8 @@ describe('[MySQL] Create Table', () => {
         defaultValue: null,
       },
     };
-    await inductor.migrate([blueprint]);
+    await driver.migrate([blueprint]);
 
-    expect((await inductor.reverse([tableName]))[0]).toStrictEqual(blueprint);
+    expect((await driver.reverse([tableName]))[0]).toStrictEqual(blueprint);
   });
 });

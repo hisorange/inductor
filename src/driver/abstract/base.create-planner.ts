@@ -1,7 +1,7 @@
 import { IBlueprint, IMigrationContext, MigrationRisk } from '../../interface';
 import { ICreatePlanner } from '../../interface/migration/create-planner.interface';
 
-export abstract class BaseCreatePlanner implements ICreatePlanner {
+export abstract class SQLBaseCreatePlanner implements ICreatePlanner {
   constructor(readonly ctx: IMigrationContext) {}
   abstract createTable(blueprint: IBlueprint): Promise<void>;
 

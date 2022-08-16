@@ -1,7 +1,7 @@
 import { Knex } from 'knex';
 import { IFacts, IFactSource } from '../../interface';
 
-export abstract class BaseFactSource implements IFactSource {
+export abstract class SQLBaseFactSource implements IFactSource {
   constructor(readonly knex: Knex) {}
 
   async isTableHasRows(tableName: string): Promise<boolean> {

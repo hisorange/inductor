@@ -6,6 +6,7 @@ import { DatabaseProvider } from './database.provider';
  * Describe the database blueprint, and the connection associated with it.
  */
 export interface IDatabase<
+  Provider = DatabaseProvider,
   DatabaseMeta = unknown,
   BlueprintMeta = unknown,
   ColumnMeta = unknown,
@@ -14,7 +15,7 @@ export interface IDatabase<
    * Indicates which driver is used to connect to the database,
    * and which model is used to interact with the blueprints.
    */
-  readonly provider: DatabaseProvider;
+  readonly provider: Provider;
 
   /**
    * Database connection configuration

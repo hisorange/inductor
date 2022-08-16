@@ -13,7 +13,7 @@ import { IAlterPlanner } from '../../interface/migration/alter-planner.interface
 import { ICreatePlanner } from '../../interface/migration/create-planner.interface';
 import { IStateReader } from '../../interface/state-reader.interface';
 
-export abstract class BaseMigrator implements IMigrator {
+export abstract class SQLBaseMigrator implements IMigrator {
   constructor(
     readonly logger: Logger,
     protected knex: Knex,

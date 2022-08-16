@@ -3,16 +3,25 @@ import knex, { Knex } from 'knex';
 import { Model, ModelClass, Pojo } from 'objection';
 import { Logger } from 'pino';
 import { ColumnTools } from '../../component/column-tools';
+import { ModelNotFound } from '../../exception';
 import {
   IBlueprint,
   IDatabase,
   IDriver,
   IFactCollector,
+  IMigrationPlan,
   IMigrator,
+  IStepResult,
 } from '../../interface';
+import { BlueprintMap } from '../../interface/blueprint.map';
 import { DatabaseProvider } from '../../interface/database/database.provider';
 
-export abstract class BaseDriver implements IDriver {
+export abstract class SQLBaseDriver implements IDriver {
+  /**
+   * Associated blueprints with the connection
+   */
+  protected blueprints: BlueprintMap = new Map();
+
   readonly migrator: IMigrator;
   readonly factCollector: IFactCollector;
   readonly connection: Knex;
@@ -141,5 +150,43 @@ export abstract class BaseDriver implements IDriver {
     model.knex(this.connection);
 
     return model;
+  }
+
+  compare(blueprints: IBlueprint[]): Promise<IMigrationPlan> {
+    return this.migrator.compare(blueprints);
+  }
+
+  async migrate(blueprints: IBlueprint[]): Promise<IStepResult[]> {
+    return this.compare(blueprints)
+      .then(plan => plan.execute())
+      .then(result => {
+        this.blueprints = new Map(
+          blueprints.map(blueprint => [
+            blueprint.tableName,
+            {
+              blueprint,
+              model: this.toModel(blueprint),
+            },
+          ]),
+        );
+
+        return result;
+      });
+  }
+
+  reverse(filters: string[] = []): Promise<IBlueprint[]> {
+    return this.migrator.reverse(filters);
+  }
+
+  model<T extends Model = Model>(table: string): ModelClass<T> {
+    if (!this.blueprints.has(table)) {
+      throw new ModelNotFound(table);
+    }
+
+    return this.blueprints.get(table)!.model as ModelClass<T>;
+  }
+
+  close() {
+    return this.connection.destroy();
   }
 }

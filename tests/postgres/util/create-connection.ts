@@ -1,9 +1,12 @@
-import { Inductor } from '../../../src/inductor';
+import { createDriver } from '../../../src/driver.factory';
+import { IDriver } from '../../../src/interface';
 import { IDatabase } from '../../../src/interface/database/database.interface';
 import { DatabaseProvider } from '../../../src/interface/database/database.provider';
 
-export const createPostgresTestInstance = (filters: string[] = []) => {
-  const database: IDatabase = {
+export const createPostgresDriver = (
+  filters: string[] = [],
+): IDriver<DatabaseProvider.POSTGRES> => {
+  const database: IDatabase<DatabaseProvider.POSTGRES> = {
     connection: {
       host: 'localhost',
       port: 9999,
@@ -17,5 +20,5 @@ export const createPostgresTestInstance = (filters: string[] = []) => {
     filters: filters,
   };
 
-  return new Inductor(database);
+  return createDriver(database) as IDriver<DatabaseProvider.POSTGRES>;
 };
