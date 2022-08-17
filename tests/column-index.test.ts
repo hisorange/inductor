@@ -6,7 +6,7 @@ import { createTestDriver } from './util/create-connection';
 describe('Column Indexing', () => {
   const driver = createTestDriver();
 
-  afterAll(() => driver.close());
+  afterAll(() => driver.closeConnection());
 
   test.each([
     ['btree', ColumnType.TEXT, IndexType.BTREE],
@@ -42,13 +42,13 @@ describe('Column Indexing', () => {
       };
 
       // Remove blueprint if exists from a previous test
-      await driver.migrator.dropTable(tableName);
-      await driver.migrate([blueprint]);
+      await driver.migrationManager.dropTable(tableName);
+      await driver.setState([blueprint]);
 
-      expect((await driver.reverse([tableName]))[0]).toStrictEqual(blueprint);
+      expect((await driver.readState([tableName]))[0]).toStrictEqual(blueprint);
 
       // Cleanup
-      await driver.migrator.dropTable(tableName);
+      await driver.migrationManager.dropTable(tableName);
     },
   );
 });

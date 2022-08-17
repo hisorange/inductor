@@ -6,7 +6,7 @@ import { createTestDriver } from './util/create-connection';
 describe('Relations', () => {
   const driver = createTestDriver();
 
-  afterAll(() => driver.close());
+  afterAll(() => driver.closeConnection());
 
   test('should create a belongs to relation', async () => {
     const tableNameA = `relation_belongsto_a`;
@@ -50,17 +50,17 @@ describe('Relations', () => {
     };
 
     // Remove blueprint if exists from a previous test
-    await driver.migrator.dropBlueprint(blueprintB);
-    await driver.migrator.dropBlueprint(blueprintA);
+    await driver.migrationManager.dropBlueprint(blueprintB);
+    await driver.migrationManager.dropBlueprint(blueprintA);
 
     // Apply the new state
-    await driver.migrate([blueprintA, blueprintB]);
+    await driver.setState([blueprintA, blueprintB]);
 
-    expect(blueprintA).toStrictEqual((await driver.reverse([tableNameA]))[0]);
-    expect(blueprintB).toStrictEqual((await driver.reverse([tableNameB]))[0]);
+    expect(blueprintA).toStrictEqual((await driver.readState([tableNameA]))[0]);
+    expect(blueprintB).toStrictEqual((await driver.readState([tableNameB]))[0]);
 
     // Cleanup
-    await driver.migrator.dropBlueprint(blueprintB);
-    await driver.migrator.dropBlueprint(blueprintA);
+    await driver.migrationManager.dropBlueprint(blueprintB);
+    await driver.migrationManager.dropBlueprint(blueprintA);
   });
 });

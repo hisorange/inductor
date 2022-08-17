@@ -6,7 +6,7 @@ import { createTestDriver } from './util/create-connection';
 describe('Default Value', () => {
   const driver = createTestDriver();
 
-  afterAll(() => driver.close());
+  afterAll(() => driver.closeConnection());
 
   test.each([
     [ColumnType.TEXT, 'string', 'abc'],
@@ -47,13 +47,13 @@ describe('Default Value', () => {
       };
 
       // Remove blueprint if exists from a previous test
-      await driver.migrator.dropBlueprint(blueprint);
-      await driver.migrate([blueprint]);
+      await driver.migrationManager.dropBlueprint(blueprint);
+      await driver.setState([blueprint]);
 
-      expect((await driver.reverse([tableName]))[0]).toStrictEqual(blueprint);
+      expect((await driver.readState([tableName]))[0]).toStrictEqual(blueprint);
 
       // Cleanup
-      await driver.migrator.dropBlueprint(blueprint);
+      await driver.migrationManager.dropBlueprint(blueprint);
     },
   );
 });

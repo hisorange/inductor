@@ -6,13 +6,15 @@ describe('Create Table from Blueprint', () => {
   const driver = createTestDriver();
   const testTables = ['create_test1', 'create_Test2', 'create_test_3_____'];
   const clearTables = () =>
-    Promise.all(testTables.map(name => driver.migrator.dropTable(name)));
+    Promise.all(
+      testTables.map(name => driver.migrationManager.dropTable(name)),
+    );
 
   beforeAll(() => clearTables());
 
   afterAll(async () => {
     await clearTables();
-    await driver.close();
+    await driver.closeConnection();
   });
 
   test.each(testTables)(
@@ -21,10 +23,10 @@ describe('Create Table from Blueprint', () => {
       const blueprint = initBlueprint(tableName);
       blueprint.columns = TestColumns;
 
-      await driver.migrate([blueprint]);
-      await driver.factCollector.gather();
+      await driver.setState([blueprint]);
+      await driver.factManager.updateFacts();
 
-      expect(driver.factCollector.isTableExists(tableName)).toBeTruthy();
+      expect(driver.factManager.isTableExists(tableName)).toBeTruthy();
     },
   );
 });

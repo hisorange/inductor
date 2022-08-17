@@ -1,9 +1,7 @@
 import { Knex } from 'knex';
 import { Logger } from 'pino';
 import { BlueprintKind, IBlueprint } from '../blueprint';
-import { FactReader } from '../fact/fact.reader';
-import { IFactCollector } from '../fact/types';
-
+import { IFactManager } from '../fact/types';
 import { MigrationPlan } from './migration.plan';
 import { MigrationPlanner } from './migration.planner';
 import { IMigrationContext } from './types/migration-context.interface';
@@ -11,44 +9,44 @@ import { IMigrationManager } from './types/migration-manager.interface';
 import { IMigrationPlan } from './types/migration-plan.interface';
 
 // Calculates and applies the changes on the database
-export class MigratonManager implements IMigrationManager {
+export class MigrationManager implements IMigrationManager {
   constructor(
-    readonly logger: Logger,
+    protected logger: Logger,
     protected knex: Knex,
-    readonly facts: IFactCollector,
+    protected factManager: IFactManager,
   ) {}
 
   /**
    * Read the database state and return it as a list of blueprints.
    */
-  async reverse(filters: string[] = []): Promise<IBlueprint[]> {
+  async readDatabaseState(filters: string[] = []): Promise<IBlueprint[]> {
     const blueprints = [];
+    await this.factManager.updateFacts();
 
-    await this.facts.gather();
-    const reader = new FactReader(this.facts);
-
-    for (const table of this.facts.getTables(filters)) {
-      blueprints.push(reader.reverse(table));
+    for (const table of this.factManager.getTables(filters)) {
+      blueprints.push(this.factManager.getBlueprintForTable(table));
     }
 
     return blueprints;
   }
 
-  async compare(blueprints: IBlueprint[]): Promise<IMigrationPlan> {
+  async compareDatabaseState(
+    blueprints: IBlueprint[],
+  ): Promise<IMigrationPlan> {
     const ctx: IMigrationContext = {
       knex: this.knex,
-      facts: this.facts,
-      plan: new MigrationPlan(this.logger),
+      factManager: this.factManager,
+      migrationPlan: new MigrationPlan(this.logger),
     };
 
-    await this.facts.gather();
+    await this.factManager.updateFacts();
     const planner = new MigrationPlanner(ctx);
 
     await Promise.all(
       blueprints.map(blueprint => {
         if (blueprint.kind === BlueprintKind.TABLE) {
           // If the table doesn't exist, create it
-          if (!this.facts.isTableExists(blueprint.tableName)) {
+          if (!this.factManager.isTableExists(blueprint.tableName)) {
             return planner.createTable(blueprint);
           }
           // If the table exists, compare the state and apply the alterations
@@ -59,7 +57,7 @@ export class MigratonManager implements IMigrationManager {
       }),
     );
 
-    return ctx.plan;
+    return ctx.migrationPlan;
   }
 
   async dropBlueprint(blueprint: IBlueprint): Promise<void> {

@@ -7,7 +7,7 @@ import { createTestDriver } from './util/create-connection';
 describe('Enumerated Column', () => {
   const driver = createTestDriver();
 
-  afterAll(() => driver.close());
+  afterAll(() => driver.closeConnection());
 
   test.each([
     ['single', ['one']],
@@ -33,13 +33,13 @@ describe('Enumerated Column', () => {
       };
 
       // Remove blueprint if exists from a previous test
-      await driver.migrator.dropBlueprint(blueprint);
-      await driver.migrate([blueprint]);
+      await driver.migrationManager.dropBlueprint(blueprint);
+      await driver.setState([blueprint]);
 
-      expect((await driver.reverse([tableName]))[0]).toStrictEqual(blueprint);
+      expect((await driver.readState([tableName]))[0]).toStrictEqual(blueprint);
 
       // Cleanup
-      await driver.migrator.dropBlueprint(blueprint);
+      await driver.migrationManager.dropBlueprint(blueprint);
     },
   );
 
@@ -66,9 +66,9 @@ describe('Enumerated Column', () => {
       },
     };
 
-    await driver.migrator.dropTable(tableName);
-    await driver.migrate([blueprintV1]);
-    expect((await driver.reverse([tableName]))[0]).toStrictEqual(blueprintV1);
+    await driver.migrationManager.dropTable(tableName);
+    await driver.setState([blueprintV1]);
+    expect((await driver.readState([tableName]))[0]).toStrictEqual(blueprintV1);
 
     const blueprintV2 = cloneDeep(blueprintV1);
     (blueprintV2.columns.enum_column.type as EnumColumnType).values = [
@@ -76,8 +76,8 @@ describe('Enumerated Column', () => {
       'b',
       'd',
     ];
-    await driver.migrate([blueprintV2]);
+    await driver.setState([blueprintV2]);
 
-    expect((await driver.reverse([tableName]))[0]).toStrictEqual(blueprintV2);
+    expect((await driver.readState([tableName]))[0]).toStrictEqual(blueprintV2);
   });
 });

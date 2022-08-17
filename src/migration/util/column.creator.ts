@@ -1,7 +1,7 @@
 import { Knex } from 'knex';
 import { IBlueprint, IColumn } from '../../blueprint';
 import { ColumnType } from '../../blueprint/types/column-type.enum';
-import { IFactCollector } from '../../fact/types/fact-collector.interface';
+import { IFactManager } from '../../fact/types/fact-manager.interface';
 import { ColumnTools } from '../../tools/column-tools';
 import { getPostgresTypeName } from './get-type-name';
 
@@ -10,7 +10,7 @@ export const createColumn = (
   name: string,
   column: IColumn,
   blueprint: IBlueprint,
-  facts: IFactCollector,
+  facts: IFactManager,
 ) => {
   let columnBuilder: Knex.PostgreSqlColumnBuilder;
 

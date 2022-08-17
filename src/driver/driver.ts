@@ -5,10 +5,10 @@ import pino, { Logger } from 'pino';
 import { v4 } from 'uuid';
 import { BlueprintMap, IBlueprint, validateBlueprint } from '../blueprint';
 import { ModelNotFound } from '../exception';
-import { FactCollector } from '../fact/fact.collector';
-import { FactSource } from '../fact/fact.source';
-import { IFactCollector } from '../fact/types';
-import { MigratonManager } from '../migration/migration.manager';
+import { FactManager } from '../fact/fact.manager';
+import { FactReader } from '../fact/fact.reader';
+import { IFactManager } from '../fact/types';
+import { MigrationManager } from '../migration/migration.manager';
 import { IMigrationManager } from '../migration/types/migration-manager.interface';
 import { IMigrationPlan } from '../migration/types/migration-plan.interface';
 import { IStepResult } from '../migration/types/step-result.interface';
@@ -22,10 +22,10 @@ export class Driver implements IDriver {
    */
   protected blueprints: BlueprintMap = new Map();
 
-  readonly migrator: IMigrationManager;
-  readonly factCollector: IFactCollector;
-  readonly connection: Knex;
-  readonly logger: Logger;
+  readonly migrationManager: IMigrationManager;
+  readonly factManager: IFactManager;
+  protected connection: Knex;
+  protected logger: Logger;
   readonly event: EventEmitter2;
 
   constructor(readonly database: IDatabase) {
@@ -52,18 +52,21 @@ export class Driver implements IDriver {
 
     this.connection.on('query', query => {
       this.event.emit('query', query);
-      //console.log(query.sql);
     });
 
-    this.factCollector = this.createFactCollector();
-    this.migrator = this.createMigrator();
+    this.factManager = new FactManager(new FactReader(this.connection));
+    this.migrationManager = new MigrationManager(
+      this.logger,
+      this.connection,
+      this.factManager,
+    );
   }
 
   /**
    * Convert the blueprint into a model class.
    */
-  toModel(blueprint: IBlueprint): ModelClass<Model> {
-    this.validateBlueprint(blueprint);
+  protected toModel(blueprint: IBlueprint): ModelClass<Model> {
+    validateBlueprint(blueprint);
 
     // Prepare fast lookup maps for both propery and column name conversions.
     // Even tho this is a small amount of data, it's worth it to avoid
@@ -133,12 +136,12 @@ export class Driver implements IDriver {
     return model;
   }
 
-  compare(blueprints: IBlueprint[]): Promise<IMigrationPlan> {
-    return this.migrator.compare(blueprints);
+  compareState(blueprints: IBlueprint[]): Promise<IMigrationPlan> {
+    return this.migrationManager.compareDatabaseState(blueprints);
   }
 
-  async migrate(blueprints: IBlueprint[]): Promise<IStepResult[]> {
-    return this.compare(blueprints)
+  async setState(blueprints: IBlueprint[]): Promise<IStepResult[]> {
+    return this.compareState(blueprints)
       .then(plan => plan.execute())
       .then(result => {
         this.blueprints = new Map(
@@ -155,11 +158,11 @@ export class Driver implements IDriver {
       });
   }
 
-  reverse(filters: string[] = []): Promise<IBlueprint[]> {
-    return this.migrator.reverse(filters);
+  readState(filters: string[] = []): Promise<IBlueprint[]> {
+    return this.migrationManager.readDatabaseState(filters);
   }
 
-  model<T extends Model = Model>(table: string): ModelClass<T> {
+  getModel<T extends Model = Model>(table: string): ModelClass<T> {
     if (!this.blueprints.has(table)) {
       throw new ModelNotFound(table);
     }
@@ -167,23 +170,7 @@ export class Driver implements IDriver {
     return this.blueprints.get(table)!.model as ModelClass<T>;
   }
 
-  close() {
+  closeConnection() {
     return this.connection.destroy();
-  }
-
-  createMigrator(): IMigrationManager {
-    return new MigratonManager(
-      this.logger,
-      this.connection,
-      this.factCollector,
-    );
-  }
-
-  createFactCollector(): IFactCollector {
-    return new FactCollector(new FactSource(this.connection));
-  }
-
-  validateBlueprint(blueprint: IBlueprint) {
-    validateBlueprint(blueprint);
   }
 }

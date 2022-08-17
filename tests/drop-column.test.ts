@@ -7,7 +7,9 @@ import { createTestDriver } from './util/create-connection';
 describe('Drop Column', () => {
   const driver = createTestDriver();
   const clearTables = () =>
-    Promise.all(testTables.map(name => driver.migrator.dropTable(name)));
+    Promise.all(
+      testTables.map(name => driver.migrationManager.dropTable(name)),
+    );
 
   const columns: IBlueprint['columns'] = {
     col_var_1: {
@@ -35,7 +37,7 @@ describe('Drop Column', () => {
 
   afterAll(async () => {
     await clearTables();
-    await driver.close();
+    await driver.closeConnection();
   });
 
   test.each(Object.keys(columns))(
@@ -45,17 +47,17 @@ describe('Drop Column', () => {
 
       const blueprintRV1 = initBlueprint(tableName);
       blueprintRV1.columns = columns;
-      await driver.migrate([blueprintRV1]);
+      await driver.setState([blueprintRV1]);
 
-      expect((await driver.reverse([tableName]))[0]).toStrictEqual(
+      expect((await driver.readState([tableName]))[0]).toStrictEqual(
         blueprintRV1,
       );
 
       const blueprintRV2 = cloneDeep(blueprintRV1);
       delete blueprintRV2.columns[col];
-      await driver.migrate([blueprintRV2]);
+      await driver.setState([blueprintRV2]);
 
-      expect((await driver.reverse([tableName]))[0]).toStrictEqual(
+      expect((await driver.readState([tableName]))[0]).toStrictEqual(
         blueprintRV2,
       );
     },

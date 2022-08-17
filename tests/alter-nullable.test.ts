@@ -12,7 +12,7 @@ describe('Alter Nullable', () => {
     .filter(([type, col]) => !ColumnTools.isSerialType(col))
     .filter(([type, col]) => ![ColumnType.BIT_VARYING].includes(type as any));
 
-  afterAll(() => driver.close());
+  afterAll(() => driver.closeConnection());
 
   test.each(cases)(
     'should alter nullable flag for [%s] type column',
@@ -31,33 +31,33 @@ describe('Alter Nullable', () => {
       };
 
       // Remove blueprint if exists from a previous test
-      await driver.migrator.dropTable(tableName);
-      await driver.migrate([blueprintRV1]);
+      await driver.migrationManager.dropTable(tableName);
+      await driver.setState([blueprintRV1]);
 
-      expect((await driver.reverse([tableName]))[0]).toStrictEqual(
+      expect((await driver.readState([tableName]))[0]).toStrictEqual(
         blueprintRV1,
       );
 
       // Continue with a true state
       blueprintRV1.columns[columnName].isNullable = true;
       blueprintRV1.columns[columnName].defaultValue = null;
-      await driver.migrate([blueprintRV1]);
+      await driver.setState([blueprintRV1]);
 
-      expect((await driver.reverse([tableName]))[0]).toStrictEqual(
+      expect((await driver.readState([tableName]))[0]).toStrictEqual(
         blueprintRV1,
       );
 
       // Continue with a false state
       blueprintRV1.columns[columnName].isNullable = false;
       blueprintRV1.columns[columnName].defaultValue = undefined;
-      await driver.migrate([blueprintRV1]);
+      await driver.setState([blueprintRV1]);
 
-      expect((await driver.reverse([tableName]))[0]).toStrictEqual(
+      expect((await driver.readState([tableName]))[0]).toStrictEqual(
         blueprintRV1,
       );
 
       // Cleanup
-      await driver.migrator.dropBlueprint(blueprintRV1);
+      await driver.migrationManager.dropBlueprint(blueprintRV1);
     },
   );
 });

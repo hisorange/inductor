@@ -1,9 +1,9 @@
 import { Knex } from 'knex';
-import { IFactCollector } from '../../fact/types/fact-collector.interface';
+import { IFactManager } from '../../fact/types/fact-manager.interface';
 import { IMigrationPlan } from './migration-plan.interface';
 
 export interface IMigrationContext {
   knex: Knex;
-  facts: IFactCollector;
-  plan: IMigrationPlan;
+  factManager: IFactManager;
+  migrationPlan: IMigrationPlan;
 }

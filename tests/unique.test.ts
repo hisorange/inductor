@@ -21,20 +21,24 @@ describe('Unique Constraint', () => {
 
   const testTables = Object.keys(uniqueCols);
   const cleanup = async () => {
-    await Promise.all([driver.migrator.dropTable(`unique_test_upgrade`)]);
+    await Promise.all([
+      driver.migrationManager.dropTable(`unique_test_upgrade`),
+    ]);
     await Promise.all(
-      testTables.map(name => driver.migrator.dropTable(`alter_unique_${name}`)),
+      testTables.map(name =>
+        driver.migrationManager.dropTable(`alter_unique_${name}`),
+      ),
     );
     await Promise.all(
       testTables.map(name =>
-        driver.migrator.dropTable(`unique_test_comp_${name}`),
+        driver.migrationManager.dropTable(`unique_test_comp_${name}`),
       ),
     );
   };
 
   afterAll(async () => {
     await cleanup();
-    await driver.close();
+    await driver.closeConnection();
   });
 
   test.each(testTables)(
@@ -52,29 +56,29 @@ describe('Unique Constraint', () => {
       };
       // Set unique to false
       blueprintRV1.columns[colName].isUnique = false;
-      await driver.migrate([blueprintRV1]);
+      await driver.setState([blueprintRV1]);
 
       expect(blueprintRV1).toStrictEqual(
-        (await driver.reverse([tableName]))[0],
+        (await driver.readState([tableName]))[0],
       );
 
       const blueprintRV2 = cloneDeep(blueprintRV1);
       // Change the unique
       blueprintRV2.columns[colName].isUnique = true;
-      await driver.migrate([blueprintRV2]);
+      await driver.setState([blueprintRV2]);
 
       expect(blueprintRV2).toStrictEqual(
-        (await driver.reverse([tableName]))[0],
+        (await driver.readState([tableName]))[0],
       );
 
       const blueprintRV3 = cloneDeep(blueprintRV2);
       // Revert the unique
       blueprintRV3.columns[colName].isUnique = false;
 
-      await driver.migrate([blueprintRV3]);
+      await driver.setState([blueprintRV3]);
 
       expect(blueprintRV3).toStrictEqual(
-        (await driver.reverse([tableName]))[0],
+        (await driver.readState([tableName]))[0],
       );
     },
   );
@@ -102,9 +106,9 @@ describe('Unique Constraint', () => {
           columns: [columnKey, 'pair_for_comp'],
         },
       };
-      await driver.migrate([blueprint]);
+      await driver.setState([blueprint]);
 
-      expect(blueprint).toStrictEqual((await driver.reverse([tableName]))[0]);
+      expect(blueprint).toStrictEqual((await driver.readState([tableName]))[0]);
     },
   );
 
@@ -118,11 +122,13 @@ describe('Unique Constraint', () => {
       },
       col_2: createTestColumn(ColumnType.INTEGER),
     };
-    await driver.migrate([blueprintRV1]);
+    await driver.setState([blueprintRV1]);
 
-    console.log('READ STATE', (await driver.reverse([tableName]))[0]);
+    console.log('READ STATE', (await driver.readState([tableName]))[0]);
 
-    expect((await driver.reverse([tableName]))[0]).toStrictEqual(blueprintRV1);
+    expect((await driver.readState([tableName]))[0]).toStrictEqual(
+      blueprintRV1,
+    );
 
     // Set the second column as unique to convert the index into a composite one
     const blueprintRV2 = cloneDeep(blueprintRV1);
@@ -130,23 +136,29 @@ describe('Unique Constraint', () => {
     blueprintRV2.uniques.test_cmp_1 = {
       columns: ['col_1', 'col_2'],
     };
-    await driver.migrate([blueprintRV2]);
+    await driver.setState([blueprintRV2]);
 
-    expect(blueprintRV2).toStrictEqual((await driver.reverse([tableName]))[0]);
+    expect(blueprintRV2).toStrictEqual(
+      (await driver.readState([tableName]))[0],
+    );
 
     // Create a new column and add it to the composite unique
     const blueprintRV3 = cloneDeep(blueprintRV2);
     blueprintRV3.columns.col_3 = createTestColumn(ColumnType.INTEGER);
     blueprintRV3.uniques.test_cmp_1.columns.push('col_3');
-    await driver.migrate([blueprintRV3]);
+    await driver.setState([blueprintRV3]);
 
-    expect(blueprintRV3).toStrictEqual((await driver.reverse([tableName]))[0]);
+    expect(blueprintRV3).toStrictEqual(
+      (await driver.readState([tableName]))[0],
+    );
 
     // Remove the composite unique
     const blueprintRV4 = cloneDeep(blueprintRV3);
     delete blueprintRV4.uniques.test_cmp_1;
-    await driver.migrate([blueprintRV4]);
+    await driver.setState([blueprintRV4]);
 
-    expect(blueprintRV4).toStrictEqual((await driver.reverse([tableName]))[0]);
+    expect(blueprintRV4).toStrictEqual(
+      (await driver.readState([tableName]))[0],
+    );
   });
 });

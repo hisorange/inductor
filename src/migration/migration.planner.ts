@@ -1,8 +1,6 @@
 import { diff } from 'just-diff';
 import { Knex } from 'knex';
 import { ColumnType, IBlueprint, IColumn } from '../blueprint';
-import { FactReader } from '../fact/fact.reader';
-import { IFactReader } from '../fact/types/fact-reader.interface';
 import { ColumnTools } from '../tools/column-tools';
 import { IMigrationContext } from './types/migration-context.interface';
 import { IMigrationPlanner } from './types/migration-planner.interface';
@@ -11,14 +9,12 @@ import { createColumn } from './util/column.creator';
 import { getPostgresTypeName } from './util/get-type-name';
 
 export class MigrationPlanner implements IMigrationPlanner {
-  protected reader: IFactReader;
-
-  constructor(readonly ctx: IMigrationContext) {
-    this.reader = new FactReader(ctx.facts);
-  }
+  constructor(readonly ctx: IMigrationContext) {}
 
   async alterTable(targetState: IBlueprint) {
-    const currentState = this.reader.reverse(targetState.tableName);
+    const currentState = this.ctx.factManager.getBlueprintForTable(
+      targetState.tableName,
+    );
     const difference = diff(currentState, targetState);
     // Track the primary keys change, since it may has to be altered after the columns
     let isPrimaryChanged = false;
@@ -41,12 +37,14 @@ export class MigrationPlanner implements IMigrationPlanner {
             // If not then we have to check for rows
             // as creating a new column without default would make the step impossible
             if (typeof columnDefinition.defaultValue === 'undefined') {
-              if (await this.ctx.facts.isTableHasRows(targetState.tableName)) {
+              if (
+                await this.ctx.factManager.isTableHasRows(targetState.tableName)
+              ) {
                 risk = MigrationRisk.IMPOSSIBLE;
               }
             }
 
-            this.ctx.plan.steps.push({
+            this.ctx.migrationPlan.steps.push({
               query: this.ctx.knex.schema.alterTable(
                 targetState.tableName,
                 builder =>
@@ -55,7 +53,7 @@ export class MigrationPlanner implements IMigrationPlanner {
                     columnName,
                     targetState.columns[columnName],
                     targetState,
-                    this.ctx.facts,
+                    this.ctx.factManager,
                   ),
               ),
               risk,
@@ -73,7 +71,7 @@ export class MigrationPlanner implements IMigrationPlanner {
 
           // Column removed
           case 'remove':
-            this.ctx.plan.steps.push({
+            this.ctx.migrationPlan.steps.push({
               query: this.ctx.knex.schema.alterTable(
                 targetState.tableName,
                 builder => builder.dropColumn(columnName),
@@ -96,7 +94,7 @@ export class MigrationPlanner implements IMigrationPlanner {
               // Route the alteration based on the change
               switch (path[2]) {
                 case 'isNullable':
-                  this.ctx.plan.steps.push({
+                  this.ctx.migrationPlan.steps.push({
                     query: this.ctx.knex.schema.alterTable(
                       targetState.tableName,
                       builder =>
@@ -112,7 +110,7 @@ export class MigrationPlanner implements IMigrationPlanner {
                   });
                   break;
                 case 'isUnique':
-                  this.ctx.plan.steps.push({
+                  this.ctx.migrationPlan.steps.push({
                     query: this.ctx.knex.schema.alterTable(
                       targetState.tableName,
                       builder =>
@@ -134,7 +132,7 @@ export class MigrationPlanner implements IMigrationPlanner {
                   // TODO implement index type change
                   break;
                 case 'defaultValue':
-                  this.ctx.plan.steps.push({
+                  this.ctx.migrationPlan.steps.push({
                     query: this.ctx.knex.schema.alterTable(
                       targetState.tableName,
                       builder =>
@@ -157,7 +155,7 @@ export class MigrationPlanner implements IMigrationPlanner {
                     if (path[3] === 'values') {
                       // Check if the native type already exists
                       if (
-                        this.ctx.facts.isTypeExists(
+                        this.ctx.factManager.isTypeExists(
                           columnDefinition.type.nativeName,
                         )
                       ) {
@@ -189,7 +187,7 @@ export class MigrationPlanner implements IMigrationPlanner {
             // We have to check if the unique existed before
             // because the add is only applied to the columns
             if (currentState.uniques[uniqueName]) {
-              this.ctx.plan.steps.push({
+              this.ctx.migrationPlan.steps.push({
                 query: this.ctx.knex.schema.alterTable(
                   targetState.tableName,
                   builder =>
@@ -204,7 +202,7 @@ export class MigrationPlanner implements IMigrationPlanner {
               });
             }
 
-            this.ctx.plan.steps.push({
+            this.ctx.migrationPlan.steps.push({
               query: this.ctx.knex.schema.alterTable(
                 targetState.tableName,
                 builder =>
@@ -221,7 +219,7 @@ export class MigrationPlanner implements IMigrationPlanner {
 
           // Unique removed
           case 'remove':
-            this.ctx.plan.steps.push({
+            this.ctx.migrationPlan.steps.push({
               query: this.ctx.knex.schema.alterTable(
                 targetState.tableName,
                 builder =>
@@ -259,7 +257,7 @@ export class MigrationPlanner implements IMigrationPlanner {
         }
 
         if (shouldDropPrimary) {
-          this.ctx.plan.steps.push({
+          this.ctx.migrationPlan.steps.push({
             query: this.ctx.knex.schema.alterTable(
               targetState.tableName,
               builder => builder.dropPrimary(),
@@ -283,7 +281,7 @@ export class MigrationPlanner implements IMigrationPlanner {
         }
 
         if (shouldAddCompositePrimary) {
-          this.ctx.plan.steps.push({
+          this.ctx.migrationPlan.steps.push({
             query: this.ctx.knex.schema.alterTable(
               targetState.tableName,
               builder => builder.primary(expectedPrimaries),
@@ -364,7 +362,7 @@ export class MigrationPlanner implements IMigrationPlanner {
   }
 
   async _createTable(blueprint: IBlueprint): Promise<void> {
-    this.ctx.plan.steps.push({
+    this.ctx.migrationPlan.steps.push({
       query: this.ctx.knex.schema.createTable(blueprint.tableName, () => {}),
       risk: MigrationRisk.NONE,
       description: `Create table [${blueprint.tableName}]`,
@@ -372,7 +370,7 @@ export class MigrationPlanner implements IMigrationPlanner {
     });
 
     // Register the fact that the table exits
-    this.ctx.facts.addTable(blueprint.tableName);
+    this.ctx.factManager.addTable(blueprint.tableName);
   }
 
   async createTable(blueprint: IBlueprint) {
@@ -398,7 +396,7 @@ export class MigrationPlanner implements IMigrationPlanner {
                 name,
                 blueprint.columns[name],
                 blueprint,
-                this.ctx.facts,
+                this.ctx.factManager,
               );
             }
           }
@@ -411,7 +409,7 @@ export class MigrationPlanner implements IMigrationPlanner {
         },
       );
 
-      this.ctx.plan.steps.push({
+      this.ctx.migrationPlan.steps.push({
         query: createColumnsQuery,
         risk: MigrationRisk.NONE,
         description: `Create columns for table [${blueprint.tableName}]`,
@@ -434,7 +432,7 @@ export class MigrationPlanner implements IMigrationPlanner {
             ),
         );
 
-        this.ctx.plan.steps.push({
+        this.ctx.migrationPlan.steps.push({
           query: createIndexQuery,
           risk: MigrationRisk.LOW,
           description: `Create composite index [${indexName}] for table [${blueprint.tableName}]`,
@@ -448,7 +446,7 @@ export class MigrationPlanner implements IMigrationPlanner {
     // Apply the composite unique constraints
     for (const uniqueName in blueprint.uniques) {
       if (Object.prototype.hasOwnProperty.call(blueprint.uniques, uniqueName)) {
-        if (this.ctx.facts.isUniqueConstraintExists(uniqueName)) {
+        if (this.ctx.factManager.isUniqueConstraintExists(uniqueName)) {
           throw new Error(
             `Unique constraint [${uniqueName}] for [${blueprint.tableName}] already exists`,
           );
@@ -462,7 +460,7 @@ export class MigrationPlanner implements IMigrationPlanner {
             }),
         );
 
-        this.ctx.plan.steps.push({
+        this.ctx.migrationPlan.steps.push({
           query: createUniqueQuery,
           risk: MigrationRisk.NONE,
           description: `Create composite unique [${uniqueName}] for table [${blueprint.tableName}]`,
@@ -470,7 +468,7 @@ export class MigrationPlanner implements IMigrationPlanner {
         });
 
         // Track to avoid duplicates in the same migration context.
-        this.ctx.facts.addUnique(uniqueName);
+        this.ctx.factManager.addUnique(uniqueName);
       }
     }
   }
@@ -499,15 +497,15 @@ export class MigrationPlanner implements IMigrationPlanner {
               .onUpdate(onUpdate),
         );
 
-        this.ctx.facts.addTableForeignKey(
+        this.ctx.factManager.addTableForeignKey(
           blueprint.tableName,
           foreignKeyName,
           relation,
         );
 
-        this.ctx.plan.steps.push({
+        this.ctx.migrationPlan.steps.push({
           query: createForeignKeyQuery,
-          risk: this.ctx.facts.isTableExists(table)
+          risk: this.ctx.factManager.isTableExists(table)
             ? MigrationRisk.LOW
             : MigrationRisk.HIGH, // Foreign table may not exists yet!
           description: `Create foreign key [${foreignKeyName}] for table [${blueprint.tableName}]`,

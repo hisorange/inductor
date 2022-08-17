@@ -6,7 +6,7 @@ import { createTestDriver } from './util/create-connection';
 describe('Composite Indexing', () => {
   const driver = createTestDriver();
 
-  afterAll(() => driver.close());
+  afterAll(() => driver.closeConnection());
 
   test.each([
     ['btree', ColumnType.TEXT, IndexType.BTREE],
@@ -58,13 +58,13 @@ describe('Composite Indexing', () => {
       };
 
       // Remove blueprint if exists from a previous test
-      await driver.migrator.dropBlueprint(blueprint);
-      await driver.migrate([blueprint]);
+      await driver.migrationManager.dropBlueprint(blueprint);
+      await driver.setState([blueprint]);
 
-      expect((await driver.reverse([tableName]))[0]).toStrictEqual(blueprint);
+      expect((await driver.readState([tableName]))[0]).toStrictEqual(blueprint);
 
       // Cleanup
-      await driver.migrator.dropBlueprint(blueprint);
+      await driver.migrationManager.dropBlueprint(blueprint);
     },
   );
 });
