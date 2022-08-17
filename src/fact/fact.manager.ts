@@ -9,6 +9,7 @@ import {
   validateBlueprint,
 } from '../blueprint';
 import { ColumnTools } from '../tools/column-tools';
+import { commentDecode } from '../tools/comment.coder';
 import { IFactManager } from './types/fact-manager.interface';
 import { IFactReader } from './types/fact-reader.interface';
 
@@ -78,7 +79,12 @@ export class FactManager implements IFactManager {
         isPrimary: compositePrimaryKeys.includes(columnName),
         isIndexed: false,
         defaultValue: columnInfo.defaultValue,
+        capabilities: [],
       };
+
+      if (columnInfo.comment) {
+        commentDecode(columnDef, columnInfo.comment);
+      }
 
       columnDef.isIndexed = singleColumnIndexes.has(columnName)
         ? singleColumnIndexes.get(columnName)!

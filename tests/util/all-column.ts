@@ -46,6 +46,7 @@ export const createTestColumn = (
     isPrimary: false,
     isIndexed: false,
     defaultValue: undefined,
+    capabilities: [],
   };
 
   // Fix the is primary flag

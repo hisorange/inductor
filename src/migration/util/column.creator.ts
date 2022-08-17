@@ -3,6 +3,7 @@ import { IBlueprint, IColumn } from '../../blueprint';
 import { ColumnType } from '../../blueprint/types/column-type.enum';
 import { IFactManager } from '../../fact/types/fact-manager.interface';
 import { ColumnTools } from '../../tools/column-tools';
+import { commentEncoder } from '../../tools/comment.coder';
 import { getPostgresTypeName } from './get-type-name';
 
 export const createColumn = (
@@ -60,6 +61,9 @@ export const createColumn = (
   if (column.isPrimary && ColumnTools.filterPrimary(blueprint).length === 1) {
     columnBuilder.primary();
   }
+
+  // Add comment for the column
+  columnBuilder.comment(commentEncoder(column));
 
   // Add default value
   if (column.defaultValue !== undefined) {

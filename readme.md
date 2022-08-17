@@ -79,6 +79,7 @@ await driver.migrate([
         isUnique: false,
         isPrimary: false,
         isIndexed: true,
+        capabilities: [ColumnCapability.CREATED_AT],
       },
     },
     uniques: {

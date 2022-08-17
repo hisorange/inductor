@@ -1,5 +1,6 @@
 import { Pojo } from 'objection';
 import { ColumnType } from './column-type.enum';
+import { ColumnCapability } from './column.capability';
 import { ColumnKind } from './column.kind';
 import { IndexType } from './index-type.enum';
 
@@ -122,6 +123,11 @@ export interface IColumn<ColumnMeta = unknown> {
     | undefined
     | Array<unknown>
     | Pojo;
+
+  /**
+   * Model supported capabilities, stored in comment format.
+   */
+  capabilities: ColumnCapability[];
 
   /**
    * Associated metadata with the database
