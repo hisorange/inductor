@@ -20,9 +20,9 @@ yarn add @hisorange/inductor
 ### Create the connection
 
 ```typescript
-import { createDriver } from '@hisorange/inductor';
+import { Driver } from '@hisorange/inductor';
 
-const driver = createDriver({
+const driver = new Driver({
   connection: {
     host: 'localhost',
     port: 5432,
