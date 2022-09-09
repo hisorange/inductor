@@ -158,8 +158,20 @@ export class Driver implements IDriver {
       });
   }
 
-  readState(filters: string[] = []): Promise<IBlueprint[]> {
-    return this.migrationManager.readDatabaseState(filters);
+  async readState(filters: string[] = []): Promise<IBlueprint[]> {
+    const currentState = await this.migrationManager.readDatabaseState(filters);
+
+    this.blueprints = new Map(
+      currentState.map(blueprint => [
+        blueprint.tableName,
+        {
+          blueprint,
+          model: this.toModel(blueprint),
+        },
+      ]),
+    );
+
+    return currentState;
   }
 
   getModel<T extends Model = Model>(table: string): ModelClass<T> {
