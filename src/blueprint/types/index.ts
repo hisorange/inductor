@@ -2,6 +2,7 @@ export * from './blueprint.interface';
 export * from './blueprint.kind';
 export * from './blueprint.map';
 export * from './column-type.enum';
+export * from './column.capability';
 export * from './column.interface';
 export * from './column.kind';
 export * from './foreign-action.enum';
