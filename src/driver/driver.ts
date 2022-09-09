@@ -173,4 +173,10 @@ export class Driver implements IDriver {
   closeConnection() {
     return this.connection.destroy();
   }
+
+  getBlueprints(): IBlueprint[] {
+    return Array.from(this.blueprints.values()).map(
+      ({ blueprint }) => blueprint,
+    );
+  }
 }

@@ -18,4 +18,6 @@ export interface IDriver {
   compareState(blueprints: IBlueprint[]): Promise<IMigrationPlan>;
   getModel<T extends Model = Model>(name: string): ModelClass<T>;
   closeConnection(): Promise<void>;
+
+  getBlueprints(): IBlueprint[];
 }
