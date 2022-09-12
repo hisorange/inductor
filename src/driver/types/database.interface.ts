@@ -23,9 +23,7 @@ export interface IDatabase<
   /**
    * blueprints associated with the database
    */
-  blueprints: {
-    [blueprintRef: string]: IBlueprint<BlueprintMeta, ColumnMeta>;
-  };
+  blueprints: IBlueprint<BlueprintMeta, ColumnMeta>[];
 
   /**
    * List of regex patterns to filter blueprints from the database.

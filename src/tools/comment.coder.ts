@@ -6,17 +6,19 @@ type CO = {
 };
 
 export const commentEncoder = (column: IColumn): string => {
-  const r: CO = {};
-
   if (column.capabilities.length) {
+    const r: CO = {};
+
     r.c = 0;
 
     for (const cap of column.capabilities.sort()) {
       r.c = r.c! | cap;
     }
+
+    return JSON.stringify(r);
   }
 
-  return JSON.stringify(r);
+  return '';
 };
 
 export const commentDecode = (column: IColumn, comment: string): IColumn => {
@@ -32,6 +34,8 @@ export const commentDecode = (column: IColumn, comment: string): IColumn => {
         ColumnCapability.DELETED_AT,
         ColumnCapability.VERSION,
       ].forEach(cap => r.c! & cap && column.capabilities.push(cap));
+
+      column.capabilities.sort((a, b) => a - b);
     }
 
     return column;

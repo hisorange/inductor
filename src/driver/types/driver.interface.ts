@@ -1,4 +1,3 @@
-import EventEmitter2 from 'eventemitter2';
 import { Model, ModelClass } from 'objection';
 import { IBlueprint } from '../../blueprint';
 import { IFactManager } from '../../fact/types/fact-manager.interface';
@@ -9,7 +8,6 @@ import { IDatabase } from './database.interface';
 
 export interface IDriver {
   readonly database: IDatabase;
-  readonly event: EventEmitter2;
   readonly migrationManager: IMigrationManager;
   readonly factManager: IFactManager;
 
@@ -20,4 +18,5 @@ export interface IDriver {
   closeConnection(): Promise<void>;
 
   getBlueprints(): IBlueprint[];
+  getModels(): ModelClass<Model>[];
 }

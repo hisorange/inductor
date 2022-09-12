@@ -9,7 +9,7 @@ describe('Able to handle new column risks', () => {
   afterAll(() => driver.closeConnection());
 
   test('should be able to create a new column with default value', async () => {
-    const tableName = `new_column_test`;
+    const tableName = `new_column_test_with_def_42`;
     const blueprintRV1 = initBlueprint(tableName);
     blueprintRV1.columns = {
       id: {

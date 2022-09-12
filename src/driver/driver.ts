@@ -1,4 +1,3 @@
-import EventEmitter2 from 'eventemitter2';
 import knex, { Knex } from 'knex';
 import { Model, ModelClass, Pojo } from 'objection';
 import pino, { Logger } from 'pino';
@@ -26,7 +25,6 @@ export class Driver implements IDriver {
   readonly factManager: IFactManager;
   protected connection: Knex;
   protected logger: Logger;
-  readonly event: EventEmitter2;
 
   constructor(readonly database: IDatabase) {
     const id = v4().substring(0, 8);
@@ -35,7 +33,6 @@ export class Driver implements IDriver {
       level: process.env.NODE_ENV === 'production' ? 'warn' : 'debug',
       enabled: process.env.NODE_ENV !== 'test',
     });
-    this.event = new EventEmitter2();
 
     this.connection = knex({
       client: 'pg',
@@ -50,16 +47,14 @@ export class Driver implements IDriver {
       },
     });
 
-    this.connection.on('query', query => {
-      this.event.emit('query', query);
-    });
-
     this.factManager = new FactManager(new FactReader(this.connection));
     this.migrationManager = new MigrationManager(
       this.logger,
       this.connection,
       this.factManager,
     );
+
+    this.updateBluprintMap(database.blueprints);
   }
 
   /**
@@ -144,25 +139,21 @@ export class Driver implements IDriver {
     return this.compareState(blueprints)
       .then(plan => plan.execute())
       .then(result => {
-        this.blueprints = new Map(
-          blueprints.map(blueprint => [
-            blueprint.tableName,
-            {
-              blueprint,
-              model: this.toModel(blueprint),
-            },
-          ]),
-        );
+        this.updateBluprintMap(blueprints);
 
         return result;
       });
   }
 
-  async readState(filters: string[] = []): Promise<IBlueprint[]> {
-    const currentState = await this.migrationManager.readDatabaseState(filters);
+  protected updateBluprintMap(blueprints: IBlueprint[]) {
+    blueprints.forEach(b => {
+      for (const columnName in b.columns) {
+        b.columns[columnName].capabilities.sort((a, b) => a - b);
+      }
+    });
 
     this.blueprints = new Map(
-      currentState.map(blueprint => [
+      blueprints.map(blueprint => [
         blueprint.tableName,
         {
           blueprint,
@@ -170,6 +161,12 @@ export class Driver implements IDriver {
         },
       ]),
     );
+  }
+
+  async readState(filters: string[] = []): Promise<IBlueprint[]> {
+    const currentState = await this.migrationManager.readDatabaseState(filters);
+
+    this.updateBluprintMap(currentState);
 
     return currentState;
   }
@@ -190,5 +187,9 @@ export class Driver implements IDriver {
     return Array.from(this.blueprints.values()).map(
       ({ blueprint }) => blueprint,
     );
+  }
+
+  getModels(): ModelClass<Model>[] {
+    return Array.from(this.blueprints.values()).map(({ model }) => model);
   }
 }

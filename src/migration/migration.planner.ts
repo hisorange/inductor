@@ -2,6 +2,7 @@ import { diff } from 'just-diff';
 import { Knex } from 'knex';
 import { ColumnType, IBlueprint, IColumn } from '../blueprint';
 import { ColumnTools } from '../tools/column-tools';
+import { stripMeta } from '../tools/strip-meta';
 import { IMigrationContext } from './types/migration-context.interface';
 import { IMigrationPlanner } from './types/migration-planner.interface';
 import { MigrationRisk } from './types/migration-risk.enum';
@@ -15,7 +16,7 @@ export class MigrationPlanner implements IMigrationPlanner {
     const currentState = this.ctx.factManager.getBlueprintForTable(
       targetState.tableName,
     );
-    const difference = diff(currentState, targetState);
+    const difference = diff(stripMeta(currentState), stripMeta(targetState));
     // Track the primary keys change, since it may has to be altered after the columns
     let isPrimaryChanged = false;
     let isPrimaryCreated = false;

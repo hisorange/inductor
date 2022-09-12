@@ -462,7 +462,8 @@ export class FactReader implements IFactReader {
       .andWhere({
         'pn.nspname': this.knex.raw('current_schema()'),
         //'pc.relname': tableName,
-      });
+      })
+      .orderBy('a.attnum', 'asc');
 
     const facts: IFactManager['facts']['columnValues'] = {};
     const rows: {
