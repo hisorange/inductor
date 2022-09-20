@@ -59,8 +59,8 @@ export class FactReader implements IFactReader {
       })
       .whereNot({
         't.typarray': 0,
-        't.typtype': 'p',
-      });
+      })
+      .whereIn('t.typtype', ['b', 'c', 'd', 'e', 'r', 'm']);
 
     return (await query).map(r => r.type);
   }
@@ -458,7 +458,7 @@ export class FactReader implements IFactReader {
           );
         },
       )
-      .whereNot('ty.typtype', 'p')
+      .whereIn('ty.typtype', ['b', 'c', 'd', 'e', 'r', 'm'])
       .whereNot('a.attisdropped', true)
       .andWhere('a.attnum', '>', 0)
       .andWhere({
