@@ -59,6 +59,7 @@ export class FactReader implements IFactReader {
       })
       .whereNot({
         't.typarray': 0,
+        'ty.typtype': 'p',
       });
 
     return (await query).map(r => r.type);
@@ -457,6 +458,7 @@ export class FactReader implements IFactReader {
           );
         },
       )
+      .whereNot('ty.typtype', 'p')
       .whereNot('a.attisdropped', true)
       .andWhere('a.attnum', '>', 0)
       .andWhere({
