@@ -17,14 +17,16 @@ export const createColumn = (
 
   if (column.type.name === ColumnType.ENUM) {
     // Check if the enum native type is already defined
+    // Type name need to be quoted as knex does not checks for case sensitivity and uses it as is
     const nativeType = column.type.nativeName;
 
     if (facts.isTypeExists(nativeType)) {
-      columnBuilder = tableBuilder.specificType(name, nativeType);
+      columnBuilder = tableBuilder.specificType(name, `"${nativeType}"`);
     } else {
       columnBuilder = tableBuilder.enum(name, column.type.values, {
         useNative: true,
-        enumName: column.type.nativeName,
+        existingType: false,
+        enumName: `"${nativeType}"`,
       });
     }
   } else if (column.type.name === ColumnType.JSON) {
@@ -63,7 +65,11 @@ export const createColumn = (
   }
 
   // Add comment for the column
-  columnBuilder.comment(commentEncoder(column));
+  const comment = commentEncoder(column);
+
+  if (comment && comment.length > 0) {
+    columnBuilder.comment(comment);
+  }
 
   // Add default value
   if (column.defaultValue !== undefined) {

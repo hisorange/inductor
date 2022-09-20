@@ -32,6 +32,12 @@ describe('Enumerated Column', () => {
         } as IColumn,
       };
 
+      // RegTypes are failing when the native typename contains upper case letters
+      // But we map it back from the internal lowercase aliases
+      (
+        blueprint.columns[columnName].type as EnumColumnType
+      ).nativeName = `enum_${setType}_CapitalHit`;
+
       // Remove blueprint if exists from a previous test
       await driver.migrationManager.dropBlueprint(blueprint);
       await driver.setState([blueprint]);
@@ -56,7 +62,7 @@ describe('Enumerated Column', () => {
         type: {
           name: ColumnType.ENUM,
           values: ['a', 'b', 'c'],
-          nativeName: 'enum_rv_1',
+          nativeName: 'enum_RV_1',
         },
         isNullable: false,
         isUnique: false,

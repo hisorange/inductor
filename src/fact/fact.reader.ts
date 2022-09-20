@@ -1,5 +1,6 @@
 import { Knex } from 'knex';
 import { ForeignAction } from '../blueprint/types/foreign-action.enum';
+import { mapTypname } from '../tools/map-typname';
 import { IFactManager } from './types';
 import { IFactReader } from './types/fact-reader.interface';
 
@@ -59,8 +60,7 @@ export class FactReader implements IFactReader {
       })
       .whereNot({
         't.typarray': 0,
-      })
-      .whereIn('t.typtype', ['b', 'c', 'd', 'e', 'r', 'm']);
+      });
 
     return (await query).map(r => r.type);
   }
@@ -411,7 +411,7 @@ export class FactReader implements IFactReader {
         column: 'a.attname',
         isNotNull: 'attnotnull',
         defaultValue: this.knex.raw('pg_get_expr(d.adbin, d.adrelid)'),
-        typeName: this.knex.raw('ty.typname::regtype::text'),
+        typeName: 'ty.typname',
         comment: 'de.description',
         atttypid: 'a.atttypid',
         atttypmod: this.knex.raw('a.atttypmod::int4'),
@@ -458,7 +458,7 @@ export class FactReader implements IFactReader {
           );
         },
       )
-      .whereIn('ty.typtype', ['b', 'c', 'd', 'e', 'r', 'm'])
+      // .whereIn('ty.typtype', ['b', 'c', 'd', 'e', 'r', 'm'])
       .whereNot('a.attisdropped', true)
       .andWhere('a.attnum', '>', 0)
       .andWhere({
@@ -560,7 +560,7 @@ export class FactReader implements IFactReader {
       facts[row.tableName][row.column] = {
         defaultValue,
         isNullable: !row.isNotNull,
-        typeName: row.typeName,
+        typeName: mapTypname(row.typeName),
         maxLength,
         precision,
         scale,
