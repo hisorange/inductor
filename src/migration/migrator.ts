@@ -5,11 +5,10 @@ import { IFactManager } from '../fact/types';
 import { MigrationPlan } from './migration.plan';
 import { MigrationPlanner } from './migration.planner';
 import { IMigrationContext } from './types/migration-context.interface';
-import { IMigrationManager } from './types/migration-manager.interface';
 import { IMigrationPlan } from './types/migration-plan.interface';
 
 // Calculates and applies the changes on the database
-export class MigrationManager implements IMigrationManager {
+export class Migrator {
   constructor(
     protected logger: Logger,
     protected knex: Knex,

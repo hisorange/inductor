@@ -2,14 +2,14 @@ import { Model, ModelClass } from 'objection';
 import { IBlueprint } from '../../blueprint';
 import { ICache } from '../../cache/types/cache.interface';
 import { IFactManager } from '../../fact/types/fact-manager.interface';
-import { IMigrationManager } from '../../migration/types/migration-manager.interface';
+import { Migrator } from '../../migration';
 import { IMigrationPlan } from '../../migration/types/migration-plan.interface';
 import { IStepResult } from '../../migration/types/step-result.interface';
 import { IDatabase } from './database.interface';
 
 export interface IDriver {
   readonly database: IDatabase;
-  readonly migrationManager: IMigrationManager;
+  readonly migrator: Migrator;
   readonly factManager: IFactManager;
 
   setState(blueprints: IBlueprint[]): Promise<IStepResult[]>;

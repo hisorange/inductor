@@ -31,7 +31,7 @@ describe('Alter Nullable', () => {
       };
 
       // Remove blueprint if exists from a previous test
-      await driver.migrationManager.dropTable(tableName);
+      await driver.migrator.dropTable(tableName);
       await driver.setState([blueprintRV1]);
 
       expect((await driver.readState([tableName]))[0]).toStrictEqual(
@@ -57,7 +57,7 @@ describe('Alter Nullable', () => {
       );
 
       // Cleanup
-      await driver.migrationManager.dropBlueprint(blueprintRV1);
+      await driver.migrator.dropBlueprint(blueprintRV1);
     },
   );
 });

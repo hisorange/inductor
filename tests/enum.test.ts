@@ -39,13 +39,13 @@ describe('Enumerated Column', () => {
       ).nativeName = `enum_${setType}_CapitalHit`;
 
       // Remove blueprint if exists from a previous test
-      await driver.migrationManager.dropBlueprint(blueprint);
+      await driver.migrator.dropBlueprint(blueprint);
       await driver.setState([blueprint]);
 
       expect((await driver.readState([tableName]))[0]).toStrictEqual(blueprint);
 
       // Cleanup
-      await driver.migrationManager.dropBlueprint(blueprint);
+      await driver.migrator.dropBlueprint(blueprint);
     },
   );
 
@@ -73,7 +73,7 @@ describe('Enumerated Column', () => {
       },
     };
 
-    await driver.migrationManager.dropTable(tableName);
+    await driver.migrator.dropTable(tableName);
     await driver.setState([blueprintV1]);
     expect((await driver.readState([tableName]))[0]).toStrictEqual(blueprintV1);
 

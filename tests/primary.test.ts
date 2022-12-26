@@ -21,17 +21,17 @@ describe('Primary Constraint', () => {
   const testTables = Object.keys(primaryColumns);
 
   const clearTables = async () => {
-    await driver.migrationManager.dropTable(`alter_primary_extend`);
+    await driver.migrator.dropTable(`alter_primary_extend`);
 
     await Promise.all(
       testTables.map(name =>
-        driver.migrationManager.dropTable(`create_primary_${name}`),
+        driver.migrator.dropTable(`create_primary_${name}`),
       ),
     );
 
     await Promise.all(
       testTables.map(name =>
-        driver.migrationManager.dropTable(`alter_primary_${name}`),
+        driver.migrator.dropTable(`alter_primary_${name}`),
       ),
     );
   };

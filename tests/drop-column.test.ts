@@ -7,9 +7,7 @@ import { createTestDriver } from './util/create-connection';
 describe('Drop Column', () => {
   const driver = createTestDriver();
   const clearTables = () =>
-    Promise.all(
-      testTables.map(name => driver.migrationManager.dropTable(name)),
-    );
+    Promise.all(testTables.map(name => driver.migrator.dropTable(name)));
 
   const columns: IBlueprint['columns'] = {
     col_var_1: {

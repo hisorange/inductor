@@ -42,13 +42,13 @@ describe('Column Indexing', () => {
       };
 
       // Remove blueprint if exists from a previous test
-      await driver.migrationManager.dropTable(tableName);
+      await driver.migrator.dropTable(tableName);
       await driver.setState([blueprint]);
 
       expect((await driver.readState([tableName]))[0]).toStrictEqual(blueprint);
 
       // Cleanup
-      await driver.migrationManager.dropTable(tableName);
+      await driver.migrator.dropTable(tableName);
     },
   );
 });

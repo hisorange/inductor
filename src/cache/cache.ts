@@ -1,11 +1,11 @@
 import { Knex } from 'knex';
-import { IMigrationManager } from '../migration';
+import { Migrator } from '../migration';
 import { ICache } from './types/cache.interface';
 
 export class Cache implements ICache {
   constructor(
     readonly tableName: string,
-    readonly migrationManager: IMigrationManager,
+    readonly migrator: Migrator,
     readonly knex: Knex,
   ) {}
 

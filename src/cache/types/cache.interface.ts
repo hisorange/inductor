@@ -1,9 +1,9 @@
 import { Knex } from 'knex';
-import { IMigrationManager } from '../../migration';
+import { Migrator } from '../../migration';
 
 export interface ICache {
   readonly knex: Knex;
-  readonly migrationManager: IMigrationManager;
+  readonly migrator: Migrator;
   readonly tableName: string;
 
   has(key: string): Promise<boolean>;

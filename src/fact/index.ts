@@ -1,3 +1,3 @@
 export * from './fact.manager';
-export * from './fact.reader';
+export * from './reflector';
 export * from './types';

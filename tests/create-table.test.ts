@@ -6,9 +6,7 @@ describe('Create Table from Blueprint', () => {
   const driver = createTestDriver();
   const testTables = ['create_test1', 'create_Test2', 'create_test_3_____'];
   const clearTables = () =>
-    Promise.all(
-      testTables.map(name => driver.migrationManager.dropTable(name)),
-    );
+    Promise.all(testTables.map(name => driver.migrator.dropTable(name)));
 
   beforeAll(() => clearTables());
 

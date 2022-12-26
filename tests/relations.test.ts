@@ -50,8 +50,8 @@ describe('Relations', () => {
     };
 
     // Remove blueprint if exists from a previous test
-    await driver.migrationManager.dropBlueprint(blueprintB);
-    await driver.migrationManager.dropBlueprint(blueprintA);
+    await driver.migrator.dropBlueprint(blueprintB);
+    await driver.migrator.dropBlueprint(blueprintA);
 
     // Apply the new state
     await driver.setState([blueprintA, blueprintB]);
@@ -60,7 +60,7 @@ describe('Relations', () => {
     expect(blueprintB).toStrictEqual((await driver.readState([tableNameB]))[0]);
 
     // Cleanup
-    await driver.migrationManager.dropBlueprint(blueprintB);
-    await driver.migrationManager.dropBlueprint(blueprintA);
+    await driver.migrator.dropBlueprint(blueprintB);
+    await driver.migrator.dropBlueprint(blueprintA);
   });
 });

@@ -7,10 +7,9 @@ import { Cache } from '../cache/cache';
 import { ICache } from '../cache/types/cache.interface';
 import { ModelNotFound } from '../exception';
 import { FactManager } from '../fact/fact.manager';
-import { FactReader } from '../fact/fact.reader';
+import { Reflector } from '../fact/reflector';
 import { IFactManager } from '../fact/types';
-import { MigrationManager } from '../migration/migration.manager';
-import { IMigrationManager } from '../migration/types/migration-manager.interface';
+import { Migrator } from '../migration/migrator';
 import { IMigrationPlan } from '../migration/types/migration-plan.interface';
 import { IStepResult } from '../migration/types/step-result.interface';
 import { ColumnTools } from '../tools/column-tools';
@@ -24,7 +23,7 @@ export class Driver implements IDriver {
   protected blueprints: BlueprintMap = new Map();
   protected caches: Map<string, ICache> = new Map();
 
-  readonly migrationManager: IMigrationManager;
+  readonly migrator: Migrator;
   readonly factManager: IFactManager;
   protected connection: Knex;
   protected logger: Logger;
@@ -50,8 +49,8 @@ export class Driver implements IDriver {
       },
     });
 
-    this.factManager = new FactManager(new FactReader(this.connection));
-    this.migrationManager = new MigrationManager(
+    this.factManager = new FactManager(new Reflector(this.connection));
+    this.migrator = new Migrator(
       this.logger,
       this.connection,
       this.factManager,
@@ -62,10 +61,7 @@ export class Driver implements IDriver {
 
   getCache(table: string): ICache {
     if (!this.caches.has(table)) {
-      this.caches.set(
-        table,
-        new Cache(table, this.migrationManager, this.connection),
-      );
+      this.caches.set(table, new Cache(table, this.migrator, this.connection));
     }
 
     return this.caches.get(table)!;
@@ -146,7 +142,7 @@ export class Driver implements IDriver {
   }
 
   compareState(blueprints: IBlueprint[]): Promise<IMigrationPlan> {
-    return this.migrationManager.compareDatabaseState(blueprints);
+    return this.migrator.compareDatabaseState(blueprints);
   }
 
   async setState(blueprints: IBlueprint[]): Promise<IStepResult[]> {
@@ -178,7 +174,7 @@ export class Driver implements IDriver {
   }
 
   async readState(filters: string[] = []): Promise<IBlueprint[]> {
-    const currentState = await this.migrationManager.readDatabaseState(filters);
+    const currentState = await this.migrator.readDatabaseState(filters);
 
     this.updateBluprintMap(currentState);
 

@@ -10,8 +10,8 @@ import {
 } from '../blueprint';
 import { ColumnTools } from '../tools/column-tools';
 import { commentDecode } from '../tools/comment.coder';
+import { Reflector } from './reflector';
 import { IFactManager } from './types/fact-manager.interface';
-import { IFactReader } from './types/fact-reader.interface';
 
 export class FactManager implements IFactManager {
   readonly facts: IFactManager['facts'] = {
@@ -28,7 +28,7 @@ export class FactManager implements IFactManager {
     enumerators: {},
   };
 
-  constructor(protected reader: IFactReader) {}
+  constructor(protected reflector: Reflector) {}
 
   getBlueprintForTable(tableName: string): IBlueprint {
     const blueprint = initBlueprint(tableName);
@@ -210,7 +210,7 @@ export class FactManager implements IFactManager {
     if (!this.facts.tableRowChecks.has(table)) {
       this.facts.tableRowChecks.set(
         table,
-        await this.reader.isTableHasRows(table),
+        await this.reflector.isTableHasRows(table),
       );
     }
 
@@ -233,15 +233,15 @@ export class FactManager implements IFactManager {
       columnValues,
       enumerators,
     ] = await Promise.all([
-      this.reader.getTables(),
-      this.reader.getDefinedTypes(),
-      this.reader.getUniqueConstraints(),
-      this.reader.getRelations(),
-      this.reader.getUniques(),
-      this.reader.getCompositePrimaryKeys(),
-      this.reader.getIndexes(),
-      this.reader.getColumnValues(),
-      this.reader.getEnumerators(),
+      this.reflector.getTables(),
+      this.reflector.getDefinedTypes(),
+      this.reflector.getUniqueConstraints(),
+      this.reflector.getRelations(),
+      this.reflector.getUniques(),
+      this.reflector.getCompositePrimaryKeys(),
+      this.reflector.getIndexes(),
+      this.reflector.getColumnValues(),
+      this.reflector.getEnumerators(),
     ]);
 
     this.facts.types = types;

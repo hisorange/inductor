@@ -2,12 +2,11 @@ import { Knex } from 'knex';
 import { ForeignAction } from '../blueprint/types/foreign-action.enum';
 import { mapTypname } from '../tools/map-typname';
 import { IFactManager } from './types';
-import { IFactReader } from './types/fact-reader.interface';
 
 /**
  * Reads the connection's database into a set of structure
  */
-export class FactReader implements IFactReader {
+export class Reflector {
   constructor(readonly knex: Knex) {}
 
   async isTableHasRows(tableName: string): Promise<boolean> {

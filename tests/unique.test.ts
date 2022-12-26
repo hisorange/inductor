@@ -21,17 +21,13 @@ describe('Unique Constraint', () => {
 
   const testTables = Object.keys(uniqueCols);
   const cleanup = async () => {
-    await Promise.all([
-      driver.migrationManager.dropTable(`unique_test_upgrade`),
-    ]);
+    await Promise.all([driver.migrator.dropTable(`unique_test_upgrade`)]);
     await Promise.all(
-      testTables.map(name =>
-        driver.migrationManager.dropTable(`alter_unique_${name}`),
-      ),
+      testTables.map(name => driver.migrator.dropTable(`alter_unique_${name}`)),
     );
     await Promise.all(
       testTables.map(name =>
-        driver.migrationManager.dropTable(`unique_test_comp_${name}`),
+        driver.migrator.dropTable(`unique_test_comp_${name}`),
       ),
     );
   };

@@ -13,7 +13,7 @@ describe('Unlogged Table', () => {
     blueprint.isLogged = false;
 
     // Remove blueprint if exists from a previous test
-    await driver.migrationManager.dropBlueprint(blueprint);
+    await driver.migrator.dropBlueprint(blueprint);
     await driver.setState([blueprint]);
 
     expect((await driver.readState([tableName]))[0]).toStrictEqual(blueprint);
@@ -31,6 +31,6 @@ describe('Unlogged Table', () => {
     expect((await driver.readState([tableName]))[0]).toStrictEqual(blueprint);
 
     // Cleanup
-    await driver.migrationManager.dropBlueprint(blueprint);
+    await driver.migrator.dropBlueprint(blueprint);
   });
 });
