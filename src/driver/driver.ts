@@ -64,7 +64,7 @@ export class Driver implements IDriver {
     if (!this.caches.has(table)) {
       this.caches.set(
         table,
-        new Cache(table, this.connection, this.migrationManager),
+        new Cache(table, this.migrationManager, this.connection),
       );
     }
 
