@@ -3,6 +3,8 @@ import { Model, ModelClass, Pojo } from 'objection';
 import pino, { Logger } from 'pino';
 import { v4 } from 'uuid';
 import { BlueprintMap, IBlueprint, validateBlueprint } from '../blueprint';
+import { Cache } from '../cache/cache';
+import { ICache } from '../cache/types/cache.interface';
 import { ModelNotFound } from '../exception';
 import { FactManager } from '../fact/fact.manager';
 import { FactReader } from '../fact/fact.reader';
@@ -20,6 +22,7 @@ export class Driver implements IDriver {
    * Associated blueprints with the connection
    */
   protected blueprints: BlueprintMap = new Map();
+  protected caches: Map<string, ICache> = new Map();
 
   readonly migrationManager: IMigrationManager;
   readonly factManager: IFactManager;
@@ -55,6 +58,17 @@ export class Driver implements IDriver {
     );
 
     this.updateBluprintMap(database.blueprints);
+  }
+
+  getCache(table: string): ICache {
+    if (!this.caches.has(table)) {
+      this.caches.set(
+        table,
+        new Cache(table, this.connection, this.migrationManager),
+      );
+    }
+
+    return this.caches.get(table)!;
   }
 
   /**

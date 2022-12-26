@@ -1,5 +1,6 @@
 import { Model, ModelClass } from 'objection';
 import { IBlueprint } from '../../blueprint';
+import { ICache } from '../../cache/types/cache.interface';
 import { IFactManager } from '../../fact/types/fact-manager.interface';
 import { IMigrationManager } from '../../migration/types/migration-manager.interface';
 import { IMigrationPlan } from '../../migration/types/migration-plan.interface';
@@ -19,4 +20,6 @@ export interface IDriver {
 
   getBlueprints(): IBlueprint[];
   getModels(): ModelClass<Model>[];
+
+  getCache(table: string): ICache;
 }
