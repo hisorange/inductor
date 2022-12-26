@@ -4,7 +4,7 @@ import { IFactManager } from './fact-manager.interface';
 export interface IFactReader {
   readonly knex: Knex;
 
-  getTables(): Promise<string[]>;
+  getTables(): Promise<[string, boolean][]>;
   getEnumerators(): Promise<IFactManager['facts']['enumerators']>;
   getRelations(): Promise<IFactManager['facts']['relations']>;
   getUniqueConstraints(): Promise<string[]>;

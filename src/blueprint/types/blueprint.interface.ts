@@ -50,6 +50,12 @@ export interface IBlueprint<
   };
 
   /**
+   * Unlogged tables are not replicated to standby servers.
+   * This is useful for tables that are used for logging or temporary storage.
+   */
+  isLogged: boolean;
+
+  /**
    * Associated metadata with the blueprint
    */
   meta?: BlueprintMeta;

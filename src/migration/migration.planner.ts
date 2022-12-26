@@ -25,7 +25,23 @@ export class MigrationPlanner implements IMigrationPlanner {
     for (const change of difference) {
       const { op, path } = change;
 
-      if (path[0] === 'columns') {
+      // Changed to logged / unlogged
+      if (path[0] === 'isLogged') {
+        if (op === 'replace') {
+          this.ctx.migrationPlan.steps.push({
+            query: this.ctx.knex.schema.raw(
+              `ALTER TABLE "${targetState.tableName}" SET ${
+                targetState.isLogged ? 'LOGGED' : 'UNLOGGED'
+              }`,
+            ),
+            risk: MigrationRisk.LOW,
+            description: `Changing table ${targetState.tableName} to ${
+              targetState.isLogged ? 'logged' : 'unlogged'
+            }`,
+            phase: 1,
+          });
+        }
+      } else if (path[0] === 'columns') {
         const columnName = path[1] as string;
         const columnDefinition = targetState.columns[columnName];
 
@@ -372,6 +388,21 @@ export class MigrationPlanner implements IMigrationPlanner {
 
     // Register the fact that the table exits
     this.ctx.factManager.addTable(blueprint.tableName);
+
+    // By default each table is created as logged
+    // But we can alter the table to be unlogged
+    if (!blueprint.isLogged) {
+      this.ctx.migrationPlan.steps.push({
+        query: this.ctx.knex.schema.raw(
+          `ALTER TABLE ${this.ctx.knex.client.wrapIdentifier(
+            blueprint.tableName,
+          )} SET UNLOGGED`,
+        ),
+        risk: MigrationRisk.NONE,
+        description: `Set table [${blueprint.tableName}] as unlogged`,
+        phase: 0,
+      });
+    }
   }
 
   async createTable(blueprint: IBlueprint) {

@@ -24,19 +24,20 @@ export class FactReader implements IFactReader {
     return false;
   }
 
-  async getTables(): Promise<string[]> {
+  async getTables(): Promise<[string, boolean][]> {
     return (
       await this.knex({
         rel: 'pg_class',
       })
         .select({
           tableName: 'rel.relname',
+          persistence: 'rel.relpersistence',
         })
         .where({
           'rel.relkind': 'r',
           'rel.relnamespace': this.knex.raw('current_schema::regnamespace'),
         })
-    ).map(r => r.tableName);
+    ).map(r => [r.tableName, r.persistence !== 'u']);
   }
 
   async getDefinedTypes(): Promise<string[]> {

@@ -38,6 +38,7 @@ const driver = new Driver({
 await driver.migrate([
   {
     name: 'my_table',
+    isLogged: true,
     kind: BlueprintKind.TABLE,
     columns: {
       id: {

@@ -16,6 +16,7 @@ import { IFactReader } from './types/fact-reader.interface';
 export class FactManager implements IFactManager {
   readonly facts: IFactManager['facts'] = {
     tables: [],
+    unloggedTables: [],
     types: [],
     uniqueConstraints: [],
     uniques: {},
@@ -34,6 +35,11 @@ export class FactManager implements IFactManager {
     blueprint.relations = this.getTableForeignKeys(tableName);
     blueprint.uniques = this.getTableUniques(tableName);
     blueprint.indexes = this.getTableIndexes(tableName);
+
+    // Check if the table is unlogged
+    if (this.facts.unloggedTables.includes(tableName)) {
+      blueprint.isLogged = false;
+    }
 
     const compositePrimaryKeys = this.getTablePrimaryKeys(tableName);
     const columns = this.getTableColumnInfo(tableName);
@@ -239,7 +245,10 @@ export class FactManager implements IFactManager {
     ]);
 
     this.facts.types = types;
-    this.facts.tables = tables;
+    this.facts.tables = tables.map(([table, isLogged]) => table);
+    this.facts.unloggedTables = tables
+      .filter(([table, isLogged]) => !isLogged)
+      .map(([table, isLogged]) => table);
     this.facts.uniques = uniques;
     this.facts.relations = relations;
     this.facts.uniqueConstraints = uniqueConstraints;

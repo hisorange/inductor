@@ -13,6 +13,7 @@ type ColumnInfo = {
 export interface IFactManager {
   readonly facts: {
     tables: string[];
+    unloggedTables: string[];
     types: string[];
     uniqueConstraints: string[];
     uniques: {

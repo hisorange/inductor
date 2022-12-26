@@ -11,4 +11,5 @@ export const initBlueprint = (
   uniques: {},
   indexes: {},
   relations: {},
+  isLogged: true,
 });
