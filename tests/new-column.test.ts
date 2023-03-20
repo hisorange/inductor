@@ -37,6 +37,8 @@ describe('Able to handle new column risks', () => {
     await modelRV2.query().insert({ name: 'lama' });
 
     expect((await driver.readState([tableName]))[0]).toStrictEqual(schemaRV2);
+
+    await driver.migrator.dropTable(tableName);
   });
 
   test('should be possible to create new column without default value with zero rows', async () => {
@@ -60,6 +62,8 @@ describe('Able to handle new column risks', () => {
     );
 
     await expect(driver.setState([schemaRV2])).resolves.not.toThrow();
+
+    await driver.migrator.dropTable(tableName);
   });
 
   test('should be impossible to create new column without default value with non-zero rows', async () => {
@@ -88,5 +92,7 @@ describe('Able to handle new column risks', () => {
     await expect(driver.setState([schemaRV2])).rejects.toBeInstanceOf(
       ImpossibleMigration,
     );
+
+    await driver.migrator.dropTable(tableName);
   });
 });

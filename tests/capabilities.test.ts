@@ -41,7 +41,7 @@ describe('Capabilities', () => {
       await driver.setState([schema]);
       expect(schema).toStrictEqual((await driver.readState([tableName]))[0]);
 
-      //await driver.migrationManager.dropTable(tableName);
+      await driver.migrator.dropTable(tableName);
     },
   );
 });
