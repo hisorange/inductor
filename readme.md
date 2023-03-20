@@ -35,7 +35,7 @@ const driver = new Driver({
 });
 
 // Apply the desired state, and the library will create or modify the databse to match the given blueprint
-await driver.migrate([
+await driver.setState([
   {
     name: 'my_table',
     isLogged: true,
