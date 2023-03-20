@@ -1,6 +1,6 @@
-import { ColumnKind, IBlueprint, IColumn } from '../../src';
-import { ColumnType } from '../../src/blueprint/types/column-type.enum';
+import { ColumnKind, IColumn, ISchema } from '../../src';
 import { getPostgresEnumName } from '../../src/migration/util/get-enum-name';
+import { ColumnType } from '../../src/schema/types/column-type.enum';
 import { ColumnTools } from '../../src/tools/column-tools';
 
 type typeArguments = {
@@ -57,7 +57,7 @@ export const createTestColumn = (
   return definition;
 };
 
-export const TestColumns: IBlueprint['columns'] = {
+export const TestColumns: ISchema['columns'] = {
   bigint: createTestColumn(ColumnType.BIGINT),
   bigserial: createTestColumn(ColumnType.BIGSERIAL),
   bit: createTestColumn(ColumnType.BIT),

@@ -1,5 +1,5 @@
-import { IColumn } from '../blueprint';
-import { ColumnCapability } from '../blueprint/types/column.capability';
+import { IColumn } from '../schema';
+import { ColumnCapability } from '../schema/types/column.capability';
 
 type CO = {
   c?: number; // capabilities

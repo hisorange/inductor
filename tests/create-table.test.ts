@@ -1,4 +1,4 @@
-import { initBlueprint } from '../src/blueprint/blueprint.initiator';
+import { InitiateSchema } from '../src/schema/initiator';
 import { TestColumns } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
 
@@ -18,13 +18,13 @@ describe('Create Table from Blueprint', () => {
   test.each(testTables)(
     'should create the [%s] table from blueprint',
     async (tableName: string) => {
-      const blueprint = initBlueprint(tableName);
+      const blueprint = InitiateSchema(tableName);
       blueprint.columns = TestColumns;
 
       await driver.setState([blueprint]);
-      await driver.factManager.updateFacts();
+      await driver.reflection.updateFacts();
 
-      expect(driver.factManager.isTableExists(tableName)).toBeTruthy();
+      expect(driver.reflection.isTableExists(tableName)).toBeTruthy();
     },
   );
 });

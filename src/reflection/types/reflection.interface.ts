@@ -1,4 +1,4 @@
-import { IBlueprint, IColumn, IRelation } from '../../blueprint';
+import { IColumn, IRelation, ISchema } from '../../schema';
 
 type ColumnInfo = {
   defaultValue: IColumn['defaultValue'];
@@ -10,14 +10,14 @@ type ColumnInfo = {
   comment: string | null;
 };
 
-export interface IFactManager {
+export interface IReflection {
   readonly facts: {
     tables: string[];
     unloggedTables: string[];
     types: string[];
     uniqueConstraints: string[];
     uniques: {
-      [tableName: string]: IBlueprint['uniques'];
+      [tableName: string]: ISchema['uniques'];
     };
     relations: {
       [tableName: string]: {
@@ -29,7 +29,7 @@ export interface IFactManager {
       [tableName: string]: string[];
     };
     indexes: {
-      [tableName: string]: IBlueprint['indexes'];
+      [tableName: string]: ISchema['indexes'];
     };
     columnValues: {
       [tableName: string]: {
@@ -46,7 +46,7 @@ export interface IFactManager {
     };
   };
 
-  getBlueprintForTable(table: string): IBlueprint;
+  getBlueprintForTable(table: string): ISchema;
 
   // Add live changes
   addTable(tableName: string): void;
@@ -60,8 +60,8 @@ export interface IFactManager {
 
   // Reverse calls
   getTablePrimaryKeys(tableName: string): string[];
-  getTableUniques(tableName: string): IBlueprint['uniques'];
-  getTableIndexes(tableName: string): IBlueprint['indexes'];
+  getTableUniques(tableName: string): ISchema['uniques'];
+  getTableIndexes(tableName: string): ISchema['indexes'];
   getTableColumnInfo(tableName: string): {
     [columnName: string]: ColumnInfo;
   };
@@ -73,7 +73,7 @@ export interface IFactManager {
     };
   };
 
-  getTableForeignKeys(tableName: string): IBlueprint['relations'];
+  getTableForeignKeys(tableName: string): ISchema['relations'];
   addTableForeignKey(
     tableName: string,
     name: string,

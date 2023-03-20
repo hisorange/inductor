@@ -1,5 +1,5 @@
 import { Knex } from 'knex';
-import { IBlueprint } from '../../blueprint';
+import { ISchema } from '../../schema';
 
 /**
  * Describe the database blueprint, and the connection associated with it.
@@ -23,7 +23,7 @@ export interface IDatabase<
   /**
    * blueprints associated with the database
    */
-  blueprints: IBlueprint<BlueprintMeta, ColumnMeta>[];
+  blueprints: ISchema<BlueprintMeta, ColumnMeta>[];
 
   /**
    * List of regex patterns to filter blueprints from the database.

@@ -1,7 +1,7 @@
 import { Knex } from 'knex';
-import { ForeignAction } from '../blueprint/types/foreign-action.enum';
+import { ForeignAction } from '../schema/types/foreign-action.enum';
 import { mapTypname } from '../tools/map-typname';
-import { IFactManager } from './types';
+import { IReflection } from './types';
 
 /**
  * Reads the connection's database into a set of structure
@@ -65,7 +65,7 @@ export class Reflector {
     return (await query).map(r => r.type);
   }
 
-  async getEnumerators(): Promise<IFactManager['facts']['enumerators']> {
+  async getEnumerators(): Promise<IReflection['facts']['enumerators']> {
     const query = this.knex({
       e: 'pg_enum',
     })
@@ -100,7 +100,7 @@ export class Reflector {
       column: string;
     }[] = await query;
 
-    const fact: IFactManager['facts']['enumerators'] = {};
+    const fact: IReflection['facts']['enumerators'] = {};
 
     for (const row of rows) {
       if (!fact.hasOwnProperty(row.table)) {
@@ -120,8 +120,8 @@ export class Reflector {
     return fact;
   }
 
-  async getRelations(): Promise<IFactManager['facts']['relations']> {
-    const fact: IFactManager['facts']['relations'] = {};
+  async getRelations(): Promise<IReflection['facts']['relations']> {
+    const fact: IReflection['facts']['relations'] = {};
 
     const query = this.knex({
       fks: 'information_schema.table_constraints',
@@ -255,7 +255,7 @@ export class Reflector {
   /**
    * Read the database table definition for indexes.
    */
-  async getIndexes(): Promise<IFactManager['facts']['indexes']> {
+  async getIndexes(): Promise<IReflection['facts']['indexes']> {
     const query = this.knex({
       f: 'pg_attribute',
     })
@@ -299,7 +299,7 @@ export class Reflector {
       .orderBy('f.attnum', 'asc');
 
     const rows = await query;
-    const fact: IFactManager['facts']['indexes'] = {};
+    const fact: IReflection['facts']['indexes'] = {};
 
     for (const row of rows) {
       if (!fact.hasOwnProperty(row.table)) {
@@ -319,8 +319,8 @@ export class Reflector {
     return fact;
   }
 
-  async getUniques(): Promise<IFactManager['facts']['uniques']> {
-    const fact: IFactManager['facts']['uniques'] = {};
+  async getUniques(): Promise<IReflection['facts']['uniques']> {
+    const fact: IReflection['facts']['uniques'] = {};
 
     const query = this.knex({
       tc: 'information_schema.table_constraints',
@@ -366,7 +366,7 @@ export class Reflector {
   }
 
   async getCompositePrimaryKeys(): Promise<
-    IFactManager['facts']['compositePrimaryKeys']
+    IReflection['facts']['compositePrimaryKeys']
   > {
     const query = this.knex({
       tc: 'information_schema.table_constraints',
@@ -389,7 +389,7 @@ export class Reflector {
         'tc.table_schema': this.knex.raw('current_schema()'),
       });
 
-    const fact: IFactManager['facts']['compositePrimaryKeys'] = {};
+    const fact: IReflection['facts']['compositePrimaryKeys'] = {};
 
     for (const row of await query) {
       if (!fact.hasOwnProperty(row.tableName)) {
@@ -402,7 +402,7 @@ export class Reflector {
     return fact;
   }
 
-  async getColumnValues(): Promise<IFactManager['facts']['columnValues']> {
+  async getColumnValues(): Promise<IReflection['facts']['columnValues']> {
     const query = this.knex({
       a: 'pg_catalog.pg_attribute',
     })
@@ -467,7 +467,7 @@ export class Reflector {
       })
       .orderBy('a.attnum', 'asc');
 
-    const facts: IFactManager['facts']['columnValues'] = {};
+    const facts: IReflection['facts']['columnValues'] = {};
     const rows: {
       tableName: string;
       column: string;

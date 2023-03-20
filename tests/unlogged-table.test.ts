@@ -1,4 +1,4 @@
-import { initBlueprint } from '../src/blueprint/blueprint.initiator';
+import { InitiateSchema } from '../src/schema/initiator';
 import { createTestDriver } from './util/create-connection';
 
 describe('Unlogged Table', () => {
@@ -9,7 +9,7 @@ describe('Unlogged Table', () => {
   test('should create an ulogged table', async () => {
     const tableName = `unlogged_table_1`;
 
-    const blueprint = initBlueprint(tableName);
+    const blueprint = InitiateSchema(tableName);
     blueprint.isLogged = false;
 
     // Remove blueprint if exists from a previous test

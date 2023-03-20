@@ -1,6 +1,6 @@
 import cloneDeep from 'lodash.clonedeep';
 import { ColumnType, IndexType } from '../src';
-import { initBlueprint } from '../src/blueprint/blueprint.initiator';
+import { InitiateSchema } from '../src/schema/initiator';
 import { ColumnTools } from '../src/tools/column-tools';
 import { createTestColumn, TestColumns } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
@@ -47,7 +47,7 @@ describe('Primary Constraint', () => {
     'should create the PRIMARY flag for [%s] column',
     async colName => {
       const tableName = `create_primary_${colName}`;
-      const testBlueprint = initBlueprint(tableName);
+      const testBlueprint = InitiateSchema(tableName);
       testBlueprint.columns = {
         [colName]: {
           ...primaryColumns[colName],
@@ -66,7 +66,7 @@ describe('Primary Constraint', () => {
     'should alter the PRIMARY flag for [%s] column',
     async colName => {
       const tableName = `alter_primary_${colName}`;
-      const blueprintRV1 = initBlueprint(tableName);
+      const blueprintRV1 = InitiateSchema(tableName);
       blueprintRV1.columns = {
         prefix: {
           ...createTestColumn(ColumnType.INTEGER),
@@ -108,7 +108,7 @@ describe('Primary Constraint', () => {
 
   test('should add/remove the primary keys', async () => {
     const tableName = 'alter_primary_extend';
-    const blueprintRV1 = initBlueprint(tableName);
+    const blueprintRV1 = InitiateSchema(tableName);
     blueprintRV1.columns = {
       first: {
         ...createTestColumn(ColumnType.INTEGER),

@@ -1,6 +1,6 @@
 {
   "name": "@hisorange/inductor",
-  "version": "1.6.12",
+  "version": "2.0.0",
   "description": "Bidirectonal database manager.",
   "keywords": [
     "data-model",
@@ -9,7 +9,8 @@
     "orm",
     "postgres",
     "postgresql",
-    "schema"
+    "schema",
+    "reflection"
   ],
   "main": "build/index.js",
   "repository": "https://github.com/hisorange/inductor",
@@ -33,9 +34,7 @@
     "@types/jest": "^28.0.0",
     "@types/lodash.clonedeep": "^4.5.7",
     "@types/node": "^16.0.0",
-    "@types/uuid": "^8.3.4",
     "jest": "^28.0.0",
-    "knex": "^2.2.0",
     "objection": "^3.0.1",
     "pg": "^8.7.3",
     "rimraf": "^3.0.2",
@@ -43,15 +42,12 @@
     "typescript": "^4.7.0"
   },
   "dependencies": {
-    "eventemitter2": "^6.4.7",
     "just-diff": "^5.0.1",
-    "lodash.clonedeep": "^4.5.0",
-    "pino": "^7.11.0",
-    "uuid": "^8.3.2"
-  },
-  "peerDependencies": {
     "knex": "^2.2.0",
+    "lodash.clonedeep": "^4.5.0",
+    "nanoid": "^4.0.1",
     "objection": "^3.0.1",
-    "pg": "^8.7.3"
+    "pg": "^8.7.3",
+    "pino": "^7.11.0"
   }
 }

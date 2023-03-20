@@ -1,6 +1,3 @@
-export * from './blueprint.interface';
-export * from './blueprint.kind';
-export * from './blueprint.map';
 export * from './column-type.enum';
 export * from './column.capability';
 export * from './column.interface';
@@ -9,4 +6,7 @@ export * from './foreign-action.enum';
 export * from './index-type.enum';
 export * from './index.interface';
 export * from './relation.interface';
+export * from './schema.interface';
+export * from './schema.kind';
+export * from './schema.map';
 export * from './unique.interface';

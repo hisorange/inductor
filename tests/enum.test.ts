@@ -1,6 +1,6 @@
 import cloneDeep from 'lodash.clonedeep';
 import { ColumnKind, ColumnType, EnumColumnType, IColumn } from '../src';
-import { initBlueprint } from '../src/blueprint/blueprint.initiator';
+import { InitiateSchema } from '../src/schema/initiator';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
 
@@ -19,7 +19,7 @@ describe('Enumerated Column', () => {
       const columnName = `enum_${setType}`;
       const tableName = `enum_col_${setType}`;
 
-      const blueprint = initBlueprint(tableName);
+      const blueprint = InitiateSchema(tableName);
       blueprint.columns = {
         primary_column: {
           ...createTestColumn(ColumnType.SERIAL),
@@ -52,7 +52,7 @@ describe('Enumerated Column', () => {
   // We will change an enumeration values and check if the change is reflected in the database
   test.skip('should change an enumeration value', async () => {
     const tableName = 'enum_change_v1';
-    const blueprintV1 = initBlueprint(tableName);
+    const blueprintV1 = InitiateSchema(tableName);
     blueprintV1.columns = {
       primary_column: {
         ...createTestColumn(ColumnType.SERIAL),

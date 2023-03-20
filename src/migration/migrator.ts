@@ -1,7 +1,7 @@
 import { Knex } from 'knex';
 import { Logger } from 'pino';
-import { BlueprintKind, IBlueprint } from '../blueprint';
-import { IFactManager } from '../fact/types';
+import { IReflection } from '../reflection/types';
+import { ISchema, SchemaKind } from '../schema';
 import { MigrationPlan } from './migration.plan';
 import { MigrationPlanner } from './migration.planner';
 import { IMigrationContext } from './types/migration-context.interface';
@@ -12,13 +12,13 @@ export class Migrator {
   constructor(
     protected logger: Logger,
     protected knex: Knex,
-    protected factManager: IFactManager,
+    protected factManager: IReflection,
   ) {}
 
   /**
    * Read the database state and return it as a list of blueprints.
    */
-  async readDatabaseState(filters: string[] = []): Promise<IBlueprint[]> {
+  async readDatabaseState(filters: string[] = []): Promise<ISchema[]> {
     const blueprints = [];
     await this.factManager.updateFacts();
 
@@ -29,9 +29,7 @@ export class Migrator {
     return blueprints;
   }
 
-  async compareDatabaseState(
-    blueprints: IBlueprint[],
-  ): Promise<IMigrationPlan> {
+  async compareDatabaseState(blueprints: ISchema[]): Promise<IMigrationPlan> {
     const ctx: IMigrationContext = {
       knex: this.knex,
       factManager: this.factManager,
@@ -43,7 +41,7 @@ export class Migrator {
 
     await Promise.all(
       blueprints.map(blueprint => {
-        if (blueprint.kind === BlueprintKind.TABLE) {
+        if (blueprint.kind === SchemaKind.TABLE) {
           // If the table doesn't exist, create it
           if (!this.factManager.isTableExists(blueprint.tableName)) {
             return planner.createTable(blueprint);
@@ -59,7 +57,7 @@ export class Migrator {
     return ctx.migrationPlan;
   }
 
-  async dropBlueprint(blueprint: IBlueprint): Promise<void> {
+  async dropBlueprint(blueprint: ISchema): Promise<void> {
     await this.dropTable(blueprint.tableName);
   }
 

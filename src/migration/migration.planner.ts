@@ -1,6 +1,6 @@
 import { diff } from 'just-diff';
 import { Knex } from 'knex';
-import { ColumnType, IBlueprint, IColumn } from '../blueprint';
+import { ColumnType, IColumn, ISchema } from '../schema';
 import { ColumnTools } from '../tools/column-tools';
 import { stripMeta } from '../tools/strip-meta';
 import { IMigrationContext } from './types/migration-context.interface';
@@ -12,7 +12,7 @@ import { getPostgresTypeName } from './util/get-type-name';
 export class MigrationPlanner implements IMigrationPlanner {
   constructor(readonly ctx: IMigrationContext) {}
 
-  async alterTable(targetState: IBlueprint) {
+  async alterTable(targetState: ISchema) {
     const currentState = this.ctx.factManager.getBlueprintForTable(
       targetState.tableName,
     );
@@ -378,7 +378,7 @@ export class MigrationPlanner implements IMigrationPlanner {
     });
   }
 
-  async _createTable(blueprint: IBlueprint): Promise<void> {
+  async _createTable(blueprint: ISchema): Promise<void> {
     this.ctx.migrationPlan.steps.push({
       query: this.ctx.knex.schema.createTable(blueprint.tableName, () => {}),
       risk: MigrationRisk.NONE,
@@ -405,7 +405,7 @@ export class MigrationPlanner implements IMigrationPlanner {
     }
   }
 
-  async createTable(blueprint: IBlueprint) {
+  async createTable(blueprint: ISchema) {
     this._createTable(blueprint);
 
     await Promise.all([
@@ -416,7 +416,7 @@ export class MigrationPlanner implements IMigrationPlanner {
     ]);
   }
 
-  async createColumn(blueprint: IBlueprint) {
+  async createColumn(blueprint: ISchema) {
     if (Object.keys(blueprint.columns).length) {
       const createColumnsQuery = this.ctx.knex.schema.alterTable(
         blueprint.tableName,
@@ -450,7 +450,7 @@ export class MigrationPlanner implements IMigrationPlanner {
     }
   }
 
-  async createIndex(blueprint: IBlueprint) {
+  async createIndex(blueprint: ISchema) {
     // Apply the composite indexes
     for (const indexName in blueprint.indexes) {
       if (Object.prototype.hasOwnProperty.call(blueprint.indexes, indexName)) {
@@ -474,7 +474,7 @@ export class MigrationPlanner implements IMigrationPlanner {
     }
   }
 
-  async createUnique(blueprint: IBlueprint) {
+  async createUnique(blueprint: ISchema) {
     // Apply the composite unique constraints
     for (const uniqueName in blueprint.uniques) {
       if (Object.prototype.hasOwnProperty.call(blueprint.uniques, uniqueName)) {
@@ -505,7 +505,7 @@ export class MigrationPlanner implements IMigrationPlanner {
     }
   }
 
-  async createForeignKeys(blueprint: IBlueprint) {
+  async createForeignKeys(blueprint: ISchema) {
     // Add foreign keys
     for (const foreignKeyName in blueprint.relations) {
       if (

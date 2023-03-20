@@ -1,4 +1,4 @@
-import { ColumnType } from '../blueprint/types/column-type.enum';
+import { ColumnType } from '../schema/types/column-type.enum';
 
 // Maps native type alieses to their full names
 export const mapTypname = (typname: string): ColumnType => {

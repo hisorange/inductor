@@ -1,4 +1,4 @@
-import { ColumnType, IBlueprint, IColumn, IndexType } from '../blueprint/types';
+import { ColumnType, IColumn, IndexType, ISchema } from '../schema/types';
 
 const CannotBePrimary = [
   ColumnType.BOX,
@@ -180,7 +180,7 @@ const _ColumnTools = {
 };
 
 // Find and filter the primary column names from the blueprint
-export const filterPrimary = (blueprint: IBlueprint) => {
+export const filterPrimary = (blueprint: ISchema) => {
   const primaries = [];
 
   for (const colName in blueprint.columns) {

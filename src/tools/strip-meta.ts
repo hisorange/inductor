@@ -1,7 +1,7 @@
 import cloneDeep from 'lodash.clonedeep';
-import { IBlueprint } from '../blueprint';
+import { ISchema } from '../schema';
 
-export const stripMeta = (blueprint: IBlueprint) => {
+export const stripMeta = (blueprint: ISchema) => {
   blueprint = cloneDeep(blueprint);
 
   delete blueprint.meta;

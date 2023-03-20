@@ -1,20 +1,20 @@
 import {
   ColumnKind,
   ColumnType,
-  IBlueprint,
   IColumn,
   IndexType,
-  initBlueprint,
+  InitiateSchema,
   IRelation,
-  validateBlueprint,
-} from '../blueprint';
+  ISchema,
+  ValidateSchema,
+} from '../schema';
 import { ColumnTools } from '../tools/column-tools';
 import { commentDecode } from '../tools/comment.coder';
 import { Reflector } from './reflector';
-import { IFactManager } from './types/fact-manager.interface';
+import { IReflection } from './types/reflection.interface';
 
-export class FactManager implements IFactManager {
-  readonly facts: IFactManager['facts'] = {
+export class Reflection implements IReflection {
+  readonly facts: IReflection['facts'] = {
     tables: [],
     unloggedTables: [],
     types: [],
@@ -30,8 +30,8 @@ export class FactManager implements IFactManager {
 
   constructor(protected reflector: Reflector) {}
 
-  getBlueprintForTable(tableName: string): IBlueprint {
-    const blueprint = initBlueprint(tableName);
+  getBlueprintForTable(tableName: string): ISchema {
+    const blueprint = InitiateSchema(tableName);
     blueprint.relations = this.getTableForeignKeys(tableName);
     blueprint.uniques = this.getTableUniques(tableName);
     blueprint.indexes = this.getTableIndexes(tableName);
@@ -193,7 +193,7 @@ export class FactManager implements IFactManager {
       blueprint.columns[columnName] = columnDef;
     }
 
-    validateBlueprint(blueprint);
+    ValidateSchema(blueprint);
 
     return blueprint;
   }
@@ -245,10 +245,10 @@ export class FactManager implements IFactManager {
     ]);
 
     this.facts.types = types;
-    this.facts.tables = tables.map(([table, isLogged]) => table);
+    this.facts.tables = tables.map(([table]) => table);
     this.facts.unloggedTables = tables
-      .filter(([table, isLogged]) => !isLogged)
-      .map(([table, isLogged]) => table);
+      .filter(([_, isLogged]) => !isLogged)
+      .map(([table]) => table);
     this.facts.uniques = uniques;
     this.facts.relations = relations;
     this.facts.uniqueConstraints = uniqueConstraints;
@@ -285,13 +285,13 @@ export class FactManager implements IFactManager {
       : [];
   }
 
-  getTableUniques(table: string): IBlueprint['uniques'] {
+  getTableUniques(table: string): ISchema['uniques'] {
     return this.facts.uniques.hasOwnProperty(table)
       ? this.facts.uniques[table]
       : {};
   }
 
-  getTableIndexes(table: string): IBlueprint['indexes'] {
+  getTableIndexes(table: string): ISchema['indexes'] {
     return this.facts.indexes.hasOwnProperty(table)
       ? this.facts.indexes[table]
       : {};
@@ -314,7 +314,7 @@ export class FactManager implements IFactManager {
       : {};
   }
 
-  getTableForeignKeys(table: string): IBlueprint['relations'] {
+  getTableForeignKeys(table: string): ISchema['relations'] {
     return this.facts.relations.hasOwnProperty(table)
       ? this.facts.relations[table]
       : {};

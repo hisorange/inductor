@@ -1,5 +1,5 @@
 import { ColumnType, IndexType } from '../src';
-import { initBlueprint } from '../src/blueprint/blueprint.initiator';
+import { InitiateSchema } from '../src/schema/initiator';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
 
@@ -28,7 +28,7 @@ describe('Composite Indexing', () => {
       )}`;
       const indexName = `${tableName}_${columnSafeType}_${indexType}`;
 
-      const blueprint = initBlueprint(tableName);
+      const blueprint = InitiateSchema(tableName);
       blueprint.indexes = {
         [indexName]: {
           type: indexType,

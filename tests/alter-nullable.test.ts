@@ -1,5 +1,5 @@
 import { ColumnType, IColumn } from '../src';
-import { initBlueprint } from '../src/blueprint/blueprint.initiator';
+import { InitiateSchema } from '../src/schema/initiator';
 import { ColumnTools } from '../src/tools/column-tools';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
@@ -21,7 +21,7 @@ describe('Alter Nullable', () => {
       const columnName = `column_${columnSlug}`;
       const tableName = `alter_nullable_${columnSlug}`;
 
-      const blueprintRV1 = initBlueprint(tableName);
+      const blueprintRV1 = InitiateSchema(tableName);
       blueprintRV1.columns = {
         primary_column: {
           ...createTestColumn(ColumnType.SERIAL),

@@ -1,5 +1,5 @@
 import { ColumnType } from '../src';
-import { initBlueprint } from '../src/blueprint/blueprint.initiator';
+import { InitiateSchema } from '../src/schema/initiator';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
 
@@ -37,7 +37,7 @@ describe('Default Value', () => {
         '',
       )}_${valueType}`;
 
-      const blueprint = initBlueprint(tableName);
+      const blueprint = InitiateSchema(tableName);
       blueprint.columns = {
         test_column: {
           ...createTestColumn(columnType),

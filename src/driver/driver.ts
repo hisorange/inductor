@@ -1,45 +1,42 @@
 import knex, { Knex } from 'knex';
+import { nanoid } from 'nanoid';
 import { Model, ModelClass, Pojo } from 'objection';
 import pino, { Logger } from 'pino';
-import { v4 } from 'uuid';
-import { BlueprintMap, IBlueprint, validateBlueprint } from '../blueprint';
-import { Cache } from '../cache/cache';
-import { ICache } from '../cache/types/cache.interface';
 import { ModelNotFound } from '../exception';
-import { FactManager } from '../fact/fact.manager';
-import { Reflector } from '../fact/reflector';
-import { IFactManager } from '../fact/types';
 import { Migrator } from '../migration/migrator';
 import { IMigrationPlan } from '../migration/types/migration-plan.interface';
 import { IStepResult } from '../migration/types/step-result.interface';
+import { Reflection } from '../reflection/reflection';
+import { Reflector } from '../reflection/reflector';
+import { IReflection } from '../reflection/types';
+import { ISchema, SchemaMap, ValidateSchema } from '../schema';
 import { ColumnTools } from '../tools/column-tools';
 import { IDatabase } from './types/database.interface';
 import { IDriver } from './types/driver.interface';
 
 export class Driver implements IDriver {
   /**
-   * Associated blueprints with the connection
+   * Associated schemas with the connection
    */
-  protected blueprints: BlueprintMap = new Map();
-  protected caches: Map<string, ICache> = new Map();
+  protected schemas: SchemaMap = new Map();
 
+  readonly id: string = nanoid(8);
   readonly migrator: Migrator;
-  readonly factManager: IFactManager;
-  protected connection: Knex;
+  readonly reflection: IReflection;
+  readonly knex: Knex;
   protected logger: Logger;
 
   constructor(readonly database: IDatabase) {
-    const id = v4().substring(0, 8);
     this.logger = pino({
-      name: `inductor.${id}`,
+      name: `inductor.${this.id}`,
       level: process.env.NODE_ENV === 'production' ? 'warn' : 'debug',
       enabled: process.env.NODE_ENV !== 'test',
     });
 
-    this.connection = knex({
+    this.knex = knex({
       client: 'pg',
       connection: {
-        application_name: `inductor.${id}`,
+        application_name: `inductor.${this.id}`,
         ...this.database.connection,
       } as Knex.PgConnectionConfig,
       pool: {
@@ -49,29 +46,17 @@ export class Driver implements IDriver {
       },
     });
 
-    this.factManager = new FactManager(new Reflector(this.connection));
-    this.migrator = new Migrator(
-      this.logger,
-      this.connection,
-      this.factManager,
-    );
+    this.reflection = new Reflection(new Reflector(this.knex));
+    this.migrator = new Migrator(this.logger, this.knex, this.reflection);
 
     this.updateBluprintMap(database.blueprints);
-  }
-
-  getCache(table: string): ICache {
-    if (!this.caches.has(table)) {
-      this.caches.set(table, new Cache(table, this.migrator, this.connection));
-    }
-
-    return this.caches.get(table)!;
   }
 
   /**
    * Convert the blueprint into a model class.
    */
-  protected toModel(blueprint: IBlueprint): ModelClass<Model> {
-    validateBlueprint(blueprint);
+  protected toModel(blueprint: ISchema): ModelClass<Model> {
+    ValidateSchema(blueprint);
 
     // Prepare fast lookup maps for both propery and column name conversions.
     // Even tho this is a small amount of data, it's worth it to avoid
@@ -136,16 +121,16 @@ export class Driver implements IDriver {
     // model.prototype.$beforeUpdate = onUpdate;
 
     // Associate the knex instance with the newly created model class.
-    model.knex(this.connection);
+    model.knex(this.knex);
 
     return model;
   }
 
-  compareState(blueprints: IBlueprint[]): Promise<IMigrationPlan> {
+  compareState(blueprints: ISchema[]): Promise<IMigrationPlan> {
     return this.migrator.compareDatabaseState(blueprints);
   }
 
-  async setState(blueprints: IBlueprint[]): Promise<IStepResult[]> {
+  async setState(blueprints: ISchema[]): Promise<IStepResult[]> {
     return this.compareState(blueprints)
       .then(plan => plan.execute())
       .then(result => {
@@ -155,25 +140,25 @@ export class Driver implements IDriver {
       });
   }
 
-  protected updateBluprintMap(blueprints: IBlueprint[]) {
-    blueprints.forEach(b => {
+  protected updateBluprintMap(schemas: ISchema[]) {
+    schemas.forEach(b => {
       for (const columnName in b.columns) {
         b.columns[columnName].capabilities.sort((a, b) => a - b);
       }
     });
 
-    this.blueprints = new Map(
-      blueprints.map(blueprint => [
-        blueprint.tableName,
+    this.schemas = new Map(
+      schemas.map(schema => [
+        schema.tableName,
         {
-          blueprint,
-          model: this.toModel(blueprint),
+          schema,
+          model: this.toModel(schema),
         },
       ]),
     );
   }
 
-  async readState(filters: string[] = []): Promise<IBlueprint[]> {
+  async readState(filters: string[] = []): Promise<ISchema[]> {
     const currentState = await this.migrator.readDatabaseState(filters);
 
     this.updateBluprintMap(currentState);
@@ -182,24 +167,24 @@ export class Driver implements IDriver {
   }
 
   getModel<T extends Model = Model>(table: string): ModelClass<T> {
-    if (!this.blueprints.has(table)) {
+    if (!this.schemas.has(table)) {
       throw new ModelNotFound(table);
     }
 
-    return this.blueprints.get(table)!.model as ModelClass<T>;
+    return this.schemas.get(table)!.model as ModelClass<T>;
   }
 
   closeConnection() {
-    return this.connection.destroy();
+    return this.knex.destroy();
   }
 
-  getBlueprints(): IBlueprint[] {
-    return Array.from(this.blueprints.values()).map(
-      ({ blueprint }) => blueprint,
+  getBlueprints(): ISchema[] {
+    return Array.from(this.schemas.values()).map(
+      ({ schema: blueprint }) => blueprint,
     );
   }
 
   getModels(): ModelClass<Model>[] {
-    return Array.from(this.blueprints.values()).map(({ model }) => model);
+    return Array.from(this.schemas.values()).map(({ model }) => model);
   }
 }

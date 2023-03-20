@@ -1,6 +1,6 @@
 import cloneDeep from 'lodash.clonedeep';
 import { ColumnType } from '../src';
-import { initBlueprint } from '../src/blueprint/blueprint.initiator';
+import { InitiateSchema } from '../src/schema/initiator';
 import { ColumnTools } from '../src/tools/column-tools';
 import { createTestColumn, TestColumns } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
@@ -41,7 +41,7 @@ describe('Unique Constraint', () => {
     'should manipulate the UNIQUE flag for [%s] column',
     async colName => {
       const tableName = `alter_unique_${colName}`;
-      const blueprintRV1 = initBlueprint(tableName);
+      const blueprintRV1 = InitiateSchema(tableName);
       blueprintRV1.columns = {
         id: {
           ...createTestColumn(ColumnType.INTEGER),
@@ -85,7 +85,7 @@ describe('Unique Constraint', () => {
       const tableName = `unique_test_comp_${columnKey}`;
       const uniqueName = `unique_pair_${columnKey}`;
 
-      const blueprint = initBlueprint(tableName);
+      const blueprint = InitiateSchema(tableName);
       blueprint.columns = {
         [columnKey]: uniqueCols[columnKey],
         pair_for_comp: {
@@ -110,7 +110,7 @@ describe('Unique Constraint', () => {
 
   test('should alter between compound unique states', async () => {
     const tableName = 'unique_test_upgrade';
-    const blueprintRV1 = initBlueprint(tableName);
+    const blueprintRV1 = InitiateSchema(tableName);
     blueprintRV1.columns = {
       col_1: {
         ...createTestColumn(ColumnType.INTEGER),

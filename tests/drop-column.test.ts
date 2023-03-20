@@ -1,6 +1,6 @@
 import cloneDeep from 'lodash.clonedeep';
-import { ColumnType, IBlueprint, IndexType } from '../src';
-import { initBlueprint } from '../src/blueprint/blueprint.initiator';
+import { ColumnType, IndexType, ISchema } from '../src';
+import { InitiateSchema } from '../src/schema/initiator';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
 
@@ -9,7 +9,7 @@ describe('Drop Column', () => {
   const clearTables = () =>
     Promise.all(testTables.map(name => driver.migrator.dropTable(name)));
 
-  const columns: IBlueprint['columns'] = {
+  const columns: ISchema['columns'] = {
     col_var_1: {
       ...createTestColumn(ColumnType.INTEGER),
       isPrimary: true,
@@ -43,7 +43,7 @@ describe('Drop Column', () => {
     async col => {
       const tableName = `drop_column_${col}`;
 
-      const blueprintRV1 = initBlueprint(tableName);
+      const blueprintRV1 = InitiateSchema(tableName);
       blueprintRV1.columns = columns;
       await driver.setState([blueprintRV1]);
 

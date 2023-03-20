@@ -1,4 +1,4 @@
-export enum BlueprintKind {
+export enum SchemaKind {
   TABLE = 'table',
   VIEW = 'view',
 }

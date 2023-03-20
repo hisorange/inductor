@@ -1,5 +1,5 @@
 import { ColumnType, IColumn } from '../src';
-import { initBlueprint } from '../src/blueprint/blueprint.initiator';
+import { InitiateSchema } from '../src/schema/initiator';
 import { ColumnTools } from '../src/tools/column-tools';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
@@ -19,7 +19,7 @@ describe('Column Adding', () => {
       const columnName = `column_${columnSlug}`;
       const tableName = `column_add_${columnSlug}`;
 
-      const blueprint = initBlueprint(tableName);
+      const blueprint = InitiateSchema(tableName);
       blueprint.columns = {
         primary_column: {
           ...createTestColumn(ColumnType.SERIAL),

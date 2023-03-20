@@ -1,28 +1,28 @@
-import { InvalidBlueprint } from '../exception/invalid-blueprint.exception';
+import { InvalidSchema } from '../exception/invalid-schema.exception';
 import { ColumnTools } from '../tools/column-tools';
-import { IBlueprint } from './types';
+import { ISchema } from './types';
 import { ColumnType } from './types/column-type.enum';
 import { IndexType } from './types/index-type.enum';
 
-export const validateBlueprint = (blueprint: IBlueprint): void => {
+export const ValidateSchema = (schema: ISchema): void => {
   // Validate the table name, or it's just spaces
-  if (!blueprint.tableName || blueprint.tableName.trim().length === 0) {
-    throw new InvalidBlueprint('Missing table name');
+  if (!schema.tableName || schema.tableName.trim().length === 0) {
+    throw new InvalidSchema('Missing table name');
   }
 
-  const columnNames = Object.keys(blueprint.columns);
+  const columnNames = Object.keys(schema.columns);
 
   // Validate composite indexes
-  for (const [name, compositeIndex] of Object.entries(blueprint.indexes)) {
+  for (const [name, compositeIndex] of Object.entries(schema.indexes)) {
     if (compositeIndex.columns.length < 2) {
-      throw new InvalidBlueprint(
+      throw new InvalidSchema(
         `Composite index [${name}] must have at least 2 columns`,
       );
     }
 
     for (const column of compositeIndex.columns) {
       if (!columnNames.includes(column)) {
-        throw new InvalidBlueprint(
+        throw new InvalidSchema(
           `Composite index [${name}] references a column that does not exist`,
         );
       }
@@ -30,16 +30,16 @@ export const validateBlueprint = (blueprint: IBlueprint): void => {
   }
 
   // Validate composite unique
-  for (const [name, compositeUnique] of Object.entries(blueprint.uniques)) {
+  for (const [name, compositeUnique] of Object.entries(schema.uniques)) {
     if (compositeUnique.columns.length < 2) {
-      throw new InvalidBlueprint(
+      throw new InvalidSchema(
         `Composite unique [${name}] must have at least 2 columns`,
       );
     }
 
     for (const column of compositeUnique.columns) {
       if (!columnNames.includes(column)) {
-        throw new InvalidBlueprint(
+        throw new InvalidSchema(
           `Composite unique [${name}] references a column that does not exist`,
         );
       }
@@ -47,23 +47,23 @@ export const validateBlueprint = (blueprint: IBlueprint): void => {
   }
 
   // Validate for invalid table names
-  if (blueprint.tableName.length > 63) {
-    throw new InvalidBlueprint('Table name is too long');
+  if (schema.tableName.length > 63) {
+    throw new InvalidSchema('Table name is too long');
   }
 
   // Validate for invalid table names characters
-  if (!blueprint.tableName.match(/^[_]?[a-zA-Z0-9_]*$/)) {
-    throw new InvalidBlueprint('Table name format is invalid');
+  if (!schema.tableName.match(/^[_]?[a-zA-Z0-9_]*$/)) {
+    throw new InvalidSchema('Table name format is invalid');
   }
 
-  for (const name in blueprint.columns) {
-    if (Object.prototype.hasOwnProperty.call(blueprint.columns, name)) {
-      const definition = blueprint.columns[name];
+  for (const name in schema.columns) {
+    if (Object.prototype.hasOwnProperty.call(schema.columns, name)) {
+      const definition = schema.columns[name];
       const isSerialType = ColumnTools.isSerialType(definition);
 
       // Serial columns are always primary
       if (!definition.isPrimary && isSerialType) {
-        throw new InvalidBlueprint(
+        throw new InvalidSchema(
           `Serial column [${name}] cannot be non-primary`,
         );
       }
@@ -73,49 +73,47 @@ export const validateBlueprint = (blueprint: IBlueprint): void => {
         definition.isNullable &&
         typeof definition.defaultValue === 'undefined'
       ) {
-        throw new InvalidBlueprint(
+        throw new InvalidSchema(
           `Column [${name}] is nullable but has no default value defined`,
         );
       }
 
       // Serial columns cannot be nullable
       if (definition.isNullable && isSerialType) {
-        throw new InvalidBlueprint(`Column [${name}] cannot be nullable`);
+        throw new InvalidSchema(`Column [${name}] cannot be nullable`);
       }
 
       // Unique is not supported for these types
       if (definition.isUnique && !ColumnTools.canTypeBeUnique(definition)) {
-        throw new InvalidBlueprint(`Column [${name}] cannot be unique`);
+        throw new InvalidSchema(`Column [${name}] cannot be unique`);
       }
 
       // Primary is not supported for these types
       if (definition.isPrimary && !ColumnTools.canTypeBePrimary(definition)) {
-        throw new InvalidBlueprint(`Column [${name}] cannot be a primary key`);
+        throw new InvalidSchema(`Column [${name}] cannot be a primary key`);
       }
 
       // Primary keys are unique by design
       if (definition.isPrimary && definition.isUnique) {
-        throw new InvalidBlueprint(`Primary column [${name}] cannot be unique`);
+        throw new InvalidSchema(`Primary column [${name}] cannot be unique`);
       }
 
       // Primary keys cannot be nullable
       if (definition.isPrimary && definition.isNullable) {
-        throw new InvalidBlueprint(
-          `Primary column [${name}] cannot be nullable`,
-        );
+        throw new InvalidSchema(`Primary column [${name}] cannot be nullable`);
       }
 
       if (definition.type.name === ColumnType.ENUM) {
         // Enumerators only support text values
         if (definition.type.values.some(value => typeof value !== 'string')) {
-          throw new InvalidBlueprint(
+          throw new InvalidSchema(
             `Enumerated column [${name}] cannot have non string value`,
           );
         }
 
         // Enumerators have at least one value
         if (definition.type.values.length === 0) {
-          throw new InvalidBlueprint(
+          throw new InvalidSchema(
             `Enumerated column [${name}] has to define at least one value`,
           );
         }
@@ -124,7 +122,7 @@ export const validateBlueprint = (blueprint: IBlueprint): void => {
         if (
           definition.type.values.length !== new Set(definition.type.values).size
         ) {
-          throw new InvalidBlueprint(
+          throw new InvalidSchema(
             `Enumerated column [${name}] cannot have duplicate values`,
           );
         }
@@ -133,32 +131,30 @@ export const validateBlueprint = (blueprint: IBlueprint): void => {
   }
 
   // Validate composite indexes
-  for (const [name, compositeIndex] of Object.entries(blueprint.indexes)) {
+  for (const [name, compositeIndex] of Object.entries(schema.indexes)) {
     // Cannot have the type hash or spgist
     if (
       compositeIndex.type === IndexType.HASH ||
       compositeIndex.type === IndexType.SPGIST
     ) {
-      throw new InvalidBlueprint(
+      throw new InvalidSchema(
         `Composite index [${name}] cannot have either hash and spgist`,
       );
     }
   }
 
   // Validate the composite unique fields for valid types
-  for (const uniqueName in blueprint.uniques) {
+  for (const uniqueName in schema.uniques) {
     const validColumns: string[] = [];
     const expectedColumns: string[] = [];
 
-    if (Object.prototype.hasOwnProperty.call(blueprint.uniques, uniqueName)) {
-      expectedColumns.push(...blueprint.uniques[uniqueName].columns);
+    if (Object.prototype.hasOwnProperty.call(schema.uniques, uniqueName)) {
+      expectedColumns.push(...schema.uniques[uniqueName].columns);
 
       for (const columnName of expectedColumns) {
         // Check if the column exists
-        if (
-          Object.prototype.hasOwnProperty.call(blueprint.columns, columnName)
-        ) {
-          const columnDef = blueprint.columns[columnName];
+        if (Object.prototype.hasOwnProperty.call(schema.columns, columnName)) {
+          const columnDef = schema.columns[columnName];
 
           // Check if the column can be unique
           if (ColumnTools.canTypeBeUnique(columnDef)) {
@@ -170,7 +166,7 @@ export const validateBlueprint = (blueprint: IBlueprint): void => {
 
     // All column has to match
     if (validColumns.length !== expectedColumns.length) {
-      throw new InvalidBlueprint(
+      throw new InvalidSchema(
         `Composite unique [${uniqueName}] contains invalid columns`,
       );
     }

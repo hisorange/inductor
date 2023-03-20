@@ -1,25 +1,25 @@
+import { Knex } from 'knex';
 import { Model, ModelClass } from 'objection';
-import { IBlueprint } from '../../blueprint';
-import { ICache } from '../../cache/types/cache.interface';
-import { IFactManager } from '../../fact/types/fact-manager.interface';
 import { Migrator } from '../../migration';
 import { IMigrationPlan } from '../../migration/types/migration-plan.interface';
 import { IStepResult } from '../../migration/types/step-result.interface';
+import { IReflection } from '../../reflection/types/reflection.interface';
+import { ISchema } from '../../schema';
 import { IDatabase } from './database.interface';
 
 export interface IDriver {
+  readonly id: string;
   readonly database: IDatabase;
   readonly migrator: Migrator;
-  readonly factManager: IFactManager;
+  readonly reflection: IReflection;
+  readonly knex: Knex;
 
-  setState(blueprints: IBlueprint[]): Promise<IStepResult[]>;
-  readState(filters?: string[]): Promise<IBlueprint[]>;
-  compareState(blueprints: IBlueprint[]): Promise<IMigrationPlan>;
+  setState(blueprints: ISchema[]): Promise<IStepResult[]>;
+  readState(filters?: string[]): Promise<ISchema[]>;
+  compareState(blueprints: ISchema[]): Promise<IMigrationPlan>;
   getModel<T extends Model = Model>(name: string): ModelClass<T>;
   closeConnection(): Promise<void>;
 
-  getBlueprints(): IBlueprint[];
+  getBlueprints(): ISchema[];
   getModels(): ModelClass<Model>[];
-
-  getCache(table: string): ICache;
 }

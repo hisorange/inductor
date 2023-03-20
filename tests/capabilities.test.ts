@@ -1,6 +1,6 @@
 import { ColumnType } from '../src';
-import { initBlueprint } from '../src/blueprint/blueprint.initiator';
-import { ColumnCapability } from '../src/blueprint/types/column.capability';
+import { InitiateSchema } from '../src/schema/initiator';
+import { ColumnCapability } from '../src/schema/types/column.capability';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
 
@@ -19,7 +19,7 @@ describe('Capabilities', () => {
     async (ref: string, cap: ColumnCapability) => {
       const tableName = `capability_${ref}`;
 
-      const blueprint = initBlueprint(tableName);
+      const blueprint = InitiateSchema(tableName);
       blueprint.columns = {
         primary_column: {
           ...createTestColumn(ColumnType.SERIAL),

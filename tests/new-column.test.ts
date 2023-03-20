@@ -1,6 +1,6 @@
 import cloneDeep from 'lodash.clonedeep';
 import { ColumnType, ImpossibleMigration } from '../src';
-import { initBlueprint } from '../src/blueprint/blueprint.initiator';
+import { InitiateSchema } from '../src/schema/initiator';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
 
@@ -10,7 +10,7 @@ describe('Able to handle new column risks', () => {
 
   test('should be able to create a new column with default value', async () => {
     const tableName = `new_column_test_with_def_42`;
-    const blueprintRV1 = initBlueprint(tableName);
+    const blueprintRV1 = InitiateSchema(tableName);
     blueprintRV1.columns = {
       id: {
         ...createTestColumn(ColumnType.SERIAL),
@@ -45,7 +45,7 @@ describe('Able to handle new column risks', () => {
 
   test('should be possible to create new column without default value with zero rows', async () => {
     const tableName = `new_column_test_w_defv`;
-    const blueprintRV1 = initBlueprint(tableName);
+    const blueprintRV1 = InitiateSchema(tableName);
     blueprintRV1.columns = {
       id: {
         ...createTestColumn(ColumnType.SERIAL),
@@ -70,7 +70,7 @@ describe('Able to handle new column risks', () => {
 
   test('should be impossible to create new column without default value with non-zero rows', async () => {
     const tableName = `new_column_test_wo_defv`;
-    const blueprintRV1 = initBlueprint(tableName);
+    const blueprintRV1 = InitiateSchema(tableName);
     blueprintRV1.columns = {
       id: {
         ...createTestColumn(ColumnType.SERIAL),

@@ -1,5 +1,5 @@
 import { ColumnType, IndexType } from '../src';
-import { initBlueprint } from '../src/blueprint/blueprint.initiator';
+import { InitiateSchema } from '../src/schema/initiator';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
 
@@ -25,7 +25,7 @@ describe('Column Indexing', () => {
     ) => {
       const tableName = `column_index_${tableSuffix}`;
 
-      const blueprint = initBlueprint(tableName);
+      const blueprint = InitiateSchema(tableName);
       blueprint.columns = {
         primary_column: {
           ...createTestColumn(ColumnType.SERIAL),

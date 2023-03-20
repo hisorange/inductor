@@ -1,5 +1,5 @@
 import { ColumnType, ForeignAction } from '../src';
-import { initBlueprint } from '../src/blueprint/blueprint.initiator';
+import { InitiateSchema } from '../src/schema/initiator';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
 
@@ -12,7 +12,7 @@ describe('Relations', () => {
     const tableNameA = `relation_belongsto_a`;
     const tableNameB = `relation_belongsto_b`;
 
-    const blueprintA = initBlueprint(tableNameA);
+    const blueprintA = InitiateSchema(tableNameA);
     blueprintA.columns = {
       a_id_1: {
         ...createTestColumn(ColumnType.UUID),
@@ -24,7 +24,7 @@ describe('Relations', () => {
       },
     };
 
-    const blueprintB = initBlueprint(tableNameB);
+    const blueprintB = InitiateSchema(tableNameB);
     blueprintB.relations = {
       belongs_to_a: {
         columns: ['b_id_1', 'b_id_2'],
