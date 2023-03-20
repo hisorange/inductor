@@ -1,12 +1,12 @@
 import { Knex } from 'knex';
-import { ISchema } from '../../schema';
+import { ITable } from '../../table';
 
 /**
- * Describe the database schema, and the connection associated with it.
+ * Describe the database table, and the connection associated with it.
  */
 export interface IDatabase<
   DatabaseMeta = unknown,
-  SchemaMeta = unknown,
+  TableMeta = unknown,
   ColumnMeta = unknown,
 > {
   /**
@@ -15,19 +15,19 @@ export interface IDatabase<
   readonly connection: Knex.PgConnectionConfig;
 
   /**
-   * Flag to indicate that the schemas are read only,
+   * Flag to indicate that the tables are read only,
    * and the database should not be modified.
    */
   readonly isReadOnly: boolean;
 
   /**
-   * schemas associated with the database
+   * Tables associated with the database
    */
-  schemas: ISchema<SchemaMeta, ColumnMeta>[];
+  tables: ITable<TableMeta, ColumnMeta>[];
 
   /**
-   * List of regex patterns to filter schemas from the database.
-   * In case it's empty, all schemas are returned.
+   * List of regex patterns to filter tables from the database.
+   * In case it's empty, all tables are returned.
    */
   filters: string[];
 

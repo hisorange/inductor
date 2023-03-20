@@ -1,7 +1,7 @@
 import { Knex } from 'knex';
 import { IReflection } from '../../reflection/types/reflection.interface';
-import { IColumn, ISchema } from '../../schema';
-import { ColumnType } from '../../schema/types/column-type.enum';
+import { IColumn, ITable } from '../../table';
+import { ColumnType } from '../../table/types/column-type.enum';
 import { ColumnTools } from '../../tools/column-tools';
 import { commentEncoder } from '../../tools/comment.coder';
 import { getPostgresTypeName } from './get-type-name';
@@ -10,7 +10,7 @@ export const createColumn = (
   tableBuilder: Knex.CreateTableBuilder,
   name: string,
   column: IColumn,
-  schema: ISchema,
+  table: ITable,
   facts: IReflection,
 ) => {
   let columnBuilder: Knex.PostgreSqlColumnBuilder;
@@ -60,7 +60,7 @@ export const createColumn = (
   }
 
   // Add primary constraint, only if this is the only primary column
-  if (column.isPrimary && ColumnTools.filterPrimary(schema).length === 1) {
+  if (column.isPrimary && ColumnTools.filterPrimary(table).length === 1) {
     columnBuilder.primary();
   }
 

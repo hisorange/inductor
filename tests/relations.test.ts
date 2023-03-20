@@ -1,5 +1,5 @@
 import { ColumnType, ForeignAction } from '../src';
-import { InitiateSchema } from '../src/schema/initiator';
+import { InitiateTable } from '../src/table/initiator';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
 
@@ -12,8 +12,8 @@ describe('Relations', () => {
     const tableNameA = `relation_belongsto_a`;
     const tableNameB = `relation_belongsto_b`;
 
-    const schemaA = InitiateSchema(tableNameA);
-    schemaA.columns = {
+    const tableA = InitiateTable(tableNameA);
+    tableA.columns = {
       a_id_1: {
         ...createTestColumn(ColumnType.UUID),
         isPrimary: true,
@@ -24,8 +24,8 @@ describe('Relations', () => {
       },
     };
 
-    const schemaB = InitiateSchema(tableNameB);
-    schemaB.relations = {
+    const tableB = InitiateTable(tableNameB);
+    tableB.relations = {
       belongs_to_a: {
         columns: ['b_id_1', 'b_id_2'],
         references: {
@@ -38,7 +38,7 @@ describe('Relations', () => {
       },
     };
 
-    schemaB.columns = {
+    tableB.columns = {
       b_id_1: {
         ...createTestColumn(ColumnType.UUID),
         isPrimary: true,
@@ -49,18 +49,18 @@ describe('Relations', () => {
       },
     };
 
-    // Remove schema if exists from a previous test
-    await driver.migrator.dropSchema(schemaB);
-    await driver.migrator.dropSchema(schemaA);
+    // Remove table if exists from a previous test
+    await driver.migrator.dropTableDescriptor(tableB);
+    await driver.migrator.dropTableDescriptor(tableA);
 
     // Apply the new state
-    await driver.setState([schemaA, schemaB]);
+    await driver.setState([tableA, tableB]);
 
-    expect(schemaA).toStrictEqual((await driver.readState([tableNameA]))[0]);
-    expect(schemaB).toStrictEqual((await driver.readState([tableNameB]))[0]);
+    expect(tableA).toStrictEqual((await driver.readState([tableNameA]))[0]);
+    expect(tableB).toStrictEqual((await driver.readState([tableNameB]))[0]);
 
     // Cleanup
-    await driver.migrator.dropSchema(schemaB);
-    await driver.migrator.dropSchema(schemaA);
+    await driver.migrator.dropTableDescriptor(tableB);
+    await driver.migrator.dropTableDescriptor(tableA);
   });
 });

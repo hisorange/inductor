@@ -1,4 +1,4 @@
-import { IColumn, IRelation, ISchema } from '../../schema';
+import { IColumn, IRelation, ITable } from '../../table';
 
 type ColumnInfo = {
   defaultValue: IColumn['defaultValue'];
@@ -17,7 +17,7 @@ export interface IReflection {
     types: string[];
     uniqueConstraints: string[];
     uniques: {
-      [tableName: string]: ISchema['uniques'];
+      [tableName: string]: ITable['uniques'];
     };
     relations: {
       [tableName: string]: {
@@ -29,7 +29,7 @@ export interface IReflection {
       [tableName: string]: string[];
     };
     indexes: {
-      [tableName: string]: ISchema['indexes'];
+      [tableName: string]: ITable['indexes'];
     };
     columnValues: {
       [tableName: string]: {
@@ -46,7 +46,7 @@ export interface IReflection {
     };
   };
 
-  getSchemaForTable(table: string): ISchema;
+  getTableState(table: string): ITable;
 
   // Add live changes
   addTable(tableName: string): void;
@@ -60,8 +60,8 @@ export interface IReflection {
 
   // Reverse calls
   getTablePrimaryKeys(tableName: string): string[];
-  getTableUniques(tableName: string): ISchema['uniques'];
-  getTableIndexes(tableName: string): ISchema['indexes'];
+  getTableUniques(tableName: string): ITable['uniques'];
+  getTableIndexes(tableName: string): ITable['indexes'];
   getTableColumnInfo(tableName: string): {
     [columnName: string]: ColumnInfo;
   };
@@ -73,7 +73,7 @@ export interface IReflection {
     };
   };
 
-  getTableForeignKeys(tableName: string): ISchema['relations'];
+  getTableForeignKeys(tableName: string): ITable['relations'];
   addTableForeignKey(
     tableName: string,
     name: string,

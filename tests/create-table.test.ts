@@ -1,8 +1,8 @@
-import { InitiateSchema } from '../src/schema/initiator';
+import { InitiateTable } from '../src/table/initiator';
 import { TestColumns } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
 
-describe('Create Table from Schema', () => {
+describe('Create Table from Table', () => {
   const driver = createTestDriver();
   const testTables = ['create_test1', 'create_Test2', 'create_test_3_____'];
   const clearTables = () =>
@@ -16,12 +16,12 @@ describe('Create Table from Schema', () => {
   });
 
   test.each(testTables)(
-    'should create the [%s] table from schema',
+    'should create the [%s] table from table',
     async (tableName: string) => {
-      const schema = InitiateSchema(tableName);
-      schema.columns = TestColumns;
+      const table = InitiateTable(tableName);
+      table.columns = TestColumns;
 
-      await driver.setState([schema]);
+      await driver.setState([table]);
       await driver.reflection.updateFacts();
 
       expect(driver.reflection.isTableExists(tableName)).toBeTruthy();

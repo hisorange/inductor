@@ -1,3 +1,3 @@
 import { InductorException } from './inductor.exception';
 
-export class InvalidSchema extends InductorException {}
+export class InvalidTable extends InductorException {}

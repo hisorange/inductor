@@ -1,25 +1,19 @@
 import { IColumn } from './column.interface';
 import { ICompositeIndex } from './index.interface';
 import { IRelation } from './relation.interface';
-import { SchemaKind } from './schema.kind';
 import { IUnique } from './unique.interface';
 
-export interface ISchema<
-  SchemaMeta = unknown,
+export interface ITable<
+  TableMeta = unknown,
   ColumnMeta = unknown,
   UniqueMeta = unknown,
   IndexMeta = unknown,
   RelationMeta = unknown,
 > {
   /**
-   * Can define view or table.
+   * Programatical identified of the table.
    */
-  kind: SchemaKind;
-
-  /**
-   * Programatical identified. (applied as the table's name or view's name)
-   */
-  tableName: string;
+  name: string;
 
   /**
    * Columns of the table.
@@ -56,7 +50,7 @@ export interface ISchema<
   isLogged: boolean;
 
   /**
-   * Associated metadata with the schema
+   * Associated metadata with the table
    */
-  meta?: SchemaMeta;
+  meta?: TableMeta;
 }

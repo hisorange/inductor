@@ -1,5 +1,5 @@
 import { ColumnType, IColumn } from '../src';
-import { InitiateSchema } from '../src/schema/initiator';
+import { InitiateTable } from '../src/table/initiator';
 import { ColumnTools } from '../src/tools/column-tools';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
@@ -21,8 +21,8 @@ describe('Alter Nullable', () => {
       const columnName = `column_${columnSlug}`;
       const tableName = `alter_nullable_${columnSlug}`;
 
-      const schemaRV1 = InitiateSchema(tableName);
-      schemaRV1.columns = {
+      const tableRV1 = InitiateTable(tableName);
+      tableRV1.columns = {
         primary_column: {
           ...createTestColumn(ColumnType.SERIAL),
           isPrimary: true,
@@ -30,28 +30,28 @@ describe('Alter Nullable', () => {
         [columnName]: columnDef,
       };
 
-      // Remove schema if exists from a previous test
+      // Remove table if exists from a previous test
       await driver.migrator.dropTable(tableName);
-      await driver.setState([schemaRV1]);
+      await driver.setState([tableRV1]);
 
-      expect((await driver.readState([tableName]))[0]).toStrictEqual(schemaRV1);
+      expect((await driver.readState([tableName]))[0]).toStrictEqual(tableRV1);
 
       // Continue with a true state
-      schemaRV1.columns[columnName].isNullable = true;
-      schemaRV1.columns[columnName].defaultValue = null;
-      await driver.setState([schemaRV1]);
+      tableRV1.columns[columnName].isNullable = true;
+      tableRV1.columns[columnName].defaultValue = null;
+      await driver.setState([tableRV1]);
 
-      expect((await driver.readState([tableName]))[0]).toStrictEqual(schemaRV1);
+      expect((await driver.readState([tableName]))[0]).toStrictEqual(tableRV1);
 
       // Continue with a false state
-      schemaRV1.columns[columnName].isNullable = false;
-      schemaRV1.columns[columnName].defaultValue = undefined;
-      await driver.setState([schemaRV1]);
+      tableRV1.columns[columnName].isNullable = false;
+      tableRV1.columns[columnName].defaultValue = undefined;
+      await driver.setState([tableRV1]);
 
-      expect((await driver.readState([tableName]))[0]).toStrictEqual(schemaRV1);
+      expect((await driver.readState([tableName]))[0]).toStrictEqual(tableRV1);
 
       // Cleanup
-      await driver.migrator.dropSchema(schemaRV1);
+      await driver.migrator.dropTableDescriptor(tableRV1);
     },
   );
 });

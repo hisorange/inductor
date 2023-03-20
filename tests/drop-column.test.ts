@@ -1,6 +1,6 @@
 import cloneDeep from 'lodash.clonedeep';
-import { ColumnType, IndexType, ISchema } from '../src';
-import { InitiateSchema } from '../src/schema/initiator';
+import { ColumnType, IndexType, ITable } from '../src';
+import { InitiateTable } from '../src/table/initiator';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
 
@@ -9,7 +9,7 @@ describe('Drop Column', () => {
   const clearTables = () =>
     Promise.all(testTables.map(name => driver.migrator.dropTable(name)));
 
-  const columns: ISchema['columns'] = {
+  const columns: ITable['columns'] = {
     col_var_1: {
       ...createTestColumn(ColumnType.INTEGER),
       isPrimary: true,
@@ -43,17 +43,17 @@ describe('Drop Column', () => {
     async col => {
       const tableName = `drop_column_${col}`;
 
-      const schemaRV1 = InitiateSchema(tableName);
-      schemaRV1.columns = columns;
-      await driver.setState([schemaRV1]);
+      const tableRV1 = InitiateTable(tableName);
+      tableRV1.columns = columns;
+      await driver.setState([tableRV1]);
 
-      expect((await driver.readState([tableName]))[0]).toStrictEqual(schemaRV1);
+      expect((await driver.readState([tableName]))[0]).toStrictEqual(tableRV1);
 
-      const schemaRV2 = cloneDeep(schemaRV1);
-      delete schemaRV2.columns[col];
-      await driver.setState([schemaRV2]);
+      const tableRV2 = cloneDeep(tableRV1);
+      delete tableRV2.columns[col];
+      await driver.setState([tableRV2]);
 
-      expect((await driver.readState([tableName]))[0]).toStrictEqual(schemaRV2);
+      expect((await driver.readState([tableName]))[0]).toStrictEqual(tableRV2);
     },
     5_000,
   );

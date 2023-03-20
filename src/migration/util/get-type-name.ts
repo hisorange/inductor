@@ -1,5 +1,5 @@
-import { IColumn } from '../../schema';
-import { ColumnType } from '../../schema/types/column-type.enum';
+import { IColumn } from '../../table';
+import { ColumnType } from '../../table/types/column-type.enum';
 
 export const getPostgresTypeName = (column: IColumn): string => {
   let typeName: string = '';

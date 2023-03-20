@@ -1,5 +1,5 @@
 import { ColumnType } from '../src';
-import { InitiateSchema } from '../src/schema/initiator';
+import { InitiateTable } from '../src/table/initiator';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
 
@@ -37,8 +37,8 @@ describe('Default Value', () => {
         '',
       )}_${valueType}`;
 
-      const schema = InitiateSchema(tableName);
-      schema.columns = {
+      const table = InitiateTable(tableName);
+      table.columns = {
         test_column: {
           ...createTestColumn(columnType),
           defaultValue,
@@ -46,14 +46,14 @@ describe('Default Value', () => {
         },
       };
 
-      // Remove schema if exists from a previous test
-      await driver.migrator.dropSchema(schema);
-      await driver.setState([schema]);
+      // Remove table if exists from a previous test
+      await driver.migrator.dropTableDescriptor(table);
+      await driver.setState([table]);
 
-      expect((await driver.readState([tableName]))[0]).toStrictEqual(schema);
+      expect((await driver.readState([tableName]))[0]).toStrictEqual(table);
 
       // Cleanup
-      await driver.migrator.dropSchema(schema);
+      await driver.migrator.dropTableDescriptor(table);
     },
   );
 });

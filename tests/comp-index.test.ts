@@ -1,5 +1,5 @@
 import { ColumnType, IndexType } from '../src';
-import { InitiateSchema } from '../src/schema/initiator';
+import { InitiateTable } from '../src/table/initiator';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
 
@@ -28,15 +28,15 @@ describe('Composite Indexing', () => {
       )}`;
       const indexName = `${tableName}_${columnSafeType}_${indexType}`;
 
-      const schema = InitiateSchema(tableName);
-      schema.indexes = {
+      const table = InitiateTable(tableName);
+      table.indexes = {
         [indexName]: {
           type: indexType,
           columns: ['pair_column', `${columnSafeType}_column`],
         },
       };
 
-      schema.columns = {
+      table.columns = {
         primary_column: {
           ...createTestColumn(ColumnType.SERIAL),
           isPrimary: true,
@@ -57,14 +57,14 @@ describe('Composite Indexing', () => {
         },
       };
 
-      // Remove schema if exists from a previous test
-      await driver.migrator.dropSchema(schema);
-      await driver.setState([schema]);
+      // Remove table if exists from a previous test
+      await driver.migrator.dropTableDescriptor(table);
+      await driver.setState([table]);
 
-      expect((await driver.readState([tableName]))[0]).toStrictEqual(schema);
+      expect((await driver.readState([tableName]))[0]).toStrictEqual(table);
 
       // Cleanup
-      await driver.migrator.dropSchema(schema);
+      await driver.migrator.dropTableDescriptor(table);
     },
   );
 });

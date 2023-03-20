@@ -1,4 +1,4 @@
-import { ColumnType, IColumn, IndexType, ISchema } from '../schema/types';
+import { ColumnType, IColumn, IndexType, ITable } from '../table/types';
 
 const CannotBePrimary = [
   ColumnType.BOX,
@@ -179,13 +179,13 @@ const _ColumnTools = {
   },
 };
 
-// Find and filter the primary column names from the schema
-export const filterPrimary = (schema: ISchema) => {
+// Find and filter the primary column names from the table
+export const filterPrimary = (table: ITable) => {
   const primaries = [];
 
-  for (const colName in schema.columns) {
-    if (Object.prototype.hasOwnProperty.call(schema.columns, colName)) {
-      const colDef = schema.columns[colName];
+  for (const colName in table.columns) {
+    if (Object.prototype.hasOwnProperty.call(table.columns, colName)) {
+      const colDef = table.columns[colName];
 
       if (colDef.isPrimary) {
         primaries.push(colName);

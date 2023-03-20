@@ -33,7 +33,7 @@ export interface IRelation<RelationMeta = unknown> {
   onUpdate: ForeignAction;
 
   /**
-   * Associated metadata with the schema
+   * Associated metadata with the table
    */
   meta?: RelationMeta;
 }

@@ -1,5 +1,5 @@
 import { Knex } from 'knex';
-import { ForeignAction } from '../schema/types/foreign-action.enum';
+import { ForeignAction } from '../table/types/foreign-action.enum';
 import { mapTypname } from '../tools/map-typname';
 import { IReflection } from './types';
 
@@ -9,10 +9,10 @@ import { IReflection } from './types';
 export class Reflector {
   constructor(readonly knex: Knex) {}
 
-  async isTableHasRows(tableName: string): Promise<boolean> {
+  async doesTableHasRows(name: string): Promise<boolean> {
     const countResult = await this.knex
       .select()
-      .from(tableName)
+      .from(name)
       .limit(1)
       .count('* as count');
 
@@ -29,14 +29,14 @@ export class Reflector {
         rel: 'pg_class',
       })
         .select({
-          tableName: 'rel.relname',
+          name: 'rel.relname',
           persistence: 'rel.relpersistence',
         })
         .where({
           'rel.relkind': 'r',
           'rel.relnamespace': this.knex.raw('current_schema::regnamespace'),
         })
-    ).map(r => [r.tableName, r.persistence !== 'u']);
+    ).map(r => [r.name, r.persistence !== 'u']);
   }
 
   async getDefinedTypes(): Promise<string[]> {
@@ -185,12 +185,9 @@ export class Reflector {
         'fks.constraint_type': 'FOREIGN KEY',
         'pks.constraint_type': 'PRIMARY KEY',
         'fks.table_schema': this.knex.raw('current_schema()'),
-        // 'fks.table_name': tableName,
       })
       .orderBy('fks.constraint_name')
       .orderBy('kcu_foreign.ordinal_position');
-
-    // console.log(query.toString());
 
     const rows: {
       localTableName: string;

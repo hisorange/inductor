@@ -1,5 +1,5 @@
-import { IColumn } from '../schema';
-import { ColumnCapability } from '../schema/types/column.capability';
+import { IColumn } from '../table';
+import { ColumnCapability } from '../table/types/column.capability';
 
 type CO = {
   c?: number; // capabilities

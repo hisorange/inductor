@@ -1,4 +1,4 @@
-import { InitiateSchema } from '../src/schema/initiator';
+import { InitiateTable } from '../src/table/initiator';
 import { createTestDriver } from './util/create-connection';
 
 describe('Unlogged Table', () => {
@@ -9,28 +9,28 @@ describe('Unlogged Table', () => {
   test('should create an ulogged table', async () => {
     const tableName = `unlogged_table_1`;
 
-    const schema = InitiateSchema(tableName);
-    schema.isLogged = false;
+    const table = InitiateTable(tableName);
+    table.isLogged = false;
 
-    // Remove schema if exists from a previous test
-    await driver.migrator.dropSchema(schema);
-    await driver.setState([schema]);
+    // Remove table if exists from a previous test
+    await driver.migrator.dropTableDescriptor(table);
+    await driver.setState([table]);
 
-    expect((await driver.readState([tableName]))[0]).toStrictEqual(schema);
+    expect((await driver.readState([tableName]))[0]).toStrictEqual(table);
 
     // Alter table to be logged
-    schema.isLogged = true;
-    await driver.setState([schema]);
+    table.isLogged = true;
+    await driver.setState([table]);
 
-    expect((await driver.readState([tableName]))[0]).toStrictEqual(schema);
+    expect((await driver.readState([tableName]))[0]).toStrictEqual(table);
 
     // Alter table to be unlogged
-    schema.isLogged = false;
-    await driver.setState([schema]);
+    table.isLogged = false;
+    await driver.setState([table]);
 
-    expect((await driver.readState([tableName]))[0]).toStrictEqual(schema);
+    expect((await driver.readState([tableName]))[0]).toStrictEqual(table);
 
     // Cleanup
-    await driver.migrator.dropSchema(schema);
+    await driver.migrator.dropTableDescriptor(table);
   });
 });

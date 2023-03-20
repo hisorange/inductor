@@ -1,6 +1,6 @@
 import cloneDeep from 'lodash.clonedeep';
 import { ColumnType } from '../src';
-import { InitiateSchema } from '../src/schema/initiator';
+import { InitiateTable } from '../src/table/initiator';
 import { ColumnTools } from '../src/tools/column-tools';
 import { createTestColumn, TestColumns } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
@@ -41,8 +41,8 @@ describe('Unique Constraint', () => {
     'should manipulate the UNIQUE flag for [%s] column',
     async colName => {
       const tableName = `alter_unique_${colName}`;
-      const schemaRV1 = InitiateSchema(tableName);
-      schemaRV1.columns = {
+      const tableRV1 = InitiateTable(tableName);
+      tableRV1.columns = {
         id: {
           ...createTestColumn(ColumnType.INTEGER),
           isPrimary: true,
@@ -51,25 +51,25 @@ describe('Unique Constraint', () => {
         createdAt: createTestColumn(ColumnType.DATE),
       };
       // Set unique to false
-      schemaRV1.columns[colName].isUnique = false;
-      await driver.setState([schemaRV1]);
+      tableRV1.columns[colName].isUnique = false;
+      await driver.setState([tableRV1]);
 
-      expect(schemaRV1).toStrictEqual((await driver.readState([tableName]))[0]);
+      expect(tableRV1).toStrictEqual((await driver.readState([tableName]))[0]);
 
-      const schemaRV2 = cloneDeep(schemaRV1);
+      const tableRV2 = cloneDeep(tableRV1);
       // Change the unique
-      schemaRV2.columns[colName].isUnique = true;
-      await driver.setState([schemaRV2]);
+      tableRV2.columns[colName].isUnique = true;
+      await driver.setState([tableRV2]);
 
-      expect(schemaRV2).toStrictEqual((await driver.readState([tableName]))[0]);
+      expect(tableRV2).toStrictEqual((await driver.readState([tableName]))[0]);
 
-      const schemaRV3 = cloneDeep(schemaRV2);
+      const tableRV3 = cloneDeep(tableRV2);
       // Revert the unique
-      schemaRV3.columns[colName].isUnique = false;
+      tableRV3.columns[colName].isUnique = false;
 
-      await driver.setState([schemaRV3]);
+      await driver.setState([tableRV3]);
 
-      expect(schemaRV3).toStrictEqual((await driver.readState([tableName]))[0]);
+      expect(tableRV3).toStrictEqual((await driver.readState([tableName]))[0]);
     },
   );
 
@@ -79,8 +79,8 @@ describe('Unique Constraint', () => {
       const tableName = `unique_test_comp_${columnKey}`;
       const uniqueName = `unique_pair_${columnKey}`;
 
-      const schema = InitiateSchema(tableName);
-      schema.columns = {
+      const table = InitiateTable(tableName);
+      table.columns = {
         [columnKey]: uniqueCols[columnKey],
         pair_for_comp: {
           ...createTestColumn(ColumnType.BIGINT),
@@ -88,59 +88,59 @@ describe('Unique Constraint', () => {
       };
 
       // Ensure the column is not unique
-      schema.columns[columnKey].isUnique = false;
+      table.columns[columnKey].isUnique = false;
 
       // Create the composite unique
-      schema.uniques = {
+      table.uniques = {
         [uniqueName]: {
           columns: [columnKey, 'pair_for_comp'],
         },
       };
-      await driver.setState([schema]);
+      await driver.setState([table]);
 
-      expect(schema).toStrictEqual((await driver.readState([tableName]))[0]);
+      expect(table).toStrictEqual((await driver.readState([tableName]))[0]);
     },
   );
 
   test('should alter between compound unique states', async () => {
     const tableName = 'unique_test_upgrade';
-    const schemaRV1 = InitiateSchema(tableName);
-    schemaRV1.columns = {
+    const tableRV1 = InitiateTable(tableName);
+    tableRV1.columns = {
       col_1: {
         ...createTestColumn(ColumnType.INTEGER),
         isUnique: true,
       },
       col_2: createTestColumn(ColumnType.INTEGER),
     };
-    await driver.setState([schemaRV1]);
+    await driver.setState([tableRV1]);
 
     console.log('READ STATE', (await driver.readState([tableName]))[0]);
 
-    expect((await driver.readState([tableName]))[0]).toStrictEqual(schemaRV1);
+    expect((await driver.readState([tableName]))[0]).toStrictEqual(tableRV1);
 
     // Set the second column as unique to convert the index into a composite one
-    const schemaRV2 = cloneDeep(schemaRV1);
-    schemaRV2.columns.col_1.isUnique = false;
-    schemaRV2.uniques.test_cmp_1 = {
+    const tableRV2 = cloneDeep(tableRV1);
+    tableRV2.columns.col_1.isUnique = false;
+    tableRV2.uniques.test_cmp_1 = {
       columns: ['col_1', 'col_2'],
     };
-    await driver.setState([schemaRV2]);
+    await driver.setState([tableRV2]);
 
-    expect(schemaRV2).toStrictEqual((await driver.readState([tableName]))[0]);
+    expect(tableRV2).toStrictEqual((await driver.readState([tableName]))[0]);
 
     // Create a new column and add it to the composite unique
-    const schemaRV3 = cloneDeep(schemaRV2);
-    schemaRV3.columns.col_3 = createTestColumn(ColumnType.INTEGER);
-    schemaRV3.uniques.test_cmp_1.columns.push('col_3');
-    await driver.setState([schemaRV3]);
+    const tableRV3 = cloneDeep(tableRV2);
+    tableRV3.columns.col_3 = createTestColumn(ColumnType.INTEGER);
+    tableRV3.uniques.test_cmp_1.columns.push('col_3');
+    await driver.setState([tableRV3]);
 
-    expect(schemaRV3).toStrictEqual((await driver.readState([tableName]))[0]);
+    expect(tableRV3).toStrictEqual((await driver.readState([tableName]))[0]);
 
     // Remove the composite unique
-    const schemaRV4 = cloneDeep(schemaRV3);
-    delete schemaRV4.uniques.test_cmp_1;
-    await driver.setState([schemaRV4]);
+    const tableRV4 = cloneDeep(tableRV3);
+    delete tableRV4.uniques.test_cmp_1;
+    await driver.setState([tableRV4]);
 
-    expect(schemaRV4).toStrictEqual((await driver.readState([tableName]))[0]);
+    expect(tableRV4).toStrictEqual((await driver.readState([tableName]))[0]);
   });
 });

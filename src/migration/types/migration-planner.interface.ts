@@ -1,9 +1,9 @@
-import { ISchema } from '../../schema';
+import { ITable } from '../../table';
 import { IMigrationContext } from './migration-context.interface';
 
 export interface IMigrationPlanner {
   readonly ctx: IMigrationContext;
 
-  createTable(schema: ISchema): Promise<void>;
-  alterTable(schema: ISchema): Promise<void>;
+  createTable(table: ITable): Promise<void>;
+  alterTable(table: ITable): Promise<void>;
 }

@@ -1,28 +1,28 @@
 import cloneDeep from 'lodash.clonedeep';
-import { ISchema } from '../schema';
+import { ITable } from '../table';
 
-export const stripMeta = (schema: ISchema) => {
-  schema = cloneDeep(schema);
+export const stripMeta = (table: ITable) => {
+  table = cloneDeep(table);
 
-  delete schema.meta;
+  delete table.meta;
 
-  for (const columnRef in schema.columns) {
-    delete schema.columns[columnRef].meta;
-    delete schema.columns[columnRef].propertyName;
+  for (const columnRef in table.columns) {
+    delete table.columns[columnRef].meta;
+    delete table.columns[columnRef].propertyName;
   }
 
-  for (const uniqueName in schema.uniques) {
-    delete schema.uniques[uniqueName].meta;
+  for (const uniqueName in table.uniques) {
+    delete table.uniques[uniqueName].meta;
   }
 
-  for (const indexName in schema.indexes) {
-    delete schema.indexes[indexName].meta;
+  for (const indexName in table.indexes) {
+    delete table.indexes[indexName].meta;
   }
 
-  for (const relName in schema.relations) {
-    delete schema.relations[relName].meta;
-    delete schema.relations[relName].propertyName;
+  for (const relName in table.relations) {
+    delete table.relations[relName].meta;
+    delete table.relations[relName].propertyName;
   }
 
-  return schema;
+  return table;
 };

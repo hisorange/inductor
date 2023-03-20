@@ -3,11 +3,11 @@ import {
   ColumnType,
   IColumn,
   IndexType,
-  InitiateSchema,
+  InitiateTable,
   IRelation,
-  ISchema,
-  ValidateSchema,
-} from '../schema';
+  ITable,
+  ValidateTable,
+} from '../table';
 import { ColumnTools } from '../tools/column-tools';
 import { commentDecode } from '../tools/comment.coder';
 import { Reflector } from './reflector';
@@ -30,15 +30,15 @@ export class Reflection implements IReflection {
 
   constructor(protected reflector: Reflector) {}
 
-  getSchemaForTable(tableName: string): ISchema {
-    const schema = InitiateSchema(tableName);
-    schema.relations = this.getTableForeignKeys(tableName);
-    schema.uniques = this.getTableUniques(tableName);
-    schema.indexes = this.getTableIndexes(tableName);
+  getTableState(tableName: string): ITable {
+    const table = InitiateTable(tableName);
+    table.relations = this.getTableForeignKeys(tableName);
+    table.uniques = this.getTableUniques(tableName);
+    table.indexes = this.getTableIndexes(tableName);
 
     // Check if the table is unlogged
     if (this.facts.unloggedTables.includes(tableName)) {
-      schema.isLogged = false;
+      table.isLogged = false;
     }
 
     const compositePrimaryKeys = this.getTablePrimaryKeys(tableName);
@@ -49,26 +49,26 @@ export class Reflection implements IReflection {
     const singleColumnUniques = new Set<string>();
 
     // Remove non-composite indexes
-    for (const index in schema.indexes) {
-      if (Object.prototype.hasOwnProperty.call(schema.indexes, index)) {
-        const definition = schema.indexes[index];
+    for (const index in table.indexes) {
+      if (Object.prototype.hasOwnProperty.call(table.indexes, index)) {
+        const definition = table.indexes[index];
 
         if (definition.columns.length === 1) {
           singleColumnIndexes.set(definition.columns[0], definition.type);
 
-          delete schema.indexes[index];
+          delete table.indexes[index];
         }
       }
     }
 
     // Remove non-composite uniques
-    for (const constraint in schema.uniques) {
-      if (Object.prototype.hasOwnProperty.call(schema.uniques, constraint)) {
-        const definition = schema.uniques[constraint];
+    for (const constraint in table.uniques) {
+      if (Object.prototype.hasOwnProperty.call(table.uniques, constraint)) {
+        const definition = table.uniques[constraint];
 
         if (definition.columns.length < 2) {
           singleColumnUniques.add(definition.columns[0]);
-          delete schema.uniques[constraint];
+          delete table.uniques[constraint];
         }
       }
     }
@@ -190,12 +190,12 @@ export class Reflection implements IReflection {
         }
       }
 
-      schema.columns[columnName] = columnDef;
+      table.columns[columnName] = columnDef;
     }
 
-    ValidateSchema(schema);
+    ValidateTable(table);
 
-    return schema;
+    return table;
   }
 
   isTypeExists(name: string): boolean {
@@ -210,7 +210,7 @@ export class Reflection implements IReflection {
     if (!this.facts.tableRowChecks.has(table)) {
       this.facts.tableRowChecks.set(
         table,
-        await this.reflector.isTableHasRows(table),
+        await this.reflector.doesTableHasRows(table),
       );
     }
 
@@ -285,13 +285,13 @@ export class Reflection implements IReflection {
       : [];
   }
 
-  getTableUniques(table: string): ISchema['uniques'] {
+  getTableUniques(table: string): ITable['uniques'] {
     return this.facts.uniques.hasOwnProperty(table)
       ? this.facts.uniques[table]
       : {};
   }
 
-  getTableIndexes(table: string): ISchema['indexes'] {
+  getTableIndexes(table: string): ITable['indexes'] {
     return this.facts.indexes.hasOwnProperty(table)
       ? this.facts.indexes[table]
       : {};
@@ -314,7 +314,7 @@ export class Reflection implements IReflection {
       : {};
   }
 
-  getTableForeignKeys(table: string): ISchema['relations'] {
+  getTableForeignKeys(table: string): ITable['relations'] {
     return this.facts.relations.hasOwnProperty(table)
       ? this.facts.relations[table]
       : {};

@@ -1,6 +1,6 @@
 import { ColumnType } from '../src';
-import { InitiateSchema } from '../src/schema/initiator';
-import { ColumnCapability } from '../src/schema/types/column.capability';
+import { InitiateTable } from '../src/table/initiator';
+import { ColumnCapability } from '../src/table/types/column.capability';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
 
@@ -19,8 +19,8 @@ describe('Capabilities', () => {
     async (ref: string, cap: ColumnCapability) => {
       const tableName = `capability_${ref}`;
 
-      const schema = InitiateSchema(tableName);
-      schema.columns = {
+      const table = InitiateTable(tableName);
+      table.columns = {
         primary_column: {
           ...createTestColumn(ColumnType.SERIAL),
           isPrimary: true,
@@ -32,14 +32,14 @@ describe('Capabilities', () => {
       };
 
       if (cap !== ColumnCapability.CREATED_AT) {
-        schema.columns.cappedColumn.capabilities.push(
+        table.columns.cappedColumn.capabilities.push(
           ColumnCapability.CREATED_AT,
         );
       }
 
-      // Remove schema if exists from a previous test
-      await driver.setState([schema]);
-      expect(schema).toStrictEqual((await driver.readState([tableName]))[0]);
+      // Remove table if exists from a previous test
+      await driver.setState([table]);
+      expect(table).toStrictEqual((await driver.readState([tableName]))[0]);
 
       await driver.migrator.dropTable(tableName);
     },

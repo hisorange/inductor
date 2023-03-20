@@ -1,5 +1,5 @@
 import { ColumnType, IndexType } from '../src';
-import { InitiateSchema } from '../src/schema/initiator';
+import { InitiateTable } from '../src/table/initiator';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
 
@@ -25,8 +25,8 @@ describe('Column Indexing', () => {
     ) => {
       const tableName = `column_index_${tableSuffix}`;
 
-      const schema = InitiateSchema(tableName);
-      schema.columns = {
+      const table = InitiateTable(tableName);
+      table.columns = {
         primary_column: {
           ...createTestColumn(ColumnType.SERIAL),
           isPrimary: true,
@@ -41,11 +41,11 @@ describe('Column Indexing', () => {
         },
       };
 
-      // Remove schema if exists from a previous test
+      // Remove table if exists from a previous test
       await driver.migrator.dropTable(tableName);
-      await driver.setState([schema]);
+      await driver.setState([table]);
 
-      expect((await driver.readState([tableName]))[0]).toStrictEqual(schema);
+      expect((await driver.readState([tableName]))[0]).toStrictEqual(table);
 
       // Cleanup
       await driver.migrator.dropTable(tableName);

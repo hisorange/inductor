@@ -39,7 +39,6 @@ await driver.setState([
   {
     name: 'my_table',
     isLogged: true,
-    kind: SchemaKind.TABLE,
     columns: {
       id: {
         kind: ColumnKind.COLUMN,

@@ -8,16 +8,16 @@ import { IStepResult } from '../migration/types/step-result.interface';
 import { Reflection } from '../reflection/reflection';
 import { Reflector } from '../reflection/reflector';
 import { IReflection } from '../reflection/types';
-import { ISchema, SchemaMap, ValidateSchema } from '../schema';
+import { ITable, TableMap, ValidateTable } from '../table';
 import { ColumnTools } from '../tools/column-tools';
 import { IDatabase } from './types/database.interface';
 import { IDriver } from './types/driver.interface';
 
 export class Driver implements IDriver {
   /**
-   * Associated schemas with the connection
+   * Associated tables with the connection
    */
-  protected schemas: SchemaMap = new Map();
+  protected tableMap: TableMap = new Map();
 
   readonly id: string = Date.now().toString(36);
   readonly migrator: Migrator;
@@ -48,14 +48,14 @@ export class Driver implements IDriver {
     this.reflection = new Reflection(new Reflector(this.knex));
     this.migrator = new Migrator(this.logger, this.knex, this.reflection);
 
-    this.updateBluprintMap(database.schemas);
+    this.updateTableMap(database.tables);
   }
 
   /**
-   * Convert the schema into a model class.
+   * Convert the table into a model class.
    */
-  protected toModel(schema: ISchema): ModelClass<Model> {
-    ValidateSchema(schema);
+  protected toModel(table: ITable): ModelClass<Model> {
+    ValidateTable(table);
 
     // Prepare fast lookup maps for both propery and column name conversions.
     // Even tho this is a small amount of data, it's worth it to avoid
@@ -63,9 +63,9 @@ export class Driver implements IDriver {
     const columnMap = new Map<string, string>();
     const propertyMap = new Map<string, string>();
 
-    for (const columnName in schema.columns) {
-      if (Object.prototype.hasOwnProperty.call(schema.columns, columnName)) {
-        const columnDefinition = schema.columns[columnName];
+    for (const columnName in table.columns) {
+      if (Object.prototype.hasOwnProperty.call(table.columns, columnName)) {
+        const columnDefinition = table.columns[columnName];
 
         const propertyName = columnDefinition?.propertyName ?? columnName;
 
@@ -108,8 +108,8 @@ export class Driver implements IDriver {
 
     const model = class extends Model {};
 
-    model.tableName = schema.tableName;
-    model.idColumn = ColumnTools.filterPrimary(schema);
+    model.tableName = table.name;
+    model.idColumn = ColumnTools.filterPrimary(table);
 
     model.columnNameMappers = {
       parse: databaseToModel,
@@ -125,65 +125,62 @@ export class Driver implements IDriver {
     return model;
   }
 
-  compareState(schemas: ISchema[]): Promise<IMigrationPlan> {
-    return this.migrator.compareDatabaseState(schemas);
+  compareState(tables: ITable[]): Promise<IMigrationPlan> {
+    return this.migrator.compareDatabaseState(tables);
   }
 
-  async setState(schemas: ISchema[]): Promise<IStepResult[]> {
-    return this.compareState(schemas)
+  async setState(tables: ITable[]): Promise<IStepResult[]> {
+    return this.compareState(tables)
       .then(plan => plan.execute())
       .then(result => {
-        this.updateBluprintMap(schemas);
+        this.updateTableMap(tables);
 
         return result;
       });
   }
 
-  protected updateBluprintMap(schemas: ISchema[]) {
-    schemas.forEach(b => {
+  protected updateTableMap(tables: ITable[]) {
+    tables.forEach(b => {
       for (const columnName in b.columns) {
         b.columns[columnName].capabilities.sort((a, b) => a - b);
       }
     });
 
-    this.schemas = new Map(
-      schemas.map(schema => [
-        schema.tableName,
+    this.tableMap = new Map(
+      tables.map(table => [
+        table.name,
         {
-          schema,
-          model: this.toModel(schema),
+          table,
+          model: this.toModel(table),
         },
       ]),
     );
   }
 
-  async readState(filters: string[] = []): Promise<ISchema[]> {
-    const currentState = await this.migrator.readDatabaseState(filters);
-
-    this.updateBluprintMap(currentState);
-
-    return currentState;
+  async readState(filters: string[] = []): Promise<ITable[]> {
+    return this.migrator.readDatabaseState(filters).then(state => {
+      this.updateTableMap(state);
+      return state;
+    });
   }
 
   getModel<T extends Model = Model>(table: string): ModelClass<T> {
-    if (!this.schemas.has(table)) {
+    if (!this.tableMap.has(table)) {
       throw new ModelNotFound(table);
     }
 
-    return this.schemas.get(table)!.model as ModelClass<T>;
+    return this.tableMap.get(table)!.model as ModelClass<T>;
   }
 
   closeConnection() {
     return this.knex.destroy();
   }
 
-  getSchemas(): ISchema[] {
-    return Array.from(this.schemas.values()).map(
-      ({ schema: schema }) => schema,
-    );
+  getTableDescriptors(): ITable[] {
+    return Array.from(this.tableMap.values()).map(({ table: table }) => table);
   }
 
   getModels(): ModelClass<Model>[] {
-    return Array.from(this.schemas.values()).map(({ model }) => model);
+    return Array.from(this.tableMap.values()).map(({ model }) => model);
   }
 }

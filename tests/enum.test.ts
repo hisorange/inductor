@@ -1,6 +1,6 @@
 import cloneDeep from 'lodash.clonedeep';
 import { ColumnKind, ColumnType, EnumColumnType, IColumn } from '../src';
-import { InitiateSchema } from '../src/schema/initiator';
+import { InitiateTable } from '../src/table/initiator';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
 
@@ -19,8 +19,8 @@ describe('Enumerated Column', () => {
       const columnName = `enum_${setType}`;
       const tableName = `enum_col_${setType}`;
 
-      const schema = InitiateSchema(tableName);
-      schema.columns = {
+      const table = InitiateTable(tableName);
+      table.columns = {
         primary_column: {
           ...createTestColumn(ColumnType.SERIAL),
           isPrimary: true,
@@ -35,25 +35,25 @@ describe('Enumerated Column', () => {
       // RegTypes are failing when the native typename contains upper case letters
       // But we map it back from the internal lowercase aliases
       (
-        schema.columns[columnName].type as EnumColumnType
+        table.columns[columnName].type as EnumColumnType
       ).nativeName = `enum_${setType}_CapitalHit`;
 
-      // Remove schema if exists from a previous test
-      await driver.migrator.dropSchema(schema);
-      await driver.setState([schema]);
+      // Remove table if exists from a previous test
+      await driver.migrator.dropTableDescriptor(table);
+      await driver.setState([table]);
 
-      expect((await driver.readState([tableName]))[0]).toStrictEqual(schema);
+      expect((await driver.readState([tableName]))[0]).toStrictEqual(table);
 
       // Cleanup
-      await driver.migrator.dropSchema(schema);
+      await driver.migrator.dropTableDescriptor(table);
     },
   );
 
   // We will change an enumeration values and check if the change is reflected in the database
   test.skip('should change an enumeration value', async () => {
     const tableName = 'enum_change_v1';
-    const schemaV1 = InitiateSchema(tableName);
-    schemaV1.columns = {
+    const tableV1 = InitiateTable(tableName);
+    tableV1.columns = {
       primary_column: {
         ...createTestColumn(ColumnType.SERIAL),
       },
@@ -74,17 +74,17 @@ describe('Enumerated Column', () => {
     };
 
     await driver.migrator.dropTable(tableName);
-    await driver.setState([schemaV1]);
-    expect((await driver.readState([tableName]))[0]).toStrictEqual(schemaV1);
+    await driver.setState([tableV1]);
+    expect((await driver.readState([tableName]))[0]).toStrictEqual(tableV1);
 
-    const schemaV2 = cloneDeep(schemaV1);
-    (schemaV2.columns.enum_column.type as EnumColumnType).values = [
+    const tableV2 = cloneDeep(tableV1);
+    (tableV2.columns.enum_column.type as EnumColumnType).values = [
       'a',
       'b',
       'd',
     ];
-    await driver.setState([schemaV2]);
+    await driver.setState([tableV2]);
 
-    expect((await driver.readState([tableName]))[0]).toStrictEqual(schemaV2);
+    expect((await driver.readState([tableName]))[0]).toStrictEqual(tableV2);
   });
 });
