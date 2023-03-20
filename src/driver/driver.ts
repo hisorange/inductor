@@ -1,5 +1,4 @@
 import knex, { Knex } from 'knex';
-import { nanoid } from 'nanoid';
 import { Model, ModelClass, Pojo } from 'objection';
 import pino, { Logger } from 'pino';
 import { ModelNotFound } from '../exception';
@@ -20,7 +19,7 @@ export class Driver implements IDriver {
    */
   protected schemas: SchemaMap = new Map();
 
-  readonly id: string = nanoid(8);
+  readonly id: string = Date.now().toString(36);
   readonly migrator: Migrator;
   readonly reflection: IReflection;
   readonly knex: Knex;
@@ -49,14 +48,14 @@ export class Driver implements IDriver {
     this.reflection = new Reflection(new Reflector(this.knex));
     this.migrator = new Migrator(this.logger, this.knex, this.reflection);
 
-    this.updateBluprintMap(database.blueprints);
+    this.updateBluprintMap(database.schemas);
   }
 
   /**
-   * Convert the blueprint into a model class.
+   * Convert the schema into a model class.
    */
-  protected toModel(blueprint: ISchema): ModelClass<Model> {
-    ValidateSchema(blueprint);
+  protected toModel(schema: ISchema): ModelClass<Model> {
+    ValidateSchema(schema);
 
     // Prepare fast lookup maps for both propery and column name conversions.
     // Even tho this is a small amount of data, it's worth it to avoid
@@ -64,9 +63,9 @@ export class Driver implements IDriver {
     const columnMap = new Map<string, string>();
     const propertyMap = new Map<string, string>();
 
-    for (const columnName in blueprint.columns) {
-      if (Object.prototype.hasOwnProperty.call(blueprint.columns, columnName)) {
-        const columnDefinition = blueprint.columns[columnName];
+    for (const columnName in schema.columns) {
+      if (Object.prototype.hasOwnProperty.call(schema.columns, columnName)) {
+        const columnDefinition = schema.columns[columnName];
 
         const propertyName = columnDefinition?.propertyName ?? columnName;
 
@@ -109,8 +108,8 @@ export class Driver implements IDriver {
 
     const model = class extends Model {};
 
-    model.tableName = blueprint.tableName;
-    model.idColumn = ColumnTools.filterPrimary(blueprint);
+    model.tableName = schema.tableName;
+    model.idColumn = ColumnTools.filterPrimary(schema);
 
     model.columnNameMappers = {
       parse: databaseToModel,
@@ -126,15 +125,15 @@ export class Driver implements IDriver {
     return model;
   }
 
-  compareState(blueprints: ISchema[]): Promise<IMigrationPlan> {
-    return this.migrator.compareDatabaseState(blueprints);
+  compareState(schemas: ISchema[]): Promise<IMigrationPlan> {
+    return this.migrator.compareDatabaseState(schemas);
   }
 
-  async setState(blueprints: ISchema[]): Promise<IStepResult[]> {
-    return this.compareState(blueprints)
+  async setState(schemas: ISchema[]): Promise<IStepResult[]> {
+    return this.compareState(schemas)
       .then(plan => plan.execute())
       .then(result => {
-        this.updateBluprintMap(blueprints);
+        this.updateBluprintMap(schemas);
 
         return result;
       });
@@ -178,9 +177,9 @@ export class Driver implements IDriver {
     return this.knex.destroy();
   }
 
-  getBlueprints(): ISchema[] {
+  getSchemas(): ISchema[] {
     return Array.from(this.schemas.values()).map(
-      ({ schema: blueprint }) => blueprint,
+      ({ schema: schema }) => schema,
     );
   }
 

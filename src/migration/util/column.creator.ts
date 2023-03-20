@@ -10,7 +10,7 @@ export const createColumn = (
   tableBuilder: Knex.CreateTableBuilder,
   name: string,
   column: IColumn,
-  blueprint: ISchema,
+  schema: ISchema,
   facts: IReflection,
 ) => {
   let columnBuilder: Knex.PostgreSqlColumnBuilder;
@@ -60,7 +60,7 @@ export const createColumn = (
   }
 
   // Add primary constraint, only if this is the only primary column
-  if (column.isPrimary && ColumnTools.filterPrimary(blueprint).length === 1) {
+  if (column.isPrimary && ColumnTools.filterPrimary(schema).length === 1) {
     columnBuilder.primary();
   }
 

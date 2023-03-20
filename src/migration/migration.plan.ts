@@ -41,7 +41,6 @@ export class MigrationPlan implements IMigrationPlan {
       for (const [idx, step] of this.steps
         .sort((a, b) => (a.phase > b.phase ? 0 : -1))
         .entries()) {
-        const startedAt = Date.now();
         const sql = step.query.toString();
 
         if (sql.length) {

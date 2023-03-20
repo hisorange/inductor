@@ -46,7 +46,7 @@ export interface IReflection {
     };
   };
 
-  getBlueprintForTable(table: string): ISchema;
+  getSchemaForTable(table: string): ISchema;
 
   // Add live changes
   addTable(tableName: string): void;

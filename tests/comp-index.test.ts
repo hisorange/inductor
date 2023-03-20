@@ -28,15 +28,15 @@ describe('Composite Indexing', () => {
       )}`;
       const indexName = `${tableName}_${columnSafeType}_${indexType}`;
 
-      const blueprint = InitiateSchema(tableName);
-      blueprint.indexes = {
+      const schema = InitiateSchema(tableName);
+      schema.indexes = {
         [indexName]: {
           type: indexType,
           columns: ['pair_column', `${columnSafeType}_column`],
         },
       };
 
-      blueprint.columns = {
+      schema.columns = {
         primary_column: {
           ...createTestColumn(ColumnType.SERIAL),
           isPrimary: true,
@@ -57,14 +57,14 @@ describe('Composite Indexing', () => {
         },
       };
 
-      // Remove blueprint if exists from a previous test
-      await driver.migrator.dropBlueprint(blueprint);
-      await driver.setState([blueprint]);
+      // Remove schema if exists from a previous test
+      await driver.migrator.dropSchema(schema);
+      await driver.setState([schema]);
 
-      expect((await driver.readState([tableName]))[0]).toStrictEqual(blueprint);
+      expect((await driver.readState([tableName]))[0]).toStrictEqual(schema);
 
       // Cleanup
-      await driver.migrator.dropBlueprint(blueprint);
+      await driver.migrator.dropSchema(schema);
     },
   );
 });

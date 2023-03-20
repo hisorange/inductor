@@ -12,7 +12,7 @@ export const createTestDriver = (filters: string[] = []): IDriver => {
       password: 'inductor',
     },
     isReadOnly: false,
-    blueprints: [],
+    schemas: [],
     filters: filters,
   };
 

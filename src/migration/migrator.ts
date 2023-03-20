@@ -16,20 +16,20 @@ export class Migrator {
   ) {}
 
   /**
-   * Read the database state and return it as a list of blueprints.
+   * Read the database state and return it as a list of schemas.
    */
   async readDatabaseState(filters: string[] = []): Promise<ISchema[]> {
-    const blueprints = [];
+    const schemas = [];
     await this.factManager.updateFacts();
 
     for (const table of this.factManager.getTables(filters)) {
-      blueprints.push(this.factManager.getBlueprintForTable(table));
+      schemas.push(this.factManager.getSchemaForTable(table));
     }
 
-    return blueprints;
+    return schemas;
   }
 
-  async compareDatabaseState(blueprints: ISchema[]): Promise<IMigrationPlan> {
+  async compareDatabaseState(schemas: ISchema[]): Promise<IMigrationPlan> {
     const ctx: IMigrationContext = {
       knex: this.knex,
       factManager: this.factManager,
@@ -40,15 +40,15 @@ export class Migrator {
     const planner = new MigrationPlanner(ctx);
 
     await Promise.all(
-      blueprints.map(blueprint => {
-        if (blueprint.kind === SchemaKind.TABLE) {
+      schemas.map(schema => {
+        if (schema.kind === SchemaKind.TABLE) {
           // If the table doesn't exist, create it
-          if (!this.factManager.isTableExists(blueprint.tableName)) {
-            return planner.createTable(blueprint);
+          if (!this.factManager.isTableExists(schema.tableName)) {
+            return planner.createTable(schema);
           }
           // If the table exists, compare the state and apply the alterations
           else {
-            return planner.alterTable(blueprint);
+            return planner.alterTable(schema);
           }
         }
       }),
@@ -57,8 +57,8 @@ export class Migrator {
     return ctx.migrationPlan;
   }
 
-  async dropBlueprint(blueprint: ISchema): Promise<void> {
-    await this.dropTable(blueprint.tableName);
+  async dropSchema(schema: ISchema): Promise<void> {
+    await this.dropTable(schema.tableName);
   }
 
   async dropTable(tableName: string): Promise<void> {

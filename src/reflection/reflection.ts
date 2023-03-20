@@ -30,15 +30,15 @@ export class Reflection implements IReflection {
 
   constructor(protected reflector: Reflector) {}
 
-  getBlueprintForTable(tableName: string): ISchema {
-    const blueprint = InitiateSchema(tableName);
-    blueprint.relations = this.getTableForeignKeys(tableName);
-    blueprint.uniques = this.getTableUniques(tableName);
-    blueprint.indexes = this.getTableIndexes(tableName);
+  getSchemaForTable(tableName: string): ISchema {
+    const schema = InitiateSchema(tableName);
+    schema.relations = this.getTableForeignKeys(tableName);
+    schema.uniques = this.getTableUniques(tableName);
+    schema.indexes = this.getTableIndexes(tableName);
 
     // Check if the table is unlogged
     if (this.facts.unloggedTables.includes(tableName)) {
-      blueprint.isLogged = false;
+      schema.isLogged = false;
     }
 
     const compositePrimaryKeys = this.getTablePrimaryKeys(tableName);
@@ -49,26 +49,26 @@ export class Reflection implements IReflection {
     const singleColumnUniques = new Set<string>();
 
     // Remove non-composite indexes
-    for (const index in blueprint.indexes) {
-      if (Object.prototype.hasOwnProperty.call(blueprint.indexes, index)) {
-        const definition = blueprint.indexes[index];
+    for (const index in schema.indexes) {
+      if (Object.prototype.hasOwnProperty.call(schema.indexes, index)) {
+        const definition = schema.indexes[index];
 
         if (definition.columns.length === 1) {
           singleColumnIndexes.set(definition.columns[0], definition.type);
 
-          delete blueprint.indexes[index];
+          delete schema.indexes[index];
         }
       }
     }
 
     // Remove non-composite uniques
-    for (const constraint in blueprint.uniques) {
-      if (Object.prototype.hasOwnProperty.call(blueprint.uniques, constraint)) {
-        const definition = blueprint.uniques[constraint];
+    for (const constraint in schema.uniques) {
+      if (Object.prototype.hasOwnProperty.call(schema.uniques, constraint)) {
+        const definition = schema.uniques[constraint];
 
         if (definition.columns.length < 2) {
           singleColumnUniques.add(definition.columns[0]);
-          delete blueprint.uniques[constraint];
+          delete schema.uniques[constraint];
         }
       }
     }
@@ -190,12 +190,12 @@ export class Reflection implements IReflection {
         }
       }
 
-      blueprint.columns[columnName] = columnDef;
+      schema.columns[columnName] = columnDef;
     }
 
-    ValidateSchema(blueprint);
+    ValidateSchema(schema);
 
-    return blueprint;
+    return schema;
   }
 
   isTypeExists(name: string): boolean {

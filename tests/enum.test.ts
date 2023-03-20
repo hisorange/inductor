@@ -19,8 +19,8 @@ describe('Enumerated Column', () => {
       const columnName = `enum_${setType}`;
       const tableName = `enum_col_${setType}`;
 
-      const blueprint = InitiateSchema(tableName);
-      blueprint.columns = {
+      const schema = InitiateSchema(tableName);
+      schema.columns = {
         primary_column: {
           ...createTestColumn(ColumnType.SERIAL),
           isPrimary: true,
@@ -35,25 +35,25 @@ describe('Enumerated Column', () => {
       // RegTypes are failing when the native typename contains upper case letters
       // But we map it back from the internal lowercase aliases
       (
-        blueprint.columns[columnName].type as EnumColumnType
+        schema.columns[columnName].type as EnumColumnType
       ).nativeName = `enum_${setType}_CapitalHit`;
 
-      // Remove blueprint if exists from a previous test
-      await driver.migrator.dropBlueprint(blueprint);
-      await driver.setState([blueprint]);
+      // Remove schema if exists from a previous test
+      await driver.migrator.dropSchema(schema);
+      await driver.setState([schema]);
 
-      expect((await driver.readState([tableName]))[0]).toStrictEqual(blueprint);
+      expect((await driver.readState([tableName]))[0]).toStrictEqual(schema);
 
       // Cleanup
-      await driver.migrator.dropBlueprint(blueprint);
+      await driver.migrator.dropSchema(schema);
     },
   );
 
   // We will change an enumeration values and check if the change is reflected in the database
   test.skip('should change an enumeration value', async () => {
     const tableName = 'enum_change_v1';
-    const blueprintV1 = InitiateSchema(tableName);
-    blueprintV1.columns = {
+    const schemaV1 = InitiateSchema(tableName);
+    schemaV1.columns = {
       primary_column: {
         ...createTestColumn(ColumnType.SERIAL),
       },
@@ -74,17 +74,17 @@ describe('Enumerated Column', () => {
     };
 
     await driver.migrator.dropTable(tableName);
-    await driver.setState([blueprintV1]);
-    expect((await driver.readState([tableName]))[0]).toStrictEqual(blueprintV1);
+    await driver.setState([schemaV1]);
+    expect((await driver.readState([tableName]))[0]).toStrictEqual(schemaV1);
 
-    const blueprintV2 = cloneDeep(blueprintV1);
-    (blueprintV2.columns.enum_column.type as EnumColumnType).values = [
+    const schemaV2 = cloneDeep(schemaV1);
+    (schemaV2.columns.enum_column.type as EnumColumnType).values = [
       'a',
       'b',
       'd',
     ];
-    await driver.setState([blueprintV2]);
+    await driver.setState([schemaV2]);
 
-    expect((await driver.readState([tableName]))[0]).toStrictEqual(blueprintV2);
+    expect((await driver.readState([tableName]))[0]).toStrictEqual(schemaV2);
   });
 });

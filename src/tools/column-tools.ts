@@ -179,13 +179,13 @@ const _ColumnTools = {
   },
 };
 
-// Find and filter the primary column names from the blueprint
-export const filterPrimary = (blueprint: ISchema) => {
+// Find and filter the primary column names from the schema
+export const filterPrimary = (schema: ISchema) => {
   const primaries = [];
 
-  for (const colName in blueprint.columns) {
-    if (Object.prototype.hasOwnProperty.call(blueprint.columns, colName)) {
-      const colDef = blueprint.columns[colName];
+  for (const colName in schema.columns) {
+    if (Object.prototype.hasOwnProperty.call(schema.columns, colName)) {
+      const colDef = schema.columns[colName];
 
       if (colDef.isPrimary) {
         primaries.push(colName);

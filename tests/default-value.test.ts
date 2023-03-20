@@ -37,8 +37,8 @@ describe('Default Value', () => {
         '',
       )}_${valueType}`;
 
-      const blueprint = InitiateSchema(tableName);
-      blueprint.columns = {
+      const schema = InitiateSchema(tableName);
+      schema.columns = {
         test_column: {
           ...createTestColumn(columnType),
           defaultValue,
@@ -46,14 +46,14 @@ describe('Default Value', () => {
         },
       };
 
-      // Remove blueprint if exists from a previous test
-      await driver.migrator.dropBlueprint(blueprint);
-      await driver.setState([blueprint]);
+      // Remove schema if exists from a previous test
+      await driver.migrator.dropSchema(schema);
+      await driver.setState([schema]);
 
-      expect((await driver.readState([tableName]))[0]).toStrictEqual(blueprint);
+      expect((await driver.readState([tableName]))[0]).toStrictEqual(schema);
 
       // Cleanup
-      await driver.migrator.dropBlueprint(blueprint);
+      await driver.migrator.dropSchema(schema);
     },
   );
 });

@@ -33,7 +33,7 @@ export interface IRelation<RelationMeta = unknown> {
   onUpdate: ForeignAction;
 
   /**
-   * Associated metadata with the blueprint
+   * Associated metadata with the schema
    */
   meta?: RelationMeta;
 }

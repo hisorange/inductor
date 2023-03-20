@@ -9,28 +9,28 @@ describe('Unlogged Table', () => {
   test('should create an ulogged table', async () => {
     const tableName = `unlogged_table_1`;
 
-    const blueprint = InitiateSchema(tableName);
-    blueprint.isLogged = false;
+    const schema = InitiateSchema(tableName);
+    schema.isLogged = false;
 
-    // Remove blueprint if exists from a previous test
-    await driver.migrator.dropBlueprint(blueprint);
-    await driver.setState([blueprint]);
+    // Remove schema if exists from a previous test
+    await driver.migrator.dropSchema(schema);
+    await driver.setState([schema]);
 
-    expect((await driver.readState([tableName]))[0]).toStrictEqual(blueprint);
+    expect((await driver.readState([tableName]))[0]).toStrictEqual(schema);
 
     // Alter table to be logged
-    blueprint.isLogged = true;
-    await driver.setState([blueprint]);
+    schema.isLogged = true;
+    await driver.setState([schema]);
 
-    expect((await driver.readState([tableName]))[0]).toStrictEqual(blueprint);
+    expect((await driver.readState([tableName]))[0]).toStrictEqual(schema);
 
     // Alter table to be unlogged
-    blueprint.isLogged = false;
-    await driver.setState([blueprint]);
+    schema.isLogged = false;
+    await driver.setState([schema]);
 
-    expect((await driver.readState([tableName]))[0]).toStrictEqual(blueprint);
+    expect((await driver.readState([tableName]))[0]).toStrictEqual(schema);
 
     // Cleanup
-    await driver.migrator.dropBlueprint(blueprint);
+    await driver.migrator.dropSchema(schema);
   });
 });

@@ -19,8 +19,8 @@ describe('Capabilities', () => {
     async (ref: string, cap: ColumnCapability) => {
       const tableName = `capability_${ref}`;
 
-      const blueprint = InitiateSchema(tableName);
-      blueprint.columns = {
+      const schema = InitiateSchema(tableName);
+      schema.columns = {
         primary_column: {
           ...createTestColumn(ColumnType.SERIAL),
           isPrimary: true,
@@ -32,14 +32,14 @@ describe('Capabilities', () => {
       };
 
       if (cap !== ColumnCapability.CREATED_AT) {
-        blueprint.columns.cappedColumn.capabilities.push(
+        schema.columns.cappedColumn.capabilities.push(
           ColumnCapability.CREATED_AT,
         );
       }
 
-      // Remove blueprint if exists from a previous test
-      await driver.setState([blueprint]);
-      expect(blueprint).toStrictEqual((await driver.readState([tableName]))[0]);
+      // Remove schema if exists from a previous test
+      await driver.setState([schema]);
+      expect(schema).toStrictEqual((await driver.readState([tableName]))[0]);
 
       //await driver.migrationManager.dropTable(tableName);
     },

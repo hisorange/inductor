@@ -34,12 +34,12 @@ const driver = new Driver({
   filters: ['my_.+', 'wp_.+'],
 });
 
-// Apply the desired state, and the library will create or modify the databse to match the given blueprint
+// Apply the desired state, and the library will create or modify the databse to match the given schema
 await driver.setState([
   {
     name: 'my_table',
     isLogged: true,
-    kind: BlueprintKind.TABLE,
+    kind: SchemaKind.TABLE,
     columns: {
       id: {
         kind: ColumnKind.COLUMN,
@@ -120,9 +120,9 @@ My problem was very simple, I want the flexibility of a NoSQL database but I sti
 
 ### How is this achieved?
 
-Inductor reads the database to understand your current state, and then it compares it with the desired state to calculate what has to be done to achieve the given form. There is no magic in this, borring exceptions all over the place, blueprint diffentiations and basic translations.
+Inductor reads the database to understand your current state, and then it compares it with the desired state to calculate what has to be done to achieve the given form. There is no magic in this, borring exceptions all over the place, schema diffentiations and basic translations.
 
-For example you add a new "cart_value" column to your blueprint, inductor detects that the current table does not have this column and runs an alter table query to add it. The same goes for removing and changing.
+For example you add a new "cart_value" column to your schema, inductor detects that the current table does not have this column and runs an alter table query to add it. The same goes for removing and changing.
 
 Of course this is not a trivial deal, sometime there is a lot of analysis has to be done before the system can make the right decision, but the good side is, that as a programmer you had to go through those cases manually, and this system already understands complex changes like, you add a secondary primary key to your table, so it has to remove the old constraint which only contained a single column and create a new one with both column included.
 
@@ -136,8 +136,8 @@ At this moment only the PostgreSQL database is supported, over time I may add mo
 
 Gonna track the implemented and missing features with all the generic capabilities.
 
-- Create: Can create the feature from the blueprint
-- Read: Can read the state from the database into a blueprint
+- Create: Can create the feature from the schema
+- Read: Can read the state from the database into a schema
 - Update: Can modify the state
 - Delete: Can remove the feature from the database
 

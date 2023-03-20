@@ -10,8 +10,8 @@ describe('Able to handle new column risks', () => {
 
   test('should be able to create a new column with default value', async () => {
     const tableName = `new_column_test_with_def_42`;
-    const blueprintRV1 = InitiateSchema(tableName);
-    blueprintRV1.columns = {
+    const schemaRV1 = InitiateSchema(tableName);
+    schemaRV1.columns = {
       id: {
         ...createTestColumn(ColumnType.SERIAL),
         isPrimary: true,
@@ -19,34 +19,30 @@ describe('Able to handle new column risks', () => {
       name: createTestColumn(ColumnType.TEXT),
     };
 
-    await driver.setState([blueprintRV1]);
+    await driver.setState([schemaRV1]);
 
-    expect((await driver.readState([tableName]))[0]).toStrictEqual(
-      blueprintRV1,
-    );
+    expect((await driver.readState([tableName]))[0]).toStrictEqual(schemaRV1);
 
     const modelRV1 = driver.getModel(tableName);
     await modelRV1.query().insert({ name: 'duckling' });
 
-    const blueprintRV2 = cloneDeep(blueprintRV1);
-    blueprintRV2.columns['new_column'] = {
+    const schemaRV2 = cloneDeep(schemaRV1);
+    schemaRV2.columns['new_column'] = {
       ...createTestColumn(ColumnType.INTEGER),
       defaultValue: 42,
     };
 
-    await driver.setState([blueprintRV2]);
+    await driver.setState([schemaRV2]);
     const modelRV2 = driver.getModel(tableName);
     await modelRV2.query().insert({ name: 'lama' });
 
-    expect((await driver.readState([tableName]))[0]).toStrictEqual(
-      blueprintRV2,
-    );
+    expect((await driver.readState([tableName]))[0]).toStrictEqual(schemaRV2);
   });
 
   test('should be possible to create new column without default value with zero rows', async () => {
     const tableName = `new_column_test_w_defv`;
-    const blueprintRV1 = InitiateSchema(tableName);
-    blueprintRV1.columns = {
+    const schemaRV1 = InitiateSchema(tableName);
+    schemaRV1.columns = {
       id: {
         ...createTestColumn(ColumnType.SERIAL),
         isPrimary: true,
@@ -54,24 +50,22 @@ describe('Able to handle new column risks', () => {
       name: createTestColumn(ColumnType.TEXT),
     };
 
-    await driver.setState([blueprintRV1]);
+    await driver.setState([schemaRV1]);
 
-    expect((await driver.readState([tableName]))[0]).toStrictEqual(
-      blueprintRV1,
-    );
+    expect((await driver.readState([tableName]))[0]).toStrictEqual(schemaRV1);
 
-    const blueprintRV2 = cloneDeep(blueprintRV1);
-    blueprintRV2.columns['new_column_without_defv'] = createTestColumn(
+    const schemaRV2 = cloneDeep(schemaRV1);
+    schemaRV2.columns['new_column_without_defv'] = createTestColumn(
       ColumnType.INTEGER,
     );
 
-    await expect(driver.setState([blueprintRV2])).resolves.not.toThrow();
+    await expect(driver.setState([schemaRV2])).resolves.not.toThrow();
   });
 
   test('should be impossible to create new column without default value with non-zero rows', async () => {
     const tableName = `new_column_test_wo_defv`;
-    const blueprintRV1 = InitiateSchema(tableName);
-    blueprintRV1.columns = {
+    const schemaRV1 = InitiateSchema(tableName);
+    schemaRV1.columns = {
       id: {
         ...createTestColumn(ColumnType.SERIAL),
         isPrimary: true,
@@ -79,21 +73,19 @@ describe('Able to handle new column risks', () => {
       name: createTestColumn(ColumnType.TEXT),
     };
 
-    await driver.setState([blueprintRV1]);
+    await driver.setState([schemaRV1]);
 
-    expect((await driver.readState([tableName]))[0]).toStrictEqual(
-      blueprintRV1,
-    );
+    expect((await driver.readState([tableName]))[0]).toStrictEqual(schemaRV1);
 
     const modelRV1 = driver.getModel(tableName);
     await modelRV1.query().insert({ name: 'poc' });
 
-    const blueprintRV2 = cloneDeep(blueprintRV1);
-    blueprintRV2.columns['new_column_without_defv'] = createTestColumn(
+    const schemaRV2 = cloneDeep(schemaRV1);
+    schemaRV2.columns['new_column_without_defv'] = createTestColumn(
       ColumnType.INTEGER,
     );
 
-    await expect(driver.setState([blueprintRV2])).rejects.toBeInstanceOf(
+    await expect(driver.setState([schemaRV2])).rejects.toBeInstanceOf(
       ImpossibleMigration,
     );
   });

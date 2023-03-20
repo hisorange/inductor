@@ -47,16 +47,16 @@ describe('Primary Constraint', () => {
     'should create the PRIMARY flag for [%s] column',
     async colName => {
       const tableName = `create_primary_${colName}`;
-      const testBlueprint = InitiateSchema(tableName);
-      testBlueprint.columns = {
+      const testSchema = InitiateSchema(tableName);
+      testSchema.columns = {
         [colName]: {
           ...primaryColumns[colName],
           isPrimary: true,
         },
       };
-      await driver.setState([testBlueprint]);
+      await driver.setState([testSchema]);
 
-      expect(testBlueprint).toStrictEqual(
+      expect(testSchema).toStrictEqual(
         (await driver.readState([tableName]))[0],
       );
     },
@@ -66,8 +66,8 @@ describe('Primary Constraint', () => {
     'should alter the PRIMARY flag for [%s] column',
     async colName => {
       const tableName = `alter_primary_${colName}`;
-      const blueprintRV1 = InitiateSchema(tableName);
-      blueprintRV1.columns = {
+      const schemaRV1 = InitiateSchema(tableName);
+      schemaRV1.columns = {
         prefix: {
           ...createTestColumn(ColumnType.INTEGER),
         },
@@ -78,89 +78,73 @@ describe('Primary Constraint', () => {
         },
       };
 
-      blueprintRV1.columns[colName].isPrimary = false;
-      await driver.setState([blueprintRV1]);
+      schemaRV1.columns[colName].isPrimary = false;
+      await driver.setState([schemaRV1]);
 
-      expect(blueprintRV1).toStrictEqual(
-        (await driver.readState([tableName]))[0],
-      );
+      expect(schemaRV1).toStrictEqual((await driver.readState([tableName]))[0]);
 
-      const blueprintRV2 = cloneDeep(blueprintRV1);
-      blueprintRV2.columns[colName].isPrimary = true;
-      await driver.setState([blueprintRV2]);
+      const schemaRV2 = cloneDeep(schemaRV1);
+      schemaRV2.columns[colName].isPrimary = true;
+      await driver.setState([schemaRV2]);
 
-      expect(blueprintRV2).toStrictEqual(
-        (await driver.readState([tableName]))[0],
-      );
+      expect(schemaRV2).toStrictEqual((await driver.readState([tableName]))[0]);
 
-      const blueprintRV3 = cloneDeep(blueprintRV2);
+      const schemaRV3 = cloneDeep(schemaRV2);
       // Revert the nullable
-      blueprintRV3.columns[colName].isPrimary = false;
+      schemaRV3.columns[colName].isPrimary = false;
 
-      await driver.setState([blueprintRV3]);
+      await driver.setState([schemaRV3]);
 
-      expect(blueprintRV3).toStrictEqual(
-        (await driver.readState([tableName]))[0],
-      );
+      expect(schemaRV3).toStrictEqual((await driver.readState([tableName]))[0]);
     },
     5_000,
   );
 
   test('should add/remove the primary keys', async () => {
     const tableName = 'alter_primary_extend';
-    const blueprintRV1 = InitiateSchema(tableName);
-    blueprintRV1.columns = {
+    const schemaRV1 = InitiateSchema(tableName);
+    schemaRV1.columns = {
       first: {
         ...createTestColumn(ColumnType.INTEGER),
         isPrimary: true,
       },
     };
-    await driver.setState([blueprintRV1]);
+    await driver.setState([schemaRV1]);
 
-    expect(blueprintRV1).toStrictEqual(
-      (await driver.readState([tableName]))[0],
-    );
+    expect(schemaRV1).toStrictEqual((await driver.readState([tableName]))[0]);
 
     // Extend the primary
-    const blueprintRV2 = cloneDeep(blueprintRV1);
-    blueprintRV2.columns.second = {
+    const schemaRV2 = cloneDeep(schemaRV1);
+    schemaRV2.columns.second = {
       ...createTestColumn(ColumnType.INTEGER),
       isPrimary: true,
     };
-    await driver.setState([blueprintRV2]);
+    await driver.setState([schemaRV2]);
 
-    expect(blueprintRV2).toStrictEqual(
-      (await driver.readState([tableName]))[0],
-    );
+    expect(schemaRV2).toStrictEqual((await driver.readState([tableName]))[0]);
 
     // Add the third primary column
-    const blueprintRV3 = cloneDeep(blueprintRV2);
-    blueprintRV3.columns.third = {
+    const schemaRV3 = cloneDeep(schemaRV2);
+    schemaRV3.columns.third = {
       ...createTestColumn(ColumnType.INTEGER),
       isPrimary: true,
     };
-    await driver.setState([blueprintRV3]);
+    await driver.setState([schemaRV3]);
 
-    expect(blueprintRV3).toStrictEqual(
-      (await driver.readState([tableName]))[0],
-    );
+    expect(schemaRV3).toStrictEqual((await driver.readState([tableName]))[0]);
 
     // Remove the third primary column
-    const blueprintRV4 = cloneDeep(blueprintRV3);
-    blueprintRV4.columns.third.isPrimary = false;
-    await driver.setState([blueprintRV4]);
+    const schemaRV4 = cloneDeep(schemaRV3);
+    schemaRV4.columns.third.isPrimary = false;
+    await driver.setState([schemaRV4]);
 
-    expect(blueprintRV4).toStrictEqual(
-      (await driver.readState([tableName]))[0],
-    );
+    expect(schemaRV4).toStrictEqual((await driver.readState([tableName]))[0]);
 
     // Remove the second primary column
-    const blueprintRV5 = cloneDeep(blueprintRV4);
-    blueprintRV5.columns.second.isPrimary = false;
-    await driver.setState([blueprintRV5]);
+    const schemaRV5 = cloneDeep(schemaRV4);
+    schemaRV5.columns.second.isPrimary = false;
+    await driver.setState([schemaRV5]);
 
-    expect(blueprintRV5).toStrictEqual(
-      (await driver.readState([tableName]))[0],
-    );
+    expect(schemaRV5).toStrictEqual((await driver.readState([tableName]))[0]);
   });
 });

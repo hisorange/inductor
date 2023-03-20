@@ -13,7 +13,7 @@ export class MigrationPlanner implements IMigrationPlanner {
   constructor(readonly ctx: IMigrationContext) {}
 
   async alterTable(targetState: ISchema) {
-    const currentState = this.ctx.factManager.getBlueprintForTable(
+    const currentState = this.ctx.factManager.getSchemaForTable(
       targetState.tableName,
     );
     const difference = diff(stripMeta(currentState), stripMeta(targetState));
@@ -378,62 +378,62 @@ export class MigrationPlanner implements IMigrationPlanner {
     });
   }
 
-  async _createTable(blueprint: ISchema): Promise<void> {
+  async _createTable(schema: ISchema): Promise<void> {
     this.ctx.migrationPlan.steps.push({
-      query: this.ctx.knex.schema.createTable(blueprint.tableName, () => {}),
+      query: this.ctx.knex.schema.createTable(schema.tableName, () => {}),
       risk: MigrationRisk.NONE,
-      description: `Create table [${blueprint.tableName}]`,
+      description: `Create table [${schema.tableName}]`,
       phase: 0,
     });
 
     // Register the fact that the table exits
-    this.ctx.factManager.addTable(blueprint.tableName);
+    this.ctx.factManager.addTable(schema.tableName);
 
     // By default each table is created as logged
     // But we can alter the table to be unlogged
-    if (!blueprint.isLogged) {
+    if (!schema.isLogged) {
       this.ctx.migrationPlan.steps.push({
         query: this.ctx.knex.schema.raw(
           `ALTER TABLE ${this.ctx.knex.client.wrapIdentifier(
-            blueprint.tableName,
+            schema.tableName,
           )} SET UNLOGGED`,
         ),
         risk: MigrationRisk.NONE,
-        description: `Set table [${blueprint.tableName}] as unlogged`,
+        description: `Set table [${schema.tableName}] as unlogged`,
         phase: 0,
       });
     }
   }
 
-  async createTable(blueprint: ISchema) {
-    this._createTable(blueprint);
+  async createTable(schema: ISchema) {
+    this._createTable(schema);
 
     await Promise.all([
-      this.createColumn(blueprint),
-      this.createIndex(blueprint),
-      this.createUnique(blueprint),
-      this.createForeignKeys(blueprint),
+      this.createColumn(schema),
+      this.createIndex(schema),
+      this.createUnique(schema),
+      this.createForeignKeys(schema),
     ]);
   }
 
-  async createColumn(blueprint: ISchema) {
-    if (Object.keys(blueprint.columns).length) {
+  async createColumn(schema: ISchema) {
+    if (Object.keys(schema.columns).length) {
       const createColumnsQuery = this.ctx.knex.schema.alterTable(
-        blueprint.tableName,
+        schema.tableName,
         builder => {
-          for (const name in blueprint.columns) {
-            if (Object.prototype.hasOwnProperty.call(blueprint.columns, name)) {
+          for (const name in schema.columns) {
+            if (Object.prototype.hasOwnProperty.call(schema.columns, name)) {
               createColumn(
                 builder,
                 name,
-                blueprint.columns[name],
-                blueprint,
+                schema.columns[name],
+                schema,
                 this.ctx.factManager,
               );
             }
           }
 
-          const primaries = ColumnTools.filterPrimary(blueprint);
+          const primaries = ColumnTools.filterPrimary(schema);
 
           if (primaries.length > 1) {
             builder.primary(primaries);
@@ -444,50 +444,50 @@ export class MigrationPlanner implements IMigrationPlanner {
       this.ctx.migrationPlan.steps.push({
         query: createColumnsQuery,
         risk: MigrationRisk.NONE,
-        description: `Create columns for table [${blueprint.tableName}]`,
+        description: `Create columns for table [${schema.tableName}]`,
         phase: 1,
       });
     }
   }
 
-  async createIndex(blueprint: ISchema) {
+  async createIndex(schema: ISchema) {
     // Apply the composite indexes
-    for (const indexName in blueprint.indexes) {
-      if (Object.prototype.hasOwnProperty.call(blueprint.indexes, indexName)) {
+    for (const indexName in schema.indexes) {
+      if (Object.prototype.hasOwnProperty.call(schema.indexes, indexName)) {
         const createIndexQuery = this.ctx.knex.schema.alterTable(
-          blueprint.tableName,
+          schema.tableName,
           builder =>
             builder.index(
-              blueprint.indexes[indexName].columns,
+              schema.indexes[indexName].columns,
               indexName,
-              blueprint.indexes[indexName].type,
+              schema.indexes[indexName].type,
             ),
         );
 
         this.ctx.migrationPlan.steps.push({
           query: createIndexQuery,
           risk: MigrationRisk.LOW,
-          description: `Create composite index [${indexName}] for table [${blueprint.tableName}]`,
+          description: `Create composite index [${indexName}] for table [${schema.tableName}]`,
           phase: 2,
         });
       }
     }
   }
 
-  async createUnique(blueprint: ISchema) {
+  async createUnique(schema: ISchema) {
     // Apply the composite unique constraints
-    for (const uniqueName in blueprint.uniques) {
-      if (Object.prototype.hasOwnProperty.call(blueprint.uniques, uniqueName)) {
+    for (const uniqueName in schema.uniques) {
+      if (Object.prototype.hasOwnProperty.call(schema.uniques, uniqueName)) {
         if (this.ctx.factManager.isUniqueConstraintExists(uniqueName)) {
           throw new Error(
-            `Unique constraint [${uniqueName}] for [${blueprint.tableName}] already exists`,
+            `Unique constraint [${uniqueName}] for [${schema.tableName}] already exists`,
           );
         }
 
         const createUniqueQuery = this.ctx.knex.schema.alterTable(
-          blueprint.tableName,
+          schema.tableName,
           builder =>
-            builder.unique(blueprint.uniques[uniqueName].columns, {
+            builder.unique(schema.uniques[uniqueName].columns, {
               indexName: uniqueName,
             }),
         );
@@ -495,7 +495,7 @@ export class MigrationPlanner implements IMigrationPlanner {
         this.ctx.migrationPlan.steps.push({
           query: createUniqueQuery,
           risk: MigrationRisk.NONE,
-          description: `Create composite unique [${uniqueName}] for table [${blueprint.tableName}]`,
+          description: `Create composite unique [${uniqueName}] for table [${schema.tableName}]`,
           phase: 2,
         });
 
@@ -505,21 +505,18 @@ export class MigrationPlanner implements IMigrationPlanner {
     }
   }
 
-  async createForeignKeys(blueprint: ISchema) {
+  async createForeignKeys(schema: ISchema) {
     // Add foreign keys
-    for (const foreignKeyName in blueprint.relations) {
+    for (const foreignKeyName in schema.relations) {
       if (
-        Object.prototype.hasOwnProperty.call(
-          blueprint.relations,
-          foreignKeyName,
-        )
+        Object.prototype.hasOwnProperty.call(schema.relations, foreignKeyName)
       ) {
-        const relation = blueprint.relations[foreignKeyName];
+        const relation = schema.relations[foreignKeyName];
         const { table, columns } = relation.references;
         const { onDelete, onUpdate } = relation;
 
         const createForeignKeyQuery = this.ctx.knex.schema.alterTable(
-          blueprint.tableName,
+          schema.tableName,
           builder =>
             builder
               .foreign(relation.columns, foreignKeyName)
@@ -530,7 +527,7 @@ export class MigrationPlanner implements IMigrationPlanner {
         );
 
         this.ctx.factManager.addTableForeignKey(
-          blueprint.tableName,
+          schema.tableName,
           foreignKeyName,
           relation,
         );
@@ -540,7 +537,7 @@ export class MigrationPlanner implements IMigrationPlanner {
           risk: this.ctx.factManager.isTableExists(table)
             ? MigrationRisk.LOW
             : MigrationRisk.HIGH, // Foreign table may not exists yet!
-          description: `Create foreign key [${foreignKeyName}] for table [${blueprint.tableName}]`,
+          description: `Create foreign key [${foreignKeyName}] for table [${schema.tableName}]`,
           phase: 8,
         });
       }

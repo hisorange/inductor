@@ -25,8 +25,8 @@ describe('Column Indexing', () => {
     ) => {
       const tableName = `column_index_${tableSuffix}`;
 
-      const blueprint = InitiateSchema(tableName);
-      blueprint.columns = {
+      const schema = InitiateSchema(tableName);
+      schema.columns = {
         primary_column: {
           ...createTestColumn(ColumnType.SERIAL),
           isPrimary: true,
@@ -41,11 +41,11 @@ describe('Column Indexing', () => {
         },
       };
 
-      // Remove blueprint if exists from a previous test
+      // Remove schema if exists from a previous test
       await driver.migrator.dropTable(tableName);
-      await driver.setState([blueprint]);
+      await driver.setState([schema]);
 
-      expect((await driver.readState([tableName]))[0]).toStrictEqual(blueprint);
+      expect((await driver.readState([tableName]))[0]).toStrictEqual(schema);
 
       // Cleanup
       await driver.migrator.dropTable(tableName);

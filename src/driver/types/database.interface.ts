@@ -2,11 +2,11 @@ import { Knex } from 'knex';
 import { ISchema } from '../../schema';
 
 /**
- * Describe the database blueprint, and the connection associated with it.
+ * Describe the database schema, and the connection associated with it.
  */
 export interface IDatabase<
   DatabaseMeta = unknown,
-  BlueprintMeta = unknown,
+  SchemaMeta = unknown,
   ColumnMeta = unknown,
 > {
   /**
@@ -15,19 +15,19 @@ export interface IDatabase<
   readonly connection: Knex.PgConnectionConfig;
 
   /**
-   * Flag to indicate that the blueprints are read only,
+   * Flag to indicate that the schemas are read only,
    * and the database should not be modified.
    */
   readonly isReadOnly: boolean;
 
   /**
-   * blueprints associated with the database
+   * schemas associated with the database
    */
-  blueprints: ISchema<BlueprintMeta, ColumnMeta>[];
+  schemas: ISchema<SchemaMeta, ColumnMeta>[];
 
   /**
-   * List of regex patterns to filter blueprints from the database.
-   * In case it's empty, all blueprints are returned.
+   * List of regex patterns to filter schemas from the database.
+   * In case it's empty, all schemas are returned.
    */
   filters: string[];
 

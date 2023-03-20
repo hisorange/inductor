@@ -12,8 +12,8 @@ describe('Relations', () => {
     const tableNameA = `relation_belongsto_a`;
     const tableNameB = `relation_belongsto_b`;
 
-    const blueprintA = InitiateSchema(tableNameA);
-    blueprintA.columns = {
+    const schemaA = InitiateSchema(tableNameA);
+    schemaA.columns = {
       a_id_1: {
         ...createTestColumn(ColumnType.UUID),
         isPrimary: true,
@@ -24,8 +24,8 @@ describe('Relations', () => {
       },
     };
 
-    const blueprintB = InitiateSchema(tableNameB);
-    blueprintB.relations = {
+    const schemaB = InitiateSchema(tableNameB);
+    schemaB.relations = {
       belongs_to_a: {
         columns: ['b_id_1', 'b_id_2'],
         references: {
@@ -38,7 +38,7 @@ describe('Relations', () => {
       },
     };
 
-    blueprintB.columns = {
+    schemaB.columns = {
       b_id_1: {
         ...createTestColumn(ColumnType.UUID),
         isPrimary: true,
@@ -49,18 +49,18 @@ describe('Relations', () => {
       },
     };
 
-    // Remove blueprint if exists from a previous test
-    await driver.migrator.dropBlueprint(blueprintB);
-    await driver.migrator.dropBlueprint(blueprintA);
+    // Remove schema if exists from a previous test
+    await driver.migrator.dropSchema(schemaB);
+    await driver.migrator.dropSchema(schemaA);
 
     // Apply the new state
-    await driver.setState([blueprintA, blueprintB]);
+    await driver.setState([schemaA, schemaB]);
 
-    expect(blueprintA).toStrictEqual((await driver.readState([tableNameA]))[0]);
-    expect(blueprintB).toStrictEqual((await driver.readState([tableNameB]))[0]);
+    expect(schemaA).toStrictEqual((await driver.readState([tableNameA]))[0]);
+    expect(schemaB).toStrictEqual((await driver.readState([tableNameB]))[0]);
 
     // Cleanup
-    await driver.migrator.dropBlueprint(blueprintB);
-    await driver.migrator.dropBlueprint(blueprintA);
+    await driver.migrator.dropSchema(schemaB);
+    await driver.migrator.dropSchema(schemaA);
   });
 });

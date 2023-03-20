@@ -2,7 +2,7 @@ import { InitiateSchema } from '../src/schema/initiator';
 import { TestColumns } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
 
-describe('Create Table from Blueprint', () => {
+describe('Create Table from Schema', () => {
   const driver = createTestDriver();
   const testTables = ['create_test1', 'create_Test2', 'create_test_3_____'];
   const clearTables = () =>
@@ -16,12 +16,12 @@ describe('Create Table from Blueprint', () => {
   });
 
   test.each(testTables)(
-    'should create the [%s] table from blueprint',
+    'should create the [%s] table from schema',
     async (tableName: string) => {
-      const blueprint = InitiateSchema(tableName);
-      blueprint.columns = TestColumns;
+      const schema = InitiateSchema(tableName);
+      schema.columns = TestColumns;
 
-      await driver.setState([blueprint]);
+      await driver.setState([schema]);
       await driver.reflection.updateFacts();
 
       expect(driver.reflection.isTableExists(tableName)).toBeTruthy();

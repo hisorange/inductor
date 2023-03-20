@@ -56,7 +56,7 @@ export interface ISchema<
   isLogged: boolean;
 
   /**
-   * Associated metadata with the blueprint
+   * Associated metadata with the schema
    */
   meta?: SchemaMeta;
 }

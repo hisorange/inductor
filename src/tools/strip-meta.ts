@@ -1,28 +1,28 @@
 import cloneDeep from 'lodash.clonedeep';
 import { ISchema } from '../schema';
 
-export const stripMeta = (blueprint: ISchema) => {
-  blueprint = cloneDeep(blueprint);
+export const stripMeta = (schema: ISchema) => {
+  schema = cloneDeep(schema);
 
-  delete blueprint.meta;
+  delete schema.meta;
 
-  for (const columnRef in blueprint.columns) {
-    delete blueprint.columns[columnRef].meta;
-    delete blueprint.columns[columnRef].propertyName;
+  for (const columnRef in schema.columns) {
+    delete schema.columns[columnRef].meta;
+    delete schema.columns[columnRef].propertyName;
   }
 
-  for (const uniqueName in blueprint.uniques) {
-    delete blueprint.uniques[uniqueName].meta;
+  for (const uniqueName in schema.uniques) {
+    delete schema.uniques[uniqueName].meta;
   }
 
-  for (const indexName in blueprint.indexes) {
-    delete blueprint.indexes[indexName].meta;
+  for (const indexName in schema.indexes) {
+    delete schema.indexes[indexName].meta;
   }
 
-  for (const relName in blueprint.relations) {
-    delete blueprint.relations[relName].meta;
-    delete blueprint.relations[relName].propertyName;
+  for (const relName in schema.relations) {
+    delete schema.relations[relName].meta;
+    delete schema.relations[relName].propertyName;
   }
 
-  return blueprint;
+  return schema;
 };

@@ -43,21 +43,17 @@ describe('Drop Column', () => {
     async col => {
       const tableName = `drop_column_${col}`;
 
-      const blueprintRV1 = InitiateSchema(tableName);
-      blueprintRV1.columns = columns;
-      await driver.setState([blueprintRV1]);
+      const schemaRV1 = InitiateSchema(tableName);
+      schemaRV1.columns = columns;
+      await driver.setState([schemaRV1]);
 
-      expect((await driver.readState([tableName]))[0]).toStrictEqual(
-        blueprintRV1,
-      );
+      expect((await driver.readState([tableName]))[0]).toStrictEqual(schemaRV1);
 
-      const blueprintRV2 = cloneDeep(blueprintRV1);
-      delete blueprintRV2.columns[col];
-      await driver.setState([blueprintRV2]);
+      const schemaRV2 = cloneDeep(schemaRV1);
+      delete schemaRV2.columns[col];
+      await driver.setState([schemaRV2]);
 
-      expect((await driver.readState([tableName]))[0]).toStrictEqual(
-        blueprintRV2,
-      );
+      expect((await driver.readState([tableName]))[0]).toStrictEqual(schemaRV2);
     },
     5_000,
   );

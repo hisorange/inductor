@@ -14,12 +14,12 @@ export interface IDriver {
   readonly reflection: IReflection;
   readonly knex: Knex;
 
-  setState(blueprints: ISchema[]): Promise<IStepResult[]>;
+  setState(schemas: ISchema[]): Promise<IStepResult[]>;
   readState(filters?: string[]): Promise<ISchema[]>;
-  compareState(blueprints: ISchema[]): Promise<IMigrationPlan>;
+  compareState(schemas: ISchema[]): Promise<IMigrationPlan>;
   getModel<T extends Model = Model>(name: string): ModelClass<T>;
   closeConnection(): Promise<void>;
 
-  getBlueprints(): ISchema[];
+  getSchemas(): ISchema[];
   getModels(): ModelClass<Model>[];
 }
