@@ -1,4 +1,4 @@
-import { InitiateTable } from '../src/table/initiator';
+import { InitiateTable } from '../src/library/table.initiator';
 import { createTestDriver } from './util/create-connection';
 
 describe('Unlogged Table', () => {
@@ -13,7 +13,7 @@ describe('Unlogged Table', () => {
     table.isLogged = false;
 
     // Remove table if exists from a previous test
-    await driver.migrator.dropTableDescriptor(table);
+    await driver.migrator.dropTable(table.name);
     await driver.setState([table]);
 
     expect((await driver.readState([tableName]))[0]).toStrictEqual(table);
@@ -31,6 +31,6 @@ describe('Unlogged Table', () => {
     expect((await driver.readState([tableName]))[0]).toStrictEqual(table);
 
     // Cleanup
-    await driver.migrator.dropTableDescriptor(table);
+    await driver.migrator.dropTable(table.name);
   });
 });

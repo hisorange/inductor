@@ -1,4 +1,4 @@
-import { InitiateTable } from '../src/table/initiator';
+import { InitiateTable } from '../src/library/table.initiator';
 import { TestColumns } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
 
@@ -22,9 +22,9 @@ describe('Create Table from Table', () => {
       table.columns = TestColumns;
 
       await driver.setState([table]);
-      await driver.reflection.updateFacts();
+      await driver.migrator.reflection.refresh();
 
-      expect(driver.reflection.isTableExists(tableName)).toBeTruthy();
+      expect(driver.migrator.reflection.isTableExists(tableName)).toBeTruthy();
     },
   );
 });

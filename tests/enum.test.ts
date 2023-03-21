@@ -1,6 +1,8 @@
 import cloneDeep from 'lodash.clonedeep';
-import { ColumnKind, ColumnType, EnumColumnType, IColumn } from '../src';
-import { InitiateTable } from '../src/table/initiator';
+import { InitiateTable } from '../src/library/table.initiator';
+import { ColumnType } from '../src/types/column-type.enum';
+import { EnumColumnType, IColumn } from '../src/types/column.interface';
+import { ColumnKind } from '../src/types/column.kind';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
 
@@ -39,13 +41,13 @@ describe('Enumerated Column', () => {
       ).nativeName = `enum_${setType}_CapitalHit`;
 
       // Remove table if exists from a previous test
-      await driver.migrator.dropTableDescriptor(table);
+      await driver.migrator.dropTable(table.name);
       await driver.setState([table]);
 
       expect((await driver.readState([tableName]))[0]).toStrictEqual(table);
 
       // Cleanup
-      await driver.migrator.dropTableDescriptor(table);
+      await driver.migrator.dropTable(table.name);
     },
   );
 

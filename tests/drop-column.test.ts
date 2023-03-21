@@ -1,6 +1,8 @@
 import cloneDeep from 'lodash.clonedeep';
-import { ColumnType, IndexType, ITable } from '../src';
-import { InitiateTable } from '../src/table/initiator';
+import { InitiateTable } from '../src/library/table.initiator';
+import { ColumnType } from '../src/types/column-type.enum';
+import { IndexType } from '../src/types/index-type.enum';
+import { ITable } from '../src/types/table.interface';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
 

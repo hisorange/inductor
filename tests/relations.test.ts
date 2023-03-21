@@ -1,5 +1,6 @@
-import { ColumnType, ForeignAction } from '../src';
-import { InitiateTable } from '../src/table/initiator';
+import { InitiateTable } from '../src/library/table.initiator';
+import { ColumnType } from '../src/types/column-type.enum';
+import { ForeignAction } from '../src/types/foreign-action.enum';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
 
@@ -50,8 +51,8 @@ describe('Relations', () => {
     };
 
     // Remove table if exists from a previous test
-    await driver.migrator.dropTableDescriptor(tableB);
-    await driver.migrator.dropTableDescriptor(tableA);
+    await driver.migrator.dropTable(tableB.name);
+    await driver.migrator.dropTable(tableA.name);
 
     // Apply the new state
     await driver.setState([tableA, tableB]);
@@ -60,7 +61,7 @@ describe('Relations', () => {
     expect(tableB).toStrictEqual((await driver.readState([tableNameB]))[0]);
 
     // Cleanup
-    await driver.migrator.dropTableDescriptor(tableB);
-    await driver.migrator.dropTableDescriptor(tableA);
+    await driver.migrator.dropTable(tableB.name);
+    await driver.migrator.dropTable(tableA.name);
   });
 });

@@ -1,8 +1,7 @@
-import { Driver } from '../../src/driver/driver';
-import { IDatabase } from '../../src/driver/types/database.interface';
-import { IDriver } from '../../src/driver/types/driver.interface';
+import { Inductor } from '../../src/inductor';
+import { IDatabase } from '../../src/types/database.interface';
 
-export const createTestDriver = (filters: string[] = []): IDriver => {
+export const createTestDriver = (filters: string[] = []): Inductor => {
   const database: IDatabase = {
     connection: {
       host: 'localhost',
@@ -16,5 +15,5 @@ export const createTestDriver = (filters: string[] = []): IDriver => {
     filters: filters,
   };
 
-  return new Driver(database);
+  return new Inductor(database);
 };

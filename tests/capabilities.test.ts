@@ -1,6 +1,6 @@
-import { ColumnType } from '../src';
-import { InitiateTable } from '../src/table/initiator';
-import { ColumnCapability } from '../src/table/types/column.capability';
+import { InitiateTable } from '../src/library/table.initiator';
+import { ColumnType } from '../src/types/column-type.enum';
+import { ColumnCapability } from '../src/types/column.capability';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
 

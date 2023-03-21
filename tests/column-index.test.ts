@@ -1,5 +1,6 @@
-import { ColumnType, IndexType } from '../src';
-import { InitiateTable } from '../src/table/initiator';
+import { InitiateTable } from '../src/library/table.initiator';
+import { ColumnType } from '../src/types/column-type.enum';
+import { IndexType } from '../src/types/index-type.enum';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
 

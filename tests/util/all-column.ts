@@ -1,7 +1,9 @@
-import { ColumnKind, IColumn, ITable } from '../../src';
-import { getPostgresEnumName } from '../../src/migration/util/get-enum-name';
-import { ColumnType } from '../../src/table/types/column-type.enum';
-import { ColumnTools } from '../../src/tools/column-tools';
+import { generateEnumName } from '../../src/library/planners/enum-name.generator';
+import { ColumnType } from '../../src/types/column-type.enum';
+import { IColumn } from '../../src/types/column.interface';
+import { ColumnKind } from '../../src/types/column.kind';
+import { ITable } from '../../src/types/table.interface';
+import { ColumnTools } from '../../src/utils/column-tools';
 
 type typeArguments = {
   length?: number;
@@ -27,7 +29,7 @@ export const createTestColumn = (
     }
 
     typeArgs.nativeName =
-      typeArgs?.nativeName ?? getPostgresEnumName(typeArgs.values);
+      typeArgs?.nativeName ?? generateEnumName(typeArgs.values);
   }
 
   if (typeName === ColumnType.NUMERIC) {

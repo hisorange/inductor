@@ -1,6 +1,7 @@
-import { ColumnType, IColumn } from '../src';
-import { InitiateTable } from '../src/table/initiator';
-import { ColumnTools } from '../src/tools/column-tools';
+import { InitiateTable } from '../src/library/table.initiator';
+import { ColumnType } from '../src/types/column-type.enum';
+import { IColumn } from '../src/types/column.interface';
+import { ColumnTools } from '../src/utils/column-tools';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
 
@@ -51,7 +52,7 @@ describe('Alter Nullable', () => {
       expect((await driver.readState([tableName]))[0]).toStrictEqual(tableRV1);
 
       // Cleanup
-      await driver.migrator.dropTableDescriptor(tableRV1);
+      await driver.migrator.dropTable(tableRV1.name);
     },
   );
 });
