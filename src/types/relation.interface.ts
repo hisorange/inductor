@@ -2,11 +2,6 @@ import { ForeignAction } from './foreign-action.enum';
 
 export interface IRelation<RelationMeta = unknown> {
   /**
-   * Name used to define the relation on the model.
-   */
-  propertyName?: string;
-
-  /**
    * List of local references.
    */
   columns: string[];

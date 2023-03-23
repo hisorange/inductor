@@ -45,14 +45,12 @@ export class Inductor {
 
     for (const columnName in table.columns) {
       if (Object.prototype.hasOwnProperty.call(table.columns, columnName)) {
-        const columnDefinition = table.columns[columnName];
-
-        const propertyName = columnDefinition?.propertyName ?? columnName;
+        // TODO map from meta defintion
 
         // Map column names to property names
-        columnMap.set(columnName, propertyName);
+        columnMap.set(columnName, columnName);
         // Map property names to column names
-        propertyMap.set(propertyName, columnName);
+        propertyMap.set(columnName, columnName);
       }
     }
 

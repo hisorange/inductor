@@ -72,11 +72,6 @@ type BasicColumnType = {
 
 export interface IColumn<ColumnMeta = unknown> {
   /**
-   * Property alias on the model.
-   */
-  propertyName?: string;
-
-  /**
    * Type mapping with type attributes
    */
   type:

@@ -8,7 +8,6 @@ export const stripMeta = (table: ITable) => {
 
   for (const columnRef in table.columns) {
     delete table.columns[columnRef].meta;
-    delete table.columns[columnRef].propertyName;
   }
 
   for (const uniqueName in table.uniques) {
@@ -21,7 +20,6 @@ export const stripMeta = (table: ITable) => {
 
   for (const relName in table.relations) {
     delete table.relations[relName].meta;
-    delete table.relations[relName].propertyName;
   }
 
   return table;
