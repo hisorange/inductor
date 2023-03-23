@@ -1,7 +1,6 @@
 import { InitiateTable } from '../src/library/table.initiator';
 import { ValidateTable } from '../src/library/table.validator';
 import { ColumnType } from '../src/types/column-type.enum';
-import { ColumnKind } from '../src/types/column.kind';
 
 describe('Alter Nullable', () => {
   test('Invalid default value for enum', async () => {
@@ -12,7 +11,6 @@ describe('Alter Nullable', () => {
         isNullable: false,
         isPrimary: false,
         isUnique: false,
-        kind: ColumnKind.COLUMN,
         defaultValue: 'd',
         capabilities: [],
         type: {

@@ -1,7 +1,6 @@
 import { Knex } from 'knex';
 import { ColumnType } from '../types/column-type.enum';
 import { IColumn } from '../types/column.interface';
-import { ColumnKind } from '../types/column.kind';
 import { IDatabaseState } from '../types/database-state.interface';
 import { IndexType } from '../types/index-type.enum';
 import { IRelation } from '../types/relation.interface';
@@ -83,7 +82,6 @@ export class Reflection {
         type: {
           name: columnInfo.typeName,
         } as IColumn['type'],
-        kind: ColumnKind.COLUMN,
         isNullable: columnInfo.isNullable,
         isUnique: singleColumnUniques.has(columnName),
         isPrimary: compositePrimaryKeys.includes(columnName),

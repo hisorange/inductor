@@ -1,7 +1,6 @@
 import { generateEnumName } from '../../src/library/planners/utils/enum-name.generator';
 import { ColumnType } from '../../src/types/column-type.enum';
 import { IColumn } from '../../src/types/column.interface';
-import { ColumnKind } from '../../src/types/column.kind';
 import { ITable } from '../../src/types/table.interface';
 import { ColumnTools } from '../../src/utils/column-tools';
 
@@ -42,7 +41,6 @@ export const createTestColumn = (
       name: typeName,
       ...typeArgs,
     } as IColumn['type'],
-    kind: ColumnKind.COLUMN,
     isNullable: false,
     isUnique: false,
     isPrimary: false,

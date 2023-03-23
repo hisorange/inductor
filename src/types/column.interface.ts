@@ -1,7 +1,6 @@
 import { Pojo } from 'objection';
 import { ColumnType } from './column-type.enum';
 import { ColumnCapability } from './column.capability';
-import { ColumnKind } from './column.kind';
 import { IndexType } from './index-type.enum';
 
 export type EnumColumnType = {
@@ -72,12 +71,6 @@ type BasicColumnType = {
 };
 
 export interface IColumn<ColumnMeta = unknown> {
-  /**
-   * Columns can be defined as a traditional column,
-   * but also as virtual / stored / computed columns.
-   */
-  kind: ColumnKind;
-
   /**
    * Property alias on the model.
    */

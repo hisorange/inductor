@@ -2,7 +2,6 @@ import cloneDeep from 'lodash.clonedeep';
 import { InitiateTable } from '../src/library/table.initiator';
 import { ColumnType } from '../src/types/column-type.enum';
 import { EnumColumnType, IColumn } from '../src/types/column.interface';
-import { ColumnKind } from '../src/types/column.kind';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
 
@@ -60,7 +59,6 @@ describe('Enumerated Column', () => {
         ...createTestColumn(ColumnType.SERIAL),
       },
       enum_column: {
-        kind: ColumnKind.COLUMN,
         type: {
           name: ColumnType.ENUM,
           values: ['a', 'b', 'c'],
