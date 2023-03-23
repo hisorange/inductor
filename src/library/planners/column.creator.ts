@@ -5,7 +5,7 @@ import { ITable } from '../../types/table.interface';
 import { ColumnTools } from '../../utils/column-tools';
 import { commentEncoder } from '../../utils/comment.coder';
 import { Reflection } from '../reflection';
-import { generateNativeType } from './native-type.generator';
+import { generateNativeType } from './utils/native-type.generator';
 
 export const createColumn = (
   tableBuilder: Knex.CreateTableBuilder,

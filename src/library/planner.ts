@@ -1,25 +1,36 @@
 import { diff } from 'just-diff';
-import { Knex } from 'knex';
-import { ColumnType } from '../types/column-type.enum';
-import { IColumn } from '../types/column.interface';
+import { NotImplemented } from '../exception/not-implemented.exception';
+import { ChangeContext } from '../types/change-context.interface';
 import { IMigrationContext } from '../types/migration-context.interface';
 import { MigrationRisk } from '../types/migration-risk.enum';
 import { ITable } from '../types/table.interface';
 import { ColumnTools } from '../utils/column-tools';
 import { stripMeta } from '../utils/strip-meta';
+import { addColumn } from './planners/add.column';
+import { alterDefaultValue } from './planners/alter.default-value';
+import { alterIsLogged } from './planners/alter.is-logged';
+import { alterNullable } from './planners/alter.nullable';
+import { alterUnique } from './planners/alter.unique';
 import { createColumn } from './planners/column.creator';
-import { generateNativeType } from './planners/native-type.generator';
+import { dropColumn } from './planners/drop.column';
 
 export class Planner {
   constructor(readonly ctx: IMigrationContext) {}
 
-  async alterTable(targetState: ITable) {
-    const currentState = this.ctx.reflection.getTableState(targetState.name);
-    const difference = diff(stripMeta(currentState), stripMeta(targetState));
+  async alterTable(target: ITable) {
+    const current = this.ctx.reflection.getTableState(target.name);
+    const difference = diff(stripMeta(current), stripMeta(target));
     // Track the primary keys change, since it may has to be altered after the columns
     let isPrimaryChanged = false;
     let isPrimaryCreated = false;
     let isPrimaryDropped = false;
+
+    // Create context for the changes
+    const changeCtx: ChangeContext = {
+      ctx: this.ctx,
+      target,
+      current,
+    };
 
     for (const change of difference) {
       const { op, path } = change;
@@ -27,77 +38,29 @@ export class Planner {
       // Changed to logged / unlogged
       if (path[0] === 'isLogged') {
         if (op === 'replace') {
-          this.ctx.plan.steps.push({
-            query: this.ctx.knex.schema.raw(
-              `ALTER TABLE "${targetState.name}" SET ${
-                targetState.isLogged ? 'LOGGED' : 'UNLOGGED'
-              }`,
-            ),
-            risk: MigrationRisk.LOW,
-            description: `Changing table ${targetState.name} to ${
-              targetState.isLogged ? 'logged' : 'unlogged'
-            }`,
-            phase: 1,
-          });
+          alterIsLogged(changeCtx);
         }
       } else if (path[0] === 'columns') {
         const columnName = path[1] as string;
-        const columnDefinition = targetState.columns[columnName];
+        const columnDefinition = target.columns[columnName];
 
         switch (op) {
           // New column added
           case 'add':
-            let risk = MigrationRisk.NONE;
+            await addColumn(changeCtx, columnName, columnDefinition);
 
-            // Check if the column has a default value
-            // If not then we have to check for rows
-            // as creating a new column without default would make the step impossible
-            if (typeof columnDefinition.defaultValue === 'undefined') {
-              if (await this.ctx.reflection.isTableHasRows(targetState.name)) {
-                risk = MigrationRisk.IMPOSSIBLE;
-              }
-            }
-
-            this.ctx.plan.steps.push({
-              query: this.ctx.knex.schema.alterTable(
-                targetState.name,
-                builder =>
-                  createColumn(
-                    builder,
-                    columnName,
-                    targetState.columns[columnName],
-                    targetState,
-                    this.ctx.reflection,
-                  ),
-              ),
-              risk,
-              description: `Creating new column ${columnName}`,
-              phase: 3,
-            });
-
-            // New column added to the primary list
-            if (targetState.columns[columnName].isPrimary) {
-              isPrimaryCreated = true;
-            }
-
+            // Primary columns altered
+            isPrimaryCreated =
+              isPrimaryCreated || target.columns[columnName].isPrimary;
             break;
 
           // Column removed
           case 'remove':
-            this.ctx.plan.steps.push({
-              query: this.ctx.knex.schema.alterTable(
-                targetState.name,
-                builder => builder.dropColumn(columnName),
-              ),
-              risk: MigrationRisk.LOW,
-              description: `Dropping column ${columnName}`,
-              phase: 3,
-            });
+            dropColumn(changeCtx, columnName);
 
-            // Column removed from the primary list
-            if (currentState.columns[columnName].isPrimary) {
-              isPrimaryDropped = true;
-            }
+            // Primary columns altered
+            isPrimaryDropped =
+              isPrimaryDropped || current.columns[columnName].isPrimary;
             break;
 
           // Column altered
@@ -106,85 +69,47 @@ export class Planner {
               // Route the alteration based on the change
               switch (path[2]) {
                 case 'isNullable':
-                  this.ctx.plan.steps.push({
-                    query: this.ctx.knex.schema.alterTable(
-                      targetState.name,
-                      builder =>
-                        this.changeNullable(
-                          builder,
-                          columnName,
-                          columnDefinition,
-                        ),
-                    ),
-                    risk: MigrationRisk.LOW,
-                    description: `Changing column ${columnName} nullable state`,
-                    phase: 3,
-                  });
+                  alterNullable(changeCtx, columnName, columnDefinition);
                   break;
                 case 'isUnique':
-                  this.ctx.plan.steps.push({
-                    query: this.ctx.knex.schema.alterTable(
-                      targetState.name,
-                      builder =>
-                        this.changeUnique(
-                          builder,
-                          columnName,
-                          columnDefinition,
-                        ),
-                    ),
-                    risk: MigrationRisk.LOW,
-                    description: `Changing column ${columnName} unique state`,
-                    phase: 3,
-                  });
+                  alterUnique(changeCtx, columnName, columnDefinition);
                   break;
                 case 'isPrimary':
                   isPrimaryChanged = true;
                   break;
-                case 'isIndexed':
-                  // TODO implement index type change
-                  break;
+                // case 'isIndexed':
+                //   Index changed
+                //   break;
                 case 'defaultValue':
-                  this.ctx.plan.steps.push({
-                    query: this.ctx.knex.schema.alterTable(
-                      targetState.name,
-                      builder =>
-                        this.changeDefaultValue(
-                          builder,
-                          columnName,
-                          columnDefinition,
-                        ),
-                    ),
-                    risk: MigrationRisk.LOW,
-                    description: `Changing column ${columnName} default value`,
-                    phase: 3,
-                  });
+                  alterDefaultValue(changeCtx, columnName, columnDefinition);
                   break;
-                case 'type':
-                  // TODO implement type change
-
-                  if (columnDefinition.type.name === ColumnType.ENUM) {
-                    // Changing enum values
-                    if (path[3] === 'values') {
-                      // Check if the native type already exists
-                      if (
-                        this.ctx.reflection.isTypeExists(
-                          columnDefinition.type.nativeName,
-                        )
-                      ) {
-                        // Need to check if the values are the same
-                        // Rename the type if not connected to other tables
-                        // Fail if so
-                        // Then create the new type and use the old name
-                        // And after it's created we can drop the old one
-                      }
-                    }
-                  }
-                  break;
+                // case 'type':
+                //   if (columnDefinition.type.name === ColumnType.ENUM) {
+                //     // Changing enum values
+                //     if (path[3] === 'values') {
+                //       // Check if the native type already exists
+                //       if (
+                //         this.ctx.reflection.isTypeExists(
+                //           columnDefinition.type.nativeName,
+                //         )
+                //       ) {
+                //         // Need to check if the values are the same
+                //         // Rename the type if not connected to other tables
+                //         // Fail if so
+                //         // Then create the new type and use the old name
+                //         // And after it's created we can drop the old one
+                //       }
+                //     }
+                //   }
+                //   break;
+                default:
+                  throw new NotImplemented(
+                    `Column alteration for [${path[2]}] is not implemented`,
+                  );
               }
             } else {
-              console.error(
-                'Column change is not implemented:' +
-                  JSON.stringify(change, null, 2),
+              throw new NotImplemented(
+                `Column alteration for [${path[2]}] is not implemented`,
               );
             }
         }
@@ -198,15 +123,13 @@ export class Planner {
           case 'add':
             // We have to check if the unique existed before
             // because the add is only applied to the columns
-            if (currentState.uniques[uniqueName]) {
+            if (current.uniques[uniqueName]) {
               this.ctx.plan.steps.push({
-                query: this.ctx.knex.schema.alterTable(
-                  targetState.name,
-                  builder =>
-                    builder.dropUnique(
-                      currentState.uniques[uniqueName].columns,
-                      uniqueName,
-                    ),
+                query: this.ctx.knex.schema.alterTable(target.name, builder =>
+                  builder.dropUnique(
+                    current.uniques[uniqueName].columns,
+                    uniqueName,
+                  ),
                 ),
                 risk: MigrationRisk.LOW,
                 description: `Dropping unique ${uniqueName} before recreation`,
@@ -215,12 +138,10 @@ export class Planner {
             }
 
             this.ctx.plan.steps.push({
-              query: this.ctx.knex.schema.alterTable(
-                targetState.name,
-                builder =>
-                  builder.unique(targetState.uniques[uniqueName].columns, {
-                    indexName: uniqueName,
-                  }),
+              query: this.ctx.knex.schema.alterTable(target.name, builder =>
+                builder.unique(target.uniques[uniqueName].columns, {
+                  indexName: uniqueName,
+                }),
               ),
               risk: MigrationRisk.LOW,
               description: `Creating composite unique ${uniqueName}`,
@@ -232,13 +153,11 @@ export class Planner {
           // Unique removed
           case 'remove':
             this.ctx.plan.steps.push({
-              query: this.ctx.knex.schema.alterTable(
-                targetState.name,
-                builder =>
-                  builder.dropUnique(
-                    currentState.uniques[uniqueName].columns,
-                    uniqueName,
-                  ),
+              query: this.ctx.knex.schema.alterTable(target.name, builder =>
+                builder.dropUnique(
+                  current.uniques[uniqueName].columns,
+                  uniqueName,
+                ),
               ),
               risk: MigrationRisk.LOW,
               description: `Dropping composite unique ${uniqueName}`,
@@ -251,8 +170,8 @@ export class Planner {
 
     // Primary key changed
     if (isPrimaryChanged || isPrimaryCreated || isPrimaryDropped) {
-      const currentPrimaries = ColumnTools.filterPrimary(currentState);
-      const expectedPrimaries = ColumnTools.filterPrimary(targetState);
+      const currentPrimaries = ColumnTools.filterPrimary(current);
+      const expectedPrimaries = ColumnTools.filterPrimary(target);
 
       // Remove the current primary keys
       if (currentPrimaries.length > 0) {
@@ -270,11 +189,11 @@ export class Planner {
 
         if (shouldDropPrimary) {
           this.ctx.plan.steps.push({
-            query: this.ctx.knex.schema.alterTable(targetState.name, builder =>
+            query: this.ctx.knex.schema.alterTable(target.name, builder =>
               builder.dropPrimary(),
             ),
             risk: MigrationRisk.LOW,
-            description: `Dropping primary for ${targetState.name}`,
+            description: `Dropping primary for ${target.name}`,
             phase: 3,
           });
         }
@@ -293,82 +212,16 @@ export class Planner {
 
         if (shouldAddCompositePrimary) {
           this.ctx.plan.steps.push({
-            query: this.ctx.knex.schema.alterTable(targetState.name, builder =>
+            query: this.ctx.knex.schema.alterTable(target.name, builder =>
               builder.primary(expectedPrimaries),
             ),
             risk: MigrationRisk.LOW,
-            description: `Creating primary for ${targetState.name}`,
+            description: `Creating primary for ${target.name}`,
             phase: 3,
           });
         }
       }
     }
-  }
-
-  protected changeUnique(
-    builder: Knex.AlterTableBuilder,
-    columnName: string,
-    columnDefinition: IColumn,
-  ) {
-    if (columnDefinition.isUnique) {
-      builder.unique([columnName]);
-    } else {
-      builder.dropUnique([columnName]);
-    }
-  }
-
-  protected changeNullable(
-    builder: Knex.AlterTableBuilder,
-    columnName: string,
-    columnDefinition: IColumn,
-  ) {
-    if (columnDefinition.isNullable) {
-      builder.setNullable(columnName);
-    } else {
-      builder.dropNullable(columnName);
-    }
-  }
-
-  protected changeDefaultValue(
-    builder: Knex.AlterTableBuilder,
-    columnName: string,
-    columnDefinition: IColumn,
-  ) {
-    let columnBuilder: Knex.ColumnBuilder;
-
-    if (columnDefinition.type.name === ColumnType.ENUM) {
-      columnBuilder = builder.enum(columnName, columnDefinition.type.values, {
-        useNative: true,
-        enumName: columnDefinition.type.nativeName,
-      });
-    } else if (columnDefinition.type.name === ColumnType.JSON) {
-      columnBuilder = builder.json(columnName);
-    } else if (columnDefinition.type.name === ColumnType.JSONB) {
-      columnBuilder = builder.jsonb(columnName);
-    } else {
-      columnBuilder = builder.specificType(
-        columnName,
-        generateNativeType(columnDefinition),
-      );
-    }
-
-    // Defauls is null
-    const isDefaultNull = columnDefinition.defaultValue === null;
-
-    // Add default value
-    if (columnDefinition.defaultValue !== undefined) {
-      columnBuilder.defaultTo(columnDefinition.defaultValue);
-    }
-
-    // Add null default value
-    if (isDefaultNull) {
-      columnBuilder.nullable();
-    }
-
-    columnBuilder.alter({
-      alterNullable: false,
-      alterType: false,
-    });
   }
 
   async _createTable(table: ITable): Promise<void> {

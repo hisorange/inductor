@@ -1,5 +1,5 @@
-import { ColumnType } from '../../types/column-type.enum';
-import { IColumn } from '../../types/column.interface';
+import { ColumnType } from '../../../types/column-type.enum';
+import { IColumn } from '../../../types/column.interface';
 
 export const generateNativeType = (column: IColumn): string => {
   let typeName: string = '';

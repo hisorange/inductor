@@ -1,4 +1,4 @@
-import { generateEnumName } from '../../src/library/planners/enum-name.generator';
+import { generateEnumName } from '../../src/library/planners/utils/enum-name.generator';
 import { ColumnType } from '../../src/types/column-type.enum';
 import { IColumn } from '../../src/types/column.interface';
 import { ColumnKind } from '../../src/types/column.kind';
