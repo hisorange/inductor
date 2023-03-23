@@ -7,7 +7,7 @@ import { IndexType } from '../types/index-type.enum';
 import { IRelation } from '../types/relation.interface';
 import { ITable } from '../types/table.interface';
 import { ColumnTools } from '../utils/column-tools';
-import { commentDecode } from '../utils/comment.coder';
+import { decodeComments } from '../utils/comment.coder';
 import { readDatabase } from './reflectors/database.reader';
 import { readRowCount } from './reflectors/row-count.reader';
 import { InitiateTable } from './table.initiator';
@@ -93,7 +93,7 @@ export class Reflection {
       };
 
       if (columnInfo.comment) {
-        commentDecode(columnDef, columnInfo.comment);
+        decodeComments(columnDef, columnInfo.comment);
       }
 
       columnDef.isIndexed = singleColumnIndexes.has(columnName)

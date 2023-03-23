@@ -3,7 +3,7 @@ import { ColumnType } from '../../types/column-type.enum';
 import { IColumn } from '../../types/column.interface';
 import { ITable } from '../../types/table.interface';
 import { ColumnTools } from '../../utils/column-tools';
-import { commentEncoder } from '../../utils/comment.coder';
+import { encodeComments } from '../../utils/comment.coder';
 import { Reflection } from '../reflection';
 import { generateNativeType } from './utils/native-type.generator';
 
@@ -69,7 +69,7 @@ export const createColumn = (
   }
 
   // Add comment for the column
-  const comment = commentEncoder(columnDesc);
+  const comment = encodeComments(columnDesc);
 
   if (comment && comment.length > 0) {
     columnBuilder.comment(comment);

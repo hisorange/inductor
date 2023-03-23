@@ -1,13 +1,13 @@
 import { ColumnCapability } from '../types/column.capability';
 import { IColumn } from '../types/column.interface';
 
-type CO = {
+type Comments = {
   c?: number; // capabilities
 };
 
-export const commentEncoder = (column: IColumn): string => {
+export const encodeComments = (column: IColumn): string => {
   if (column.capabilities.length) {
-    const r: CO = {};
+    const r: Comments = {};
 
     r.c = 0;
 
@@ -21,11 +21,11 @@ export const commentEncoder = (column: IColumn): string => {
   return '';
 };
 
-export const commentDecode = (column: IColumn, comment: string): IColumn => {
-  let r: CO;
+export const decodeComments = (column: IColumn, comment: string): IColumn => {
+  let r: Comments;
 
   try {
-    r = JSON.parse(comment) as CO;
+    r = JSON.parse(comment) as Comments;
 
     if (typeof r.c === 'number') {
       [
