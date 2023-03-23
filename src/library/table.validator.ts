@@ -124,6 +124,16 @@ export const ValidateTable = (table: ITable): void => {
             `Enumerated column [${name}] cannot have duplicate values`,
           );
         }
+
+        // Default value has to be one of the values
+        if (
+          definition.defaultValue &&
+          !definition.type.values.includes(definition.defaultValue as string)
+        ) {
+          throw new InvalidTable(
+            `Enumerated column [${name}] default value is not one of the values`,
+          );
+        }
       }
     }
   }
