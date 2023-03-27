@@ -1,8 +1,8 @@
-import { ChangeContext } from '../../types/change-context.interface';
+import { IChange } from '../../types/change.interface';
 import { MigrationRisk } from '../../types/migration-risk.enum';
 
 export const dropColumn = (
-  { ctx, target }: ChangeContext,
+  { context: ctx, target }: IChange,
   columnName: string,
 ) => {
   ctx.plan.steps.push({

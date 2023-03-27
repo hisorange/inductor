@@ -1,9 +1,9 @@
-import { ChangeContext } from '../../types/change-context.interface';
+import { IChange } from '../../types/change.interface';
 import { MigrationRisk } from '../../types/migration-risk.enum';
 import { ColumnTools } from '../../utils/column-tools';
 
 export const alterPrimaryKeys = (
-  { current, target, ctx }: ChangeContext,
+  { current, target, context: ctx }: IChange,
   {
     isPrimaryCreated,
     isPrimaryDropped,

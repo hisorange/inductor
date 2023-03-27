@@ -1,7 +1,7 @@
-import { ChangeContext } from '../../types/change-context.interface';
+import { IChange } from '../../types/change.interface';
 import { MigrationRisk } from '../../types/migration-risk.enum';
 
-export const alterIsLogged = ({ ctx, target }: ChangeContext) => {
+export const alterIsLogged = ({ context: ctx, target }: IChange) => {
   ctx.plan.steps.push({
     query: ctx.knex.schema.raw(
       `ALTER TABLE "${target.name}" SET ${

@@ -1,8 +1,8 @@
-import { ChangeContext } from '../../types/change-context.interface';
+import { IChange } from '../../types/change.interface';
 import { MigrationRisk } from '../../types/migration-risk.enum';
 
 export const addCompositeUnique = (
-  { current, target, ctx }: ChangeContext,
+  { current, target, context: ctx }: IChange,
   uniqueName: string,
 ) => {
   // We have to check if the unique existed before

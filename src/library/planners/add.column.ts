@@ -1,10 +1,10 @@
-import { ChangeContext } from '../../types/change-context.interface';
+import { IChange } from '../../types/change.interface';
 import { IColumn } from '../../types/column.interface';
 import { MigrationRisk } from '../../types/migration-risk.enum';
 import { createColumn } from './column.creator';
 
 export const addColumn = async (
-  { ctx, target }: ChangeContext,
+  { context: ctx, target }: IChange,
   cname: string,
   def: IColumn,
 ) => {

@@ -1,9 +1,9 @@
-import { ChangeContext } from '../../types/change-context.interface';
+import { IChange } from '../../types/change.interface';
 import { IColumn } from '../../types/column.interface';
 import { MigrationRisk } from '../../types/migration-risk.enum';
 
 export const alterUnique = (
-  { ctx, target }: ChangeContext,
+  { context: ctx, target }: IChange,
   columnName: string,
   columnDefinition: IColumn,
 ) => {

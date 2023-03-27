@@ -1,12 +1,12 @@
 import { Knex } from 'knex';
-import { ChangeContext } from '../../types/change-context.interface';
+import { IChange } from '../../types/change.interface';
 import { ColumnType } from '../../types/column-type.enum';
 import { IColumn } from '../../types/column.interface';
 import { MigrationRisk } from '../../types/migration-risk.enum';
 import { generateNativeType } from './utils/native-type.generator';
 
 export const alterDefaultValue = (
-  { ctx, target }: ChangeContext,
+  { context: ctx, target }: IChange,
   columnName: string,
   columnDefinition: IColumn,
 ) => {

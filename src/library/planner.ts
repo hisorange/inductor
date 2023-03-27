@@ -1,6 +1,6 @@
-import { diff } from 'just-diff';
+import { diff, Operation } from 'just-diff';
 import { NotImplemented } from '../exception/not-implemented.exception';
-import { ChangeContext } from '../types/change-context.interface';
+import { IChange } from '../types/change.interface';
 import { IColumn } from '../types/column.interface';
 import { IMigrationContext } from '../types/migration-context.interface';
 import { ITable } from '../types/table.interface';
@@ -47,34 +47,31 @@ export class Planner {
     const current = this.ctx.reflection.getTableState(target.name);
     const differences = diff(stripMeta(current), stripMeta(target));
     // Track the primary keys change, since it may has to be altered after the columns
-    let isPrimaryChanged = false;
     let isPrimaryCreated = false;
     let isPrimaryDropped = false;
 
     // Create context for the changes
-    const change: ChangeContext = {
-      ctx: this.ctx,
+    const change: IChange = {
+      context: this.ctx,
       target,
       current,
+      isPrimaryChanged: false,
     };
 
     for (const entry of differences) {
-      const { op: operation, path } = entry;
-      const tableProperty = path[0] as keyof ITable;
+      const { op, path } = entry;
+      const tableKey = path[0] as keyof ITable;
 
       // Changes the isLogged state
-      if (tableProperty === 'isLogged') {
-        if (operation === 'replace') {
-          alterIsLogged(change);
-        }
+      if (tableKey === 'isLogged') {
+        alterIsLogged(change);
       }
-
       // Changes a column
-      if (tableProperty === 'columns') {
+      else if (tableKey === 'columns') {
         const columnName = path[1] as string;
         const columnDefinition = target.columns[columnName];
 
-        switch (operation) {
+        switch (op) {
           // Adds a new column
           case 'add':
             await addColumn(change, columnName, columnDefinition);
@@ -95,58 +92,86 @@ export class Planner {
 
           // Column definition changed
           case 'replace':
-            const columnProperty = path[2] as keyof IColumn;
-
-            switch (columnProperty) {
-              case 'isPrimary':
-                isPrimaryChanged = true;
-                break;
-              case 'isNullable':
-                alterNullable(change, columnName, columnDefinition);
-                break;
-              case 'isUnique':
-                alterUnique(change, columnName, columnDefinition);
-                break;
-              case 'isIndexed':
-                alterIndex();
-                break;
-              case 'defaultValue':
-                alterDefaultValue(change, columnName, columnDefinition);
-                break;
-              case 'type':
-                alterType();
-                break;
-              default:
-                throw new NotImplemented(
-                  `Column alteration for [${path[2]}] is not implemented`,
-                );
-            }
+            await this.handleColumnChange(
+              change,
+              path[2] as keyof IColumn,
+              columnName,
+              columnDefinition,
+            );
+            break;
         }
       }
       // Change is affecting the unique set
-      else if (tableProperty === 'uniques') {
-        const uniqueName = path[1] as string;
-
-        switch (operation) {
-          // New unique added
-          case 'add':
-            addCompositeUnique(change, uniqueName);
-            break;
-
-          // Unique removed
-          case 'remove':
-            dropCompositeUnique(change, uniqueName);
-            break;
-        }
+      else if (tableKey === 'uniques') {
+        await this.handleUniqueChange(change, op, path[1] as string);
+      }
+      // Change is affecting the indexes
+      else if (tableKey === 'indexes') {
+      }
+      // Change is affecting the foreign keys
+      else if (tableKey === 'relations') {
       }
     }
 
     // Primary key changed
-    if (isPrimaryChanged || isPrimaryCreated || isPrimaryDropped) {
+    if (change.isPrimaryChanged || isPrimaryCreated || isPrimaryDropped) {
       alterPrimaryKeys(change, {
         isPrimaryCreated,
         isPrimaryDropped,
       });
+    }
+  }
+
+  protected async handleColumnChange(
+    change: IChange,
+    key: keyof IColumn,
+    name: string,
+    definition: IColumn,
+  ) {
+    switch (key) {
+      case 'capabilities':
+        // TODO: Implement capability changes
+        break;
+      case 'isPrimary':
+        change.isPrimaryChanged = true;
+        break;
+      case 'isNullable':
+        alterNullable(change, name, definition);
+        break;
+      case 'isUnique':
+        alterUnique(change, name, definition);
+        break;
+      case 'isIndexed':
+        alterIndex();
+        break;
+      case 'defaultValue':
+        alterDefaultValue(change, name, definition);
+        break;
+      case 'type':
+        alterType();
+        break;
+      default:
+        throw new NotImplemented(
+          `Column alteration for [${key}] is not implemented`,
+        );
+    }
+  }
+
+  protected async handleUniqueChange(
+    change: IChange,
+    op: Operation,
+    name: string,
+  ) {
+    switch (op) {
+      // New unique added
+      case 'add':
+        addCompositeUnique(change, name);
+        break;
+
+      // Unique removed
+      case 'remove':
+        dropCompositeUnique(change, name);
+        break;
     }
   }
 }

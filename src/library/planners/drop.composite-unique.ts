@@ -1,8 +1,8 @@
-import { ChangeContext } from '../../types/change-context.interface';
+import { IChange } from '../../types/change.interface';
 import { MigrationRisk } from '../../types/migration-risk.enum';
 
 export const dropCompositeUnique = (
-  { ctx, current, target }: ChangeContext,
+  { context: ctx, current, target }: IChange,
   uniqueName: string,
 ) => {
   ctx.plan.steps.push({
