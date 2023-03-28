@@ -11,6 +11,14 @@ export class ModelManager {
 
   constructor(protected readonly migrator: Migrator) {}
 
+  public asJson(tableName: string): string {
+    return JSON.stringify(this.getTable(tableName), null, 2);
+  }
+
+  public fromJson(json: string): void {
+    this.addTable(JSON.parse(json) as ITable);
+  }
+
   public getTableMap(): TableMap {
     return this.tables;
   }
