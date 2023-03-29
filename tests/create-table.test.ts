@@ -22,9 +22,10 @@ describe('Create Table from Table', () => {
       table.columns = TestColumns;
 
       await driver.set([table]);
-      await driver.migrator.reflection.refresh();
 
-      expect(driver.migrator.reflection.isTableExists(tableName)).toBeTruthy();
+      const newState = await driver.migrator.read();
+
+      expect(newState.find(t => table.name == tableName)).toBeTruthy();
     },
   );
 });
