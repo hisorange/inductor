@@ -1,6 +1,7 @@
 import { NotImplemented } from '../../exception/not-implemented.exception';
 import { IChange } from '../../types/change.interface';
 import { IColumn } from '../../types/column.interface';
+import { alterCapabilities } from './alter.capabilities';
 import { alterDefaultValue } from './alter.default-value';
 import { alterIndex } from './alter.index';
 import { alterNullable } from './alter.nullable';
@@ -15,7 +16,7 @@ export const alterColumn = async (
 ) => {
   switch (key) {
     case 'capabilities':
-      // TODO: Implement capability changes
+      alterCapabilities(change, name);
       break;
     case 'isPrimary':
       change.isPrimaryChanged = true;

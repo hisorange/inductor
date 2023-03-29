@@ -52,6 +52,8 @@ export class Planner {
       isPrimaryChanged: false,
     };
 
+    // console.log('Differences: ', differences);
+
     for (const entry of differences) {
       const { op, path } = entry;
       const tableKey = path[0] as keyof ITable;
@@ -65,34 +67,43 @@ export class Planner {
         const columnName = path[1] as string;
         const columnDefinition = target.columns[columnName];
 
-        switch (op) {
-          // Adds a new column
-          case 'add':
-            await addColumn(change, columnName, columnDefinition);
+        if (path.length === 2) {
+          switch (op) {
+            // Adds a new column
+            case 'add':
+              await addColumn(change, columnName, columnDefinition);
 
-            // Primary columns altered
-            isPrimaryCreated =
-              isPrimaryCreated || target.columns[columnName].isPrimary;
-            break;
+              // Primary columns altered
+              isPrimaryCreated =
+                isPrimaryCreated || target.columns[columnName].isPrimary;
+              break;
 
-          // Drops a column
-          case 'remove':
-            dropColumn(change, columnName);
+            // Drops a column
+            case 'remove':
+              dropColumn(change, columnName);
 
-            // Primary columns altered
-            isPrimaryDropped =
-              isPrimaryDropped || current.columns[columnName].isPrimary;
-            break;
+              // Primary columns altered
+              isPrimaryDropped =
+                isPrimaryDropped || current.columns[columnName].isPrimary;
+              break;
 
-          // Column definition changed
-          case 'replace':
-            await alterColumn(
-              change,
-              path[2] as keyof IColumn,
-              columnName,
-              columnDefinition,
-            );
-            break;
+            // Column definition changed
+            case 'replace':
+              await alterColumn(
+                change,
+                path[2] as keyof IColumn,
+                columnName,
+                columnDefinition,
+              );
+              break;
+          }
+        } else {
+          await alterColumn(
+            change,
+            path[2] as keyof IColumn,
+            columnName,
+            columnDefinition,
+          );
         }
       }
       // Change is affecting the unique set
