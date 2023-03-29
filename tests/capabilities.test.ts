@@ -19,6 +19,10 @@ describe('Capabilities', () => {
     'should be able to associate [%s] capabilities with a column',
     async (ref: string, cap: ColumnCapability) => {
       const tableName = `capability_${ref}`;
+      const columnName = 'cappedColumn' + cap;
+
+      // Drop table if exists from a previous test
+      await driver.migrator.drop(tableName);
 
       const table = InitiateTable(tableName);
       table.columns = {
@@ -26,17 +30,15 @@ describe('Capabilities', () => {
           ...createTestColumn(ColumnType.SERIAL),
           isPrimary: true,
         },
-        cappedColumn: {
-          ...createTestColumn(ColumnType.INTEGER),
+        [columnName]: {
+          ...createTestColumn(
+            cap === ColumnCapability.VERSION
+              ? ColumnType.INTEGER
+              : ColumnType.DATE,
+          ),
           capabilities: [cap],
         },
       };
-
-      if (cap !== ColumnCapability.CREATED_AT) {
-        table.columns.cappedColumn.capabilities.push(
-          ColumnCapability.CREATED_AT,
-        );
-      }
 
       // Remove table if exists from a previous test
       await driver.set([table]);
@@ -59,7 +61,7 @@ describe('Capabilities', () => {
         isPrimary: true,
       },
       with_cap: {
-        ...createTestColumn(ColumnType.INTEGER),
+        ...createTestColumn(ColumnType.TIMESTAMP),
         capabilities: [ColumnCapability.CREATED_AT],
       },
     };

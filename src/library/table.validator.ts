@@ -1,5 +1,6 @@
 import { InvalidTable } from '../exception/invalid-table.exception';
 import { ColumnType } from '../types/column-type.enum';
+import { ColumnCapability } from '../types/column.capability';
 import { IndexType } from '../types/index-type.enum';
 import { ITable } from '../types/table.interface';
 import { ColumnTools } from '../utils/column-tools';
@@ -56,10 +57,55 @@ export const ValidateTable = (table: ITable): void => {
     throw new InvalidTable('Table name format is invalid');
   }
 
+  // Collect alias names for later validation
+  const aliases = [];
+
   for (const name in table.columns) {
     if (Object.prototype.hasOwnProperty.call(table.columns, name)) {
       const definition = table.columns[name];
       const isSerialType = ColumnTools.isSerialType(definition);
+
+      if (definition.alias) {
+        aliases.push(definition.alias);
+      }
+
+      if (definition.capabilities && definition.capabilities.length > 0) {
+        // Exclusive capabilities
+        if (
+          definition.capabilities.includes(ColumnCapability.CREATED_AT) ||
+          definition.capabilities.includes(ColumnCapability.UPDATED_AT) ||
+          definition.capabilities.includes(ColumnCapability.DELETED_AT) ||
+          definition.capabilities.includes(ColumnCapability.VERSION)
+        ) {
+          if (definition.capabilities.length > 1) {
+            throw new InvalidTable(
+              `Column [${name}] cannot have other capabilities when using CreatedAt, UpdatedAt, DeletedAt or Version capabilities`,
+            );
+          }
+        }
+
+        // CreatedAt, UpdatedAt, or DeletedAt can only be a date or timestamp
+        if (
+          definition.capabilities.includes(ColumnCapability.CREATED_AT) ||
+          definition.capabilities.includes(ColumnCapability.UPDATED_AT) ||
+          definition.capabilities.includes(ColumnCapability.DELETED_AT)
+        ) {
+          if (!ColumnTools.isDateType(definition)) {
+            throw new InvalidTable(
+              `Column [${name}] must be a date or timestamp when using CreatedAt, UpdatedAt or DeletedAt capabilities`,
+            );
+          }
+        }
+
+        // Version can only be a number
+        if (definition.capabilities.includes(ColumnCapability.VERSION)) {
+          if (!ColumnTools.isIntegerType(definition)) {
+            throw new InvalidTable(
+              `Column [${name}] must be a number when using Version capability`,
+            );
+          }
+        }
+      }
 
       // Serial columns are always primary
       if (!definition.isPrimary && isSerialType) {
@@ -150,6 +196,24 @@ export const ValidateTable = (table: ITable): void => {
         }
       }
     }
+  }
+
+  // Alias cannot collide with column names
+  for (const name in table.columns) {
+    if (Object.prototype.hasOwnProperty.call(table.columns, name)) {
+      const definition = table.columns[name];
+
+      if (definition.alias && aliases.includes(name)) {
+        throw new InvalidTable(
+          `Column [${name}] alias cannot collide with another column`,
+        );
+      }
+    }
+  }
+
+  // Alias has to be unique
+  if (new Set(aliases).size !== aliases.length) {
+    throw new InvalidTable('Column aliases have to be unique');
   }
 
   // Validate composite indexes

@@ -56,15 +56,20 @@ const FloatTypes = [
   ColumnType.NUMERIC,
 ];
 
+const DateTypes = [
+  ColumnType.DATE,
+  ColumnType.TIMESTAMP,
+  ColumnType.TIMESTAMP_WITH_TIMEZONE,
+];
+
 const LengthRequiredTypes = [ColumnType.BIT_VARYING, ColumnType.CHAR_VARYING];
 
 const PrecisionRequiredTypes = [ColumnType.NUMERIC];
 
 const ScaleRequiredTypes = [ColumnType.NUMERIC];
 
-/**
- * Check if the column is serial type
- */
+const isDateType = (column: IColumn): boolean =>
+  DateTypes.includes(column.type.name);
 
 const isSerialType = (column: IColumn): boolean =>
   SerialTypes.includes(column.type.name);
@@ -177,6 +182,9 @@ const _ColumnTools = {
   },
 };
 
+const isJsonType = (column: IColumn): boolean =>
+  column.type.name === ColumnType.JSON || column.type.name === ColumnType.JSONB;
+
 // Find and filter the primary column names from the table
 export const filterPrimary = (table: ITable) => {
   const primaries = [];
@@ -200,5 +208,7 @@ export const ColumnTools = {
   isIntegerType,
   isSerialType,
   isFloatType,
+  isJsonType,
   filterPrimary,
+  isDateType,
 };

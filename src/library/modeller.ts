@@ -1,5 +1,6 @@
-import { Model, ModelClass, Pojo } from 'objection';
+import { Model, ModelClass, ModelOptions, Pojo, QueryContext } from 'objection';
 import { ModelNotFound } from '../exception/model-not-found.exception';
+import { ColumnCapability } from '../types/column.capability';
 import { ITable } from '../types/table.interface';
 import { TableMap } from '../types/table.map';
 import { ColumnTools } from '../utils/column-tools';
@@ -68,68 +69,157 @@ export class Modeller {
    * Convert the table into a model class.
    */
   protected toModel(table: ITable): ModelClass<Model> {
+    const model = class extends Model {} as ModelClass<Model>;
+
+    model.tableName = table.name;
+
     // Prepare fast lookup maps for both propery and column name conversions.
     // Even tho this is a small amount of data, it's worth it to avoid
     // having to iterate over the properties of the model class.
-    const columnMap = new Map<string, string>();
-    const propertyMap = new Map<string, string>();
+    const columnToProperty = new Map<string, string>();
+    const propertyToColumn = new Map<string, string>();
 
     for (const columnName in table.columns) {
       if (Object.prototype.hasOwnProperty.call(table.columns, columnName)) {
-        // TODO map from meta defintion
+        const column = table.columns[columnName];
 
         // Map column names to property names
-        columnMap.set(columnName, columnName);
+        columnToProperty.set(columnName, column.alias || columnName);
         // Map property names to column names
-        propertyMap.set(columnName, columnName);
+        propertyToColumn.set(column.alias || columnName, columnName);
       }
     }
 
+    model.idColumn = ColumnTools.filterPrimary(table);
+
+    // TODO: getter and setter hooks
+
     // Map database columns to code level references
     // Database -> Model = Getter
-    const databaseToModel = (dbPojo: Pojo): Pojo => {
-      const modelPojo: Pojo = {};
+    const databaseToModel = function (dbPojo: Pojo): Pojo {
+      Object.keys(dbPojo).forEach(column => {
+        const property = columnToProperty.get(column)!;
 
-      for (const columnName of Object.keys(dbPojo)) {
-        modelPojo[columnMap.get(columnName)!] = dbPojo[columnName];
-      }
+        if (property !== column) {
+          dbPojo[columnToProperty.get(column)!] = dbPojo[column];
+          delete dbPojo[column];
+        }
+      });
 
       return dbPojo;
     };
 
     // Map code level references to database columns
     // Database -> Model = Setter
-    const modelToDatabase = (modelPojo: Pojo): Pojo => {
-      const dbPojo: Pojo = {};
+    const modelToDatabase = function (modelPojo: Pojo): Pojo {
+      Object.keys(modelPojo).forEach(property => {
+        const column = propertyToColumn.get(property)!;
 
-      for (const propertyName of Object.keys(modelPojo)) {
-        dbPojo[propertyMap.get(propertyName)!] = modelPojo[propertyName];
-      }
+        if (property !== column) {
+          modelPojo[column] = modelPojo[property];
+          delete modelPojo[property];
+        }
+      });
 
-      return dbPojo;
+      return modelPojo;
     };
 
-    // Hook before the model is created
-    const onCreate = () => {};
+    // Quick lookup for the capabilities
+    const createdAtProps = new Set<string>();
+    const updatedAtProps = new Set<string>();
+    const versionProps = new Set<string>();
 
-    // Hook before the model is updated
-    const onUpdate = () => {};
+    // Set of JSON or JSONB columns
+    const jsonProps = new Set<string>();
 
-    const model = class extends Model {};
+    Object.keys(table.columns).forEach(columnName => {
+      const column = table.columns[columnName];
+      const property = columnToProperty.get(columnName)!;
+      const capabilities = column.capabilities;
 
-    model.tableName = table.name;
-    model.idColumn = ColumnTools.filterPrimary(table);
+      if (capabilities.length) {
+        if (capabilities.includes(ColumnCapability.VERSION)) {
+          versionProps.add(property);
+        } else if (capabilities.includes(ColumnCapability.CREATED_AT)) {
+          createdAtProps.add(property);
+        } else if (capabilities.includes(ColumnCapability.UPDATED_AT)) {
+          updatedAtProps.add(property);
+        }
+      }
+
+      if (ColumnTools.isJsonType(column)) {
+        jsonProps.add(property);
+      }
+    });
+
+    // Hook before the model is created only if there is any capability that activates it
+    if (createdAtProps.size || versionProps.size) {
+      model.prototype.$beforeInsert = function () {
+        const properties = Object.keys(this);
+
+        if (createdAtProps.size) {
+          const createdAt = new Date()
+            .toISOString()
+            .replace(/T|Z/g, ' ')
+            .trim();
+
+          createdAtProps.forEach(property => {
+            if (!properties.includes(property) || !this[property]) {
+              this[property] = createdAt;
+            }
+          });
+        }
+
+        if (versionProps.size) {
+          versionProps.forEach(property => {
+            this[property] = 1;
+          });
+        }
+      };
+    }
+
+    // Hook before the model is updated only if there is any capability that activates it
+    if (updatedAtProps.size || versionProps.size) {
+      model.prototype.$beforeUpdate = function (
+        opts: ModelOptions,
+        queryContext: QueryContext,
+      ) {
+        const properties = Object.keys(this);
+
+        console.log('Before update', properties);
+
+        if (updatedAtProps.size) {
+          const updatedAt = new Date().toISOString().replace(/T|Z/g, ' ');
+
+          updatedAtProps.forEach(property => {
+            this[property] = updatedAt;
+          });
+        }
+
+        if (versionProps.size) {
+          versionProps.forEach(property => {
+            if (properties.includes(property)) {
+              this[property] = this[property] + 1;
+            }
+
+            // queryContext.transaction.increment(property, 1);
+            // console.log('Incrementing', property, this[property]);
+          });
+        }
+      };
+    }
+
+    model.jsonAttributes = Array.from(jsonProps);
 
     model.columnNameMappers = {
       parse: databaseToModel,
       format: modelToDatabase,
     };
 
-    // model.prototype.$beforeInsert = onCreate;
-    // model.prototype.$beforeUpdate = onUpdate;
-
     // Associate the knex instance with the newly created model class.
     model.knex(this.migrator.connection);
+
+    // TODO: map relations in context for the database
 
     return model;
   }
