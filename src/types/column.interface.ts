@@ -118,6 +118,11 @@ export interface IColumn<ColumnMeta = unknown> {
   capabilities: ColumnCapability[];
 
   /**
+   * Model mapping to property name
+   */
+  alias?: string;
+
+  /**
    * Associated metadata with the database
    */
   meta?: ColumnMeta;

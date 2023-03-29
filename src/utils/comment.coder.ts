@@ -3,31 +3,37 @@ import { IColumn } from '../types/column.interface';
 
 type Comments = {
   c?: number; // capabilities
+  a?: string; // alias
 };
 
 export const encodeComments = (column: IColumn): string => {
-  if (column.capabilities.length) {
-    const r: Comments = {};
+  const r: Comments = {};
 
+  if (column.capabilities.length) {
     r.c = 0;
 
     for (const cap of column.capabilities.sort()) {
       r.c = r.c! | cap;
     }
-
-    return JSON.stringify(r);
   }
 
-  return '';
+  if (column.alias) {
+    r.a = column.alias;
+  }
+
+  return Object.keys(r).length ? JSON.stringify(r) : '';
 };
 
 export const decodeComments = (column: IColumn, comment: string): IColumn => {
-  let r: Comments;
+  // Skip on empty comment
+  if (!comment || !comment.length || comment === '{}') {
+    return column;
+  }
 
   try {
-    r = JSON.parse(comment) as Comments;
+    let r: Comments = JSON.parse(comment) as Comments;
 
-    if (typeof r.c === 'number') {
+    if (r.c && typeof r.c === 'number') {
       [
         ColumnCapability.CREATED_AT,
         ColumnCapability.UPDATED_AT,
@@ -36,6 +42,10 @@ export const decodeComments = (column: IColumn, comment: string): IColumn => {
       ].forEach(cap => r.c! & cap && column.capabilities.push(cap));
 
       column.capabilities.sort((a, b) => a - b);
+    }
+
+    if (r.a && typeof r.a === 'string') {
+      column.alias = r.a;
     }
 
     return column;

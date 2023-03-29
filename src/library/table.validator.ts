@@ -101,6 +101,20 @@ export const ValidateTable = (table: ITable): void => {
         throw new InvalidTable(`Primary column [${name}] cannot be nullable`);
       }
 
+      // Alias cannot contain any control characters
+      if (definition.alias && definition.alias.match(/[\x00-\x1F\x7F]/)) {
+        throw new InvalidTable(
+          `Column [${name}] alias cannot contain control characters`,
+        );
+      }
+
+      // Alias cannot start or end with a space
+      if (definition.alias && definition.alias.match(/^ | $/)) {
+        throw new InvalidTable(
+          `Column [${name}] alias cannot start or end with a space`,
+        );
+      }
+
       if (definition.type.name === ColumnType.ENUM) {
         // Enumerators only support text values
         if (definition.type.values.some(value => typeof value !== 'string')) {
