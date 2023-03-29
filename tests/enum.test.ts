@@ -8,7 +8,7 @@ import { createTestDriver } from './util/create-connection';
 describe('Enumerated Column', () => {
   const driver = createTestDriver();
 
-  afterAll(() => driver.closeConnection());
+  afterAll(() => driver.close());
 
   test.each([
     ['single', ['one']],
@@ -40,13 +40,13 @@ describe('Enumerated Column', () => {
       ).nativeName = `enum_${setType}_CapitalHit`;
 
       // Remove table if exists from a previous test
-      await driver.migrator.dropTable(table.name);
-      await driver.setState([table]);
+      await driver.migrator.drop(table.name);
+      await driver.set([table]);
 
-      expect((await driver.readState([tableName]))[0]).toStrictEqual(table);
+      expect((await driver.read([tableName]))[0]).toStrictEqual(table);
 
       // Cleanup
-      await driver.migrator.dropTable(table.name);
+      await driver.migrator.drop(table.name);
     },
   );
 
@@ -73,9 +73,9 @@ describe('Enumerated Column', () => {
       },
     };
 
-    await driver.migrator.dropTable(tableName);
-    await driver.setState([tableV1]);
-    expect((await driver.readState([tableName]))[0]).toStrictEqual(tableV1);
+    await driver.migrator.drop(tableName);
+    await driver.set([tableV1]);
+    expect((await driver.read([tableName]))[0]).toStrictEqual(tableV1);
 
     const tableV2 = cloneDeep(tableV1);
     (tableV2.columns.enum_column.type as EnumColumnType).values = [
@@ -83,8 +83,8 @@ describe('Enumerated Column', () => {
       'b',
       'd',
     ];
-    await driver.setState([tableV2]);
+    await driver.set([tableV2]);
 
-    expect((await driver.readState([tableName]))[0]).toStrictEqual(tableV2);
+    expect((await driver.read([tableName]))[0]).toStrictEqual(tableV2);
   });
 });

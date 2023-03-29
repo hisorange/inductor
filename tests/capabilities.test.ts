@@ -7,7 +7,7 @@ import { createTestDriver } from './util/create-connection';
 describe('Capabilities', () => {
   const driver = createTestDriver();
 
-  afterAll(() => driver.closeConnection());
+  afterAll(() => driver.close());
 
   test.each([
     ['CREATED_AT', ColumnCapability.CREATED_AT],
@@ -38,10 +38,10 @@ describe('Capabilities', () => {
       }
 
       // Remove table if exists from a previous test
-      await driver.setState([table]);
-      expect(table).toStrictEqual((await driver.readState([tableName]))[0]);
+      await driver.set([table]);
+      expect(table).toStrictEqual((await driver.read([tableName]))[0]);
 
-      await driver.migrator.dropTable(tableName);
+      await driver.migrator.drop(tableName);
     },
   );
 });

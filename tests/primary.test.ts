@@ -22,18 +22,14 @@ describe('Primary Constraint', () => {
   const testTables = Object.keys(primaryColumns);
 
   const clearTables = async () => {
-    await driver.migrator.dropTable(`alter_primary_extend`);
+    await driver.migrator.drop(`alter_primary_extend`);
 
     await Promise.all(
-      testTables.map(name =>
-        driver.migrator.dropTable(`create_primary_${name}`),
-      ),
+      testTables.map(name => driver.migrator.drop(`create_primary_${name}`)),
     );
 
     await Promise.all(
-      testTables.map(name =>
-        driver.migrator.dropTable(`alter_primary_${name}`),
-      ),
+      testTables.map(name => driver.migrator.drop(`alter_primary_${name}`)),
     );
   };
 
@@ -41,7 +37,7 @@ describe('Primary Constraint', () => {
 
   afterAll(async () => {
     await clearTables();
-    await driver.closeConnection();
+    await driver.close();
   });
 
   test.each(testTables)(
@@ -55,9 +51,9 @@ describe('Primary Constraint', () => {
           isPrimary: true,
         },
       };
-      await driver.setState([testTable]);
+      await driver.set([testTable]);
 
-      expect(testTable).toStrictEqual((await driver.readState([tableName]))[0]);
+      expect(testTable).toStrictEqual((await driver.read([tableName]))[0]);
     },
   );
 
@@ -78,23 +74,23 @@ describe('Primary Constraint', () => {
       };
 
       tableRV1.columns[colName].isPrimary = false;
-      await driver.setState([tableRV1]);
+      await driver.set([tableRV1]);
 
-      expect(tableRV1).toStrictEqual((await driver.readState([tableName]))[0]);
+      expect(tableRV1).toStrictEqual((await driver.read([tableName]))[0]);
 
       const tableRV2 = cloneDeep(tableRV1);
       tableRV2.columns[colName].isPrimary = true;
-      await driver.setState([tableRV2]);
+      await driver.set([tableRV2]);
 
-      expect(tableRV2).toStrictEqual((await driver.readState([tableName]))[0]);
+      expect(tableRV2).toStrictEqual((await driver.read([tableName]))[0]);
 
       const tableRV3 = cloneDeep(tableRV2);
       // Revert the nullable
       tableRV3.columns[colName].isPrimary = false;
 
-      await driver.setState([tableRV3]);
+      await driver.set([tableRV3]);
 
-      expect(tableRV3).toStrictEqual((await driver.readState([tableName]))[0]);
+      expect(tableRV3).toStrictEqual((await driver.read([tableName]))[0]);
     },
     5_000,
   );
@@ -108,9 +104,9 @@ describe('Primary Constraint', () => {
         isPrimary: true,
       },
     };
-    await driver.setState([tableRV1]);
+    await driver.set([tableRV1]);
 
-    expect(tableRV1).toStrictEqual((await driver.readState([tableName]))[0]);
+    expect(tableRV1).toStrictEqual((await driver.read([tableName]))[0]);
 
     // Extend the primary
     const tableRV2 = cloneDeep(tableRV1);
@@ -118,9 +114,9 @@ describe('Primary Constraint', () => {
       ...createTestColumn(ColumnType.INTEGER),
       isPrimary: true,
     };
-    await driver.setState([tableRV2]);
+    await driver.set([tableRV2]);
 
-    expect(tableRV2).toStrictEqual((await driver.readState([tableName]))[0]);
+    expect(tableRV2).toStrictEqual((await driver.read([tableName]))[0]);
 
     // Add the third primary column
     const tableRV3 = cloneDeep(tableRV2);
@@ -128,22 +124,22 @@ describe('Primary Constraint', () => {
       ...createTestColumn(ColumnType.INTEGER),
       isPrimary: true,
     };
-    await driver.setState([tableRV3]);
+    await driver.set([tableRV3]);
 
-    expect(tableRV3).toStrictEqual((await driver.readState([tableName]))[0]);
+    expect(tableRV3).toStrictEqual((await driver.read([tableName]))[0]);
 
     // Remove the third primary column
     const tableRV4 = cloneDeep(tableRV3);
     tableRV4.columns.third.isPrimary = false;
-    await driver.setState([tableRV4]);
+    await driver.set([tableRV4]);
 
-    expect(tableRV4).toStrictEqual((await driver.readState([tableName]))[0]);
+    expect(tableRV4).toStrictEqual((await driver.read([tableName]))[0]);
 
     // Remove the second primary column
     const tableRV5 = cloneDeep(tableRV4);
     tableRV5.columns.second.isPrimary = false;
-    await driver.setState([tableRV5]);
+    await driver.set([tableRV5]);
 
-    expect(tableRV5).toStrictEqual((await driver.readState([tableName]))[0]);
+    expect(tableRV5).toStrictEqual((await driver.read([tableName]))[0]);
   });
 });

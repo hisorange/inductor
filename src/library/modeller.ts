@@ -6,7 +6,7 @@ import { ColumnTools } from '../utils/column-tools';
 import type { Migrator } from './migrator';
 import { ValidateTable } from './table.validator';
 
-export class ModelManager {
+export class Modeller {
   protected tables: TableMap = new Map();
 
   constructor(protected readonly migrator: Migrator) {}
@@ -27,32 +27,6 @@ export class ModelManager {
     this.tables.clear();
 
     tables.forEach(table => this.addTable(table));
-  }
-
-  public validateRelations(): void {
-    for (const { table } of this.tables.values()) {
-      if (table.relations) {
-        for (const relationName in table.relations) {
-          if (
-            Object.prototype.hasOwnProperty.call(table.relations, relationName)
-          ) {
-            const relationDefinition = table.relations[relationName];
-
-            if (relationDefinition.references.table) {
-              if (
-                !this.migrator.reflection.isTableExists(
-                  relationDefinition.references.table,
-                )
-              ) {
-                throw new Error(
-                  `Table ${relationDefinition.references.table} not found`,
-                );
-              }
-            }
-          }
-        }
-      }
-    }
   }
 
   public addTable(table: ITable): void {
@@ -155,7 +129,7 @@ export class ModelManager {
     // model.prototype.$beforeUpdate = onUpdate;
 
     // Associate the knex instance with the newly created model class.
-    model.knex(this.migrator.knex);
+    model.knex(this.migrator.connection);
 
     return model;
   }

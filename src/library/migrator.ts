@@ -6,20 +6,20 @@ import { ITable } from '../types/table.interface';
 import { Plan } from './plan';
 import { Planner } from './planner';
 import { Reflection } from './reflection';
+import { readDatabase } from './reflectors/database.reader';
 
 // Calculates and applies the changes on the database
 export class Migrator {
-  readonly reflection: Reflection;
   readonly logger: Logger;
-  readonly knex: Knex;
+  readonly connection: Knex;
 
   constructor(sessionId: string, database: IDatabase) {
-    const connection = database.connection;
-    connection.application_name = `inductor.${sessionId}`;
-
-    this.knex = knex({
+    this.connection = knex({
       client: 'pg',
-      connection,
+      connection: {
+        ...database.connection,
+        application_name: `inductor.${sessionId}`,
+      },
       pool: {
         max: 50,
         min: 0,
@@ -32,38 +32,37 @@ export class Migrator {
       level: process.env.NODE_ENV === 'production' ? 'warn' : 'debug',
       enabled: process.env.NODE_ENV !== 'test',
     });
+  }
 
-    this.reflection = new Reflection(this.knex);
+  protected async reflect(): Promise<Reflection> {
+    return new Reflection(this.connection, await readDatabase(this.connection));
   }
 
   /**
    * Read the database state and return it as a list of tables.
    */
-  async readDatabaseState(filters: string[] = []): Promise<ITable[]> {
-    const tables = [];
-    await this.reflection.refresh();
+  async read(filters: string[] = []): Promise<ITable[]> {
+    const reflection = await this.reflect();
 
-    for (const table of this.reflection.getTables(filters)) {
-      tables.push(this.reflection.getTableState(table));
-    }
-
-    return tables;
+    return reflection
+      .getTables(filters)
+      .map(table => reflection.getTableState(table));
   }
 
-  async compareDatabaseState(tables: ITable[]): Promise<Plan> {
+  async compare(tables: ITable[]): Promise<Plan> {
+    const reflection = await this.reflect();
     const ctx: IMigrationContext = {
-      knex: this.knex,
-      reflection: this.reflection,
+      knex: this.connection,
+      reflection: reflection,
       plan: new Plan(this.logger),
     };
 
-    await this.reflection.refresh();
     const planner = new Planner(ctx);
 
     await Promise.all(
       tables.map(table => {
         // If the table doesn't exist, create it
-        if (!this.reflection.isTableExists(table.name)) {
+        if (!reflection.isTableExists(table.name)) {
           return planner.createTable(table);
         }
         // If the table exists, compare the state and apply the alterations
@@ -76,11 +75,7 @@ export class Migrator {
     return ctx.plan;
   }
 
-  async dropTable(tableName: string): Promise<void> {
-    await this.knex.schema.dropTableIfExists(tableName);
-
-    if (!this.reflection.isTableExists(tableName)) {
-      this.reflection.removeTable(tableName);
-    }
+  async drop(tableName: string): Promise<void> {
+    await this.connection.schema.dropTableIfExists(tableName);
   }
 }

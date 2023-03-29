@@ -7,31 +7,12 @@ import { IRelation } from '../types/relation.interface';
 import { ITable } from '../types/table.interface';
 import { ColumnTools } from '../utils/column-tools';
 import { decodeComments } from '../utils/comment.coder';
-import { readDatabase } from './reflectors/database.reader';
 import { readRowCount } from './reflectors/row-count.reader';
 import { InitiateTable } from './table.initiator';
 import { ValidateTable } from './table.validator';
 
 export class Reflection {
-  public state: IDatabaseState = {
-    tables: [],
-    unloggedTables: [],
-    types: [],
-    uniqueConstraints: [],
-    uniques: {},
-    relations: {},
-    tableRowChecks: new Map<string, boolean>(),
-    compositePrimaryKeys: {},
-    indexes: {},
-    columnValues: {},
-    enumerators: {},
-  };
-
-  constructor(readonly knex: Knex) {}
-
-  async refresh(): Promise<void> {
-    this.state = await readDatabase(this.knex);
-  }
+  constructor(readonly connection: Knex, public state: IDatabaseState) {}
 
   getTableState(tableName: string): ITable {
     const table = InitiateTable(tableName);
@@ -216,7 +197,7 @@ export class Reflection {
     if (!this.state.tableRowChecks.has(table)) {
       this.state.tableRowChecks.set(
         table,
-        await readRowCount(this.knex, table),
+        await readRowCount(this.connection, table),
       );
     }
 

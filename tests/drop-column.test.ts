@@ -9,7 +9,7 @@ import { createTestDriver } from './util/create-connection';
 describe('Drop Column', () => {
   const driver = createTestDriver();
   const clearTables = () =>
-    Promise.all(testTables.map(name => driver.migrator.dropTable(name)));
+    Promise.all(testTables.map(name => driver.migrator.drop(name)));
 
   const columns: ITable['columns'] = {
     col_var_1: {
@@ -37,7 +37,7 @@ describe('Drop Column', () => {
 
   afterAll(async () => {
     await clearTables();
-    await driver.closeConnection();
+    await driver.close();
   });
 
   test.each(Object.keys(columns))(
@@ -47,15 +47,15 @@ describe('Drop Column', () => {
 
       const tableRV1 = InitiateTable(tableName);
       tableRV1.columns = columns;
-      await driver.setState([tableRV1]);
+      await driver.set([tableRV1]);
 
-      expect((await driver.readState([tableName]))[0]).toStrictEqual(tableRV1);
+      expect((await driver.read([tableName]))[0]).toStrictEqual(tableRV1);
 
       const tableRV2 = cloneDeep(tableRV1);
       delete tableRV2.columns[col];
-      await driver.setState([tableRV2]);
+      await driver.set([tableRV2]);
 
-      expect((await driver.readState([tableName]))[0]).toStrictEqual(tableRV2);
+      expect((await driver.read([tableName]))[0]).toStrictEqual(tableRV2);
     },
     5_000,
   );

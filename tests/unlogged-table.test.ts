@@ -4,7 +4,7 @@ import { createTestDriver } from './util/create-connection';
 describe('Unlogged Table', () => {
   const driver = createTestDriver(['unlogged_']);
 
-  afterAll(() => driver.closeConnection());
+  afterAll(() => driver.close());
 
   test('should create an ulogged table', async () => {
     const tableName = `unlogged_table_1`;
@@ -13,24 +13,24 @@ describe('Unlogged Table', () => {
     table.isLogged = false;
 
     // Remove table if exists from a previous test
-    await driver.migrator.dropTable(table.name);
-    await driver.setState([table]);
+    await driver.migrator.drop(table.name);
+    await driver.set([table]);
 
-    expect((await driver.readState([tableName]))[0]).toStrictEqual(table);
+    expect((await driver.read([tableName]))[0]).toStrictEqual(table);
 
     // Alter table to be logged
     table.isLogged = true;
-    await driver.setState([table]);
+    await driver.set([table]);
 
-    expect((await driver.readState([tableName]))[0]).toStrictEqual(table);
+    expect((await driver.read([tableName]))[0]).toStrictEqual(table);
 
     // Alter table to be unlogged
     table.isLogged = false;
-    await driver.setState([table]);
+    await driver.set([table]);
 
-    expect((await driver.readState([tableName]))[0]).toStrictEqual(table);
+    expect((await driver.read([tableName]))[0]).toStrictEqual(table);
 
     // Cleanup
-    await driver.migrator.dropTable(table.name);
+    await driver.migrator.drop(table.name);
   });
 });

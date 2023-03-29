@@ -6,7 +6,7 @@ import { createTestDriver } from './util/create-connection';
 describe('Default Value', () => {
   const driver = createTestDriver();
 
-  afterAll(() => driver.closeConnection());
+  afterAll(() => driver.close());
 
   test.each([
     [ColumnType.TEXT, 'string', 'abc'],
@@ -47,13 +47,13 @@ describe('Default Value', () => {
       };
 
       // Remove table if exists from a previous test
-      await driver.migrator.dropTable(table.name);
-      await driver.setState([table]);
+      await driver.migrator.drop(table.name);
+      await driver.set([table]);
 
-      expect((await driver.readState([tableName]))[0]).toStrictEqual(table);
+      expect((await driver.read([tableName]))[0]).toStrictEqual(table);
 
       // Cleanup
-      await driver.migrator.dropTable(table.name);
+      await driver.migrator.drop(table.name);
     },
   );
 });

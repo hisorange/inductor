@@ -1,26 +1,20 @@
-import { diff, Operation } from 'just-diff';
-import { NotImplemented } from '../exception/not-implemented.exception';
+import { diff } from 'just-diff';
 import { IChange } from '../types/change.interface';
 import { IColumn } from '../types/column.interface';
 import { IMigrationContext } from '../types/migration-context.interface';
 import { ITable } from '../types/table.interface';
 import { stripMeta } from '../utils/strip-meta';
 import { addColumn } from './planners/add.column';
-import { addCompositeUnique } from './planners/add.composite-unique';
-import { alterDefaultValue } from './planners/alter.default-value';
-import { alterIndex } from './planners/alter.index';
+import { alterColumn } from './planners/alter.column';
+import { alterCompositeUnique } from './planners/alter.composite-unique';
 import { alterIsLogged } from './planners/alter.is-logged';
-import { alterNullable } from './planners/alter.nullable';
 import { alterPrimaryKeys } from './planners/alter.primary-keys';
-import { alterType } from './planners/alter.type';
-import { alterUnique } from './planners/alter.unique';
 import { createColumns } from './planners/create.columns';
 import { createForeignKeys } from './planners/create.foreign-keys';
 import { createIndexes } from './planners/create.indexes';
 import { createTable } from './planners/create.table';
 import { createUniques } from './planners/create.uniques';
 import { dropColumn } from './planners/drop.column';
-import { dropCompositeUnique } from './planners/drop.composite-unique';
 
 export class Planner {
   constructor(readonly ctx: IMigrationContext) {}
@@ -92,7 +86,7 @@ export class Planner {
 
           // Column definition changed
           case 'replace':
-            await this.handleColumnChange(
+            await alterColumn(
               change,
               path[2] as keyof IColumn,
               columnName,
@@ -103,7 +97,7 @@ export class Planner {
       }
       // Change is affecting the unique set
       else if (tableKey === 'uniques') {
-        await this.handleUniqueChange(change, op, path[1] as string);
+        await alterCompositeUnique(change, op, path[1] as string);
       }
       // Change is affecting the indexes
       else if (tableKey === 'indexes') {
@@ -119,59 +113,6 @@ export class Planner {
         isPrimaryCreated,
         isPrimaryDropped,
       });
-    }
-  }
-
-  protected async handleColumnChange(
-    change: IChange,
-    key: keyof IColumn,
-    name: string,
-    definition: IColumn,
-  ) {
-    switch (key) {
-      case 'capabilities':
-        // TODO: Implement capability changes
-        break;
-      case 'isPrimary':
-        change.isPrimaryChanged = true;
-        break;
-      case 'isNullable':
-        alterNullable(change, name, definition);
-        break;
-      case 'isUnique':
-        alterUnique(change, name, definition);
-        break;
-      case 'isIndexed':
-        alterIndex();
-        break;
-      case 'defaultValue':
-        alterDefaultValue(change, name, definition);
-        break;
-      case 'type':
-        alterType();
-        break;
-      default:
-        throw new NotImplemented(
-          `Column alteration for [${key}] is not implemented`,
-        );
-    }
-  }
-
-  protected async handleUniqueChange(
-    change: IChange,
-    op: Operation,
-    name: string,
-  ) {
-    switch (op) {
-      // New unique added
-      case 'add':
-        addCompositeUnique(change, name);
-        break;
-
-      // Unique removed
-      case 'remove':
-        dropCompositeUnique(change, name);
-        break;
     }
   }
 }

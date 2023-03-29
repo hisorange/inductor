@@ -21,20 +21,18 @@ describe('Unique Constraint', () => {
 
   const testTables = Object.keys(uniqueCols);
   const cleanup = async () => {
-    await Promise.all([driver.migrator.dropTable(`unique_test_upgrade`)]);
+    await Promise.all([driver.migrator.drop(`unique_test_upgrade`)]);
     await Promise.all(
-      testTables.map(name => driver.migrator.dropTable(`alter_unique_${name}`)),
+      testTables.map(name => driver.migrator.drop(`alter_unique_${name}`)),
     );
     await Promise.all(
-      testTables.map(name =>
-        driver.migrator.dropTable(`unique_test_comp_${name}`),
-      ),
+      testTables.map(name => driver.migrator.drop(`unique_test_comp_${name}`)),
     );
   };
 
   afterAll(async () => {
     await cleanup();
-    await driver.closeConnection();
+    await driver.close();
   });
 
   test.each(testTables)(
@@ -52,24 +50,24 @@ describe('Unique Constraint', () => {
       };
       // Set unique to false
       tableRV1.columns[colName].isUnique = false;
-      await driver.setState([tableRV1]);
+      await driver.set([tableRV1]);
 
-      expect(tableRV1).toStrictEqual((await driver.readState([tableName]))[0]);
+      expect(tableRV1).toStrictEqual((await driver.read([tableName]))[0]);
 
       const tableRV2 = cloneDeep(tableRV1);
       // Change the unique
       tableRV2.columns[colName].isUnique = true;
-      await driver.setState([tableRV2]);
+      await driver.set([tableRV2]);
 
-      expect(tableRV2).toStrictEqual((await driver.readState([tableName]))[0]);
+      expect(tableRV2).toStrictEqual((await driver.read([tableName]))[0]);
 
       const tableRV3 = cloneDeep(tableRV2);
       // Revert the unique
       tableRV3.columns[colName].isUnique = false;
 
-      await driver.setState([tableRV3]);
+      await driver.set([tableRV3]);
 
-      expect(tableRV3).toStrictEqual((await driver.readState([tableName]))[0]);
+      expect(tableRV3).toStrictEqual((await driver.read([tableName]))[0]);
     },
   );
 
@@ -96,9 +94,9 @@ describe('Unique Constraint', () => {
           columns: [columnKey, 'pair_for_comp'],
         },
       };
-      await driver.setState([table]);
+      await driver.set([table]);
 
-      expect(table).toStrictEqual((await driver.readState([tableName]))[0]);
+      expect(table).toStrictEqual((await driver.read([tableName]))[0]);
     },
   );
 
@@ -112,11 +110,11 @@ describe('Unique Constraint', () => {
       },
       col_2: createTestColumn(ColumnType.INTEGER),
     };
-    await driver.setState([tableRV1]);
+    await driver.set([tableRV1]);
 
-    console.log('READ STATE', (await driver.readState([tableName]))[0]);
+    console.log('READ STATE', (await driver.read([tableName]))[0]);
 
-    expect((await driver.readState([tableName]))[0]).toStrictEqual(tableRV1);
+    expect((await driver.read([tableName]))[0]).toStrictEqual(tableRV1);
 
     // Set the second column as unique to convert the index into a composite one
     const tableRV2 = cloneDeep(tableRV1);
@@ -124,23 +122,23 @@ describe('Unique Constraint', () => {
     tableRV2.uniques.test_cmp_1 = {
       columns: ['col_1', 'col_2'],
     };
-    await driver.setState([tableRV2]);
+    await driver.set([tableRV2]);
 
-    expect(tableRV2).toStrictEqual((await driver.readState([tableName]))[0]);
+    expect(tableRV2).toStrictEqual((await driver.read([tableName]))[0]);
 
     // Create a new column and add it to the composite unique
     const tableRV3 = cloneDeep(tableRV2);
     tableRV3.columns.col_3 = createTestColumn(ColumnType.INTEGER);
     tableRV3.uniques.test_cmp_1.columns.push('col_3');
-    await driver.setState([tableRV3]);
+    await driver.set([tableRV3]);
 
-    expect(tableRV3).toStrictEqual((await driver.readState([tableName]))[0]);
+    expect(tableRV3).toStrictEqual((await driver.read([tableName]))[0]);
 
     // Remove the composite unique
     const tableRV4 = cloneDeep(tableRV3);
     delete tableRV4.uniques.test_cmp_1;
-    await driver.setState([tableRV4]);
+    await driver.set([tableRV4]);
 
-    expect(tableRV4).toStrictEqual((await driver.readState([tableName]))[0]);
+    expect(tableRV4).toStrictEqual((await driver.read([tableName]))[0]);
   });
 });

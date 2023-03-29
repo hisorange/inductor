@@ -13,7 +13,7 @@ describe('Alter Nullable', () => {
     .filter(([type, col]) => !ColumnTools.isSerialType(col))
     .filter(([type, col]) => ![ColumnType.BIT_VARYING].includes(type as any));
 
-  afterAll(() => driver.closeConnection());
+  afterAll(() => driver.close());
 
   test.each(cases)(
     'should alter nullable flag for [%s] type column',
@@ -32,27 +32,27 @@ describe('Alter Nullable', () => {
       };
 
       // Remove table if exists from a previous test
-      await driver.migrator.dropTable(tableName);
-      await driver.setState([tableRV1]);
+      await driver.migrator.drop(tableName);
+      await driver.set([tableRV1]);
 
-      expect((await driver.readState([tableName]))[0]).toStrictEqual(tableRV1);
+      expect((await driver.read([tableName]))[0]).toStrictEqual(tableRV1);
 
       // Continue with a true state
       tableRV1.columns[columnName].isNullable = true;
       tableRV1.columns[columnName].defaultValue = null;
-      await driver.setState([tableRV1]);
+      await driver.set([tableRV1]);
 
-      expect((await driver.readState([tableName]))[0]).toStrictEqual(tableRV1);
+      expect((await driver.read([tableName]))[0]).toStrictEqual(tableRV1);
 
       // Continue with a false state
       tableRV1.columns[columnName].isNullable = false;
       tableRV1.columns[columnName].defaultValue = undefined;
-      await driver.setState([tableRV1]);
+      await driver.set([tableRV1]);
 
-      expect((await driver.readState([tableName]))[0]).toStrictEqual(tableRV1);
+      expect((await driver.read([tableName]))[0]).toStrictEqual(tableRV1);
 
       // Cleanup
-      await driver.migrator.dropTable(tableRV1.name);
+      await driver.migrator.drop(tableRV1.name);
     },
   );
 });

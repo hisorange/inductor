@@ -6,13 +6,13 @@ describe('Create Table from Table', () => {
   const driver = createTestDriver();
   const testTables = ['create_test1', 'create_Test2', 'create_test_3_____'];
   const clearTables = () =>
-    Promise.all(testTables.map(name => driver.migrator.dropTable(name)));
+    Promise.all(testTables.map(name => driver.migrator.drop(name)));
 
   beforeAll(() => clearTables());
 
   afterAll(async () => {
     await clearTables();
-    await driver.closeConnection();
+    await driver.close();
   });
 
   test.each(testTables)(
@@ -21,7 +21,7 @@ describe('Create Table from Table', () => {
       const table = InitiateTable(tableName);
       table.columns = TestColumns;
 
-      await driver.setState([table]);
+      await driver.set([table]);
       await driver.migrator.reflection.refresh();
 
       expect(driver.migrator.reflection.isTableExists(tableName)).toBeTruthy();

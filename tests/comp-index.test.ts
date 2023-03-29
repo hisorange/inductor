@@ -7,7 +7,7 @@ import { createTestDriver } from './util/create-connection';
 describe('Composite Indexing', () => {
   const driver = createTestDriver();
 
-  afterAll(() => driver.closeConnection());
+  afterAll(() => driver.close());
 
   test.each([
     ['btree', ColumnType.TEXT, IndexType.BTREE],
@@ -59,13 +59,13 @@ describe('Composite Indexing', () => {
       };
 
       // Remove table if exists from a previous test
-      await driver.migrator.dropTable(table.name);
-      await driver.setState([table]);
+      await driver.migrator.drop(table.name);
+      await driver.set([table]);
 
-      expect((await driver.readState([tableName]))[0]).toStrictEqual(table);
+      expect((await driver.read([tableName]))[0]).toStrictEqual(table);
 
       // Cleanup
-      await driver.migrator.dropTable(table.name);
+      await driver.migrator.drop(table.name);
     },
   );
 });

@@ -7,7 +7,7 @@ import { createTestDriver } from './util/create-connection';
 describe('Relations', () => {
   const driver = createTestDriver();
 
-  afterAll(() => driver.closeConnection());
+  afterAll(() => driver.close());
 
   test('should create a belongs to relation', async () => {
     const tableNameA = `relation_belongsto_a`;
@@ -51,17 +51,17 @@ describe('Relations', () => {
     };
 
     // Remove table if exists from a previous test
-    await driver.migrator.dropTable(tableB.name);
-    await driver.migrator.dropTable(tableA.name);
+    await driver.migrator.drop(tableB.name);
+    await driver.migrator.drop(tableA.name);
 
     // Apply the new state
-    await driver.setState([tableA, tableB]);
+    await driver.set([tableA, tableB]);
 
-    expect(tableA).toStrictEqual((await driver.readState([tableNameA]))[0]);
-    expect(tableB).toStrictEqual((await driver.readState([tableNameB]))[0]);
+    expect(tableA).toStrictEqual((await driver.read([tableNameA]))[0]);
+    expect(tableB).toStrictEqual((await driver.read([tableNameB]))[0]);
 
     // Cleanup
-    await driver.migrator.dropTable(tableB.name);
-    await driver.migrator.dropTable(tableA.name);
+    await driver.migrator.drop(tableB.name);
+    await driver.migrator.drop(tableA.name);
   });
 });
