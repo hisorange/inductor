@@ -74,8 +74,7 @@ export const ValidateTable = (table: ITable): void => {
         if (
           definition.capabilities.includes(ColumnCapability.CREATED_AT) ||
           definition.capabilities.includes(ColumnCapability.UPDATED_AT) ||
-          definition.capabilities.includes(ColumnCapability.DELETED_AT) ||
-          definition.capabilities.includes(ColumnCapability.VERSION)
+          definition.capabilities.includes(ColumnCapability.DELETED_AT)
         ) {
           if (definition.capabilities.length > 1) {
             throw new InvalidTable(
@@ -93,15 +92,6 @@ export const ValidateTable = (table: ITable): void => {
           if (!ColumnTools.isDateType(definition)) {
             throw new InvalidTable(
               `Column [${name}] must be a date or timestamp when using CreatedAt, UpdatedAt or DeletedAt capabilities`,
-            );
-          }
-        }
-
-        // Version can only be a number
-        if (definition.capabilities.includes(ColumnCapability.VERSION)) {
-          if (!ColumnTools.isIntegerType(definition)) {
-            throw new InvalidTable(
-              `Column [${name}] must be a number when using Version capability`,
             );
           }
         }

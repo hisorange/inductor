@@ -31,13 +31,6 @@ describe('Model', () => {
         alias: 'createdAtPropAlias',
         capabilities: [ColumnCapability.CREATED_AT],
       },
-      version_x: {
-        ...createTestColumn(ColumnType.INTEGER),
-        capabilities: [ColumnCapability.VERSION],
-        alias: 'vx',
-        isNullable: false,
-        defaultValue: 0,
-      },
     };
 
     await driver.set([table]);
@@ -55,21 +48,6 @@ describe('Model', () => {
     expect(new Date(insert.createdAtPropAlias).getTime()).toBeLessThanOrEqual(
       after,
     );
-
-    expect(insert).toHaveProperty('vx');
-    expect(insert.vx).toBeDefined();
-    expect(insert.vx).toBe(1);
-
-    // Update the record
-    (await insert.$query().update({
-      data: 'test2',
-    })) as Pojo;
-
-    // const updated = (await model.query().findById(5)) as Pojo;
-
-    // expect(updated).toHaveProperty('createdAtPropAlias');
-    // expect(updated).toHaveProperty('vx');
-    // expect(updated.vx).toBe(2);
 
     await driver.migrator.drop(tableName);
   });

@@ -40,7 +40,6 @@ export const decodeComments = (column: IColumn, comment: string): IColumn => {
         ColumnCapability.CREATED_AT,
         ColumnCapability.UPDATED_AT,
         ColumnCapability.DELETED_AT,
-        ColumnCapability.VERSION,
       ].forEach(cap => r.c! & cap && column.capabilities!.push(cap));
 
       column.capabilities.sort((a, b) => a - b);

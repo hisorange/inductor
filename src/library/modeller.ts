@@ -138,9 +138,7 @@ export class Modeller {
       const capabilities = column.capabilities;
 
       if (capabilities && capabilities.length) {
-        if (capabilities.includes(ColumnCapability.VERSION)) {
-          versionProps.add(property);
-        } else if (capabilities.includes(ColumnCapability.CREATED_AT)) {
+        if (capabilities.includes(ColumnCapability.CREATED_AT)) {
           createdAtProps.add(property);
         } else if (capabilities.includes(ColumnCapability.UPDATED_AT)) {
           updatedAtProps.add(property);

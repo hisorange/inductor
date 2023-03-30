@@ -14,7 +14,6 @@ describe('Capabilities', () => {
     ['CREATED_AT', ColumnCapability.CREATED_AT],
     ['UPDATED_AT', ColumnCapability.UPDATED_AT],
     ['DELETED_AT', ColumnCapability.DELETED_AT],
-    ['VERSION', ColumnCapability.VERSION],
   ])(
     'should be able to associate [%s] capabilities with a column',
     async (ref: string, cap: ColumnCapability) => {
@@ -31,11 +30,7 @@ describe('Capabilities', () => {
           isPrimary: true,
         },
         [columnName]: {
-          ...createTestColumn(
-            cap === ColumnCapability.VERSION
-              ? ColumnType.INTEGER
-              : ColumnType.DATE,
-          ),
+          ...createTestColumn(ColumnType.DATE),
           capabilities: [cap],
         },
       };
