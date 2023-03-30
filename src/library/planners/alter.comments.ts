@@ -1,9 +1,9 @@
 import { IChange } from '../../types/change.interface';
 import { MigrationRisk } from '../../types/migration-risk.enum';
-import { encodeComments } from '../../utils/comment.coder';
+import { encodeColumnMeta } from '../../utils/meta.coder';
 
 export const alterComments = async (change: IChange, name: string) => {
-  const newComment = encodeComments(change.target.columns[name]);
+  const newComment = encodeColumnMeta(change.target.columns[name]);
 
   change.context.plan.steps.push({
     description: `Alter comment based extensions of column ${name}`,

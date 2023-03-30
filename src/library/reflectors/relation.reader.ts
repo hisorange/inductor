@@ -1,6 +1,7 @@
 import { Knex } from 'knex';
 import { IDatabaseState } from '../../types/database-state.interface';
 import { ForeignAction } from '../../types/foreign-action.enum';
+import { decodeRelationMeta } from '../../utils/meta.coder';
 
 export const readRelations = async (
   knex: Knex,
@@ -27,6 +28,8 @@ export const readRelations = async (
       deleteRule: 'rc.delete_rule',
       // Important for composite remote keys, where the order matters
       ordinalPosition: 'kcu_foreign.ordinal_position',
+      // Comment for the constraint
+      comment: 'd.description',
     })
     .innerJoin(
       { kcu_foreign: 'information_schema.key_column_usage' },
@@ -65,6 +68,24 @@ export const readRelations = async (
         'kcu_foreign.ordinal_position': 'kcu_primary.ordinal_position',
       },
     )
+    .innerJoin(
+      {
+        co: 'pg_catalog.pg_constraint',
+      },
+      {
+        'co.conname': 'fks.constraint_name',
+        'co.contype': knex.raw("'f'"),
+      },
+    )
+    .leftJoin(
+      {
+        d: 'pg_catalog.pg_description',
+      },
+      {
+        'd.objoid': 'co.oid',
+        'co.tableoid': 'd.classoid',
+      },
+    )
     .where({
       'fks.constraint_type': 'FOREIGN KEY',
       'pks.constraint_type': 'PRIMARY KEY',
@@ -72,6 +93,8 @@ export const readRelations = async (
     })
     .orderBy('fks.constraint_name')
     .orderBy('kcu_foreign.ordinal_position');
+
+  // console.log(query.toQuery());
 
   const rows: {
     localTableName: string;
@@ -83,6 +106,7 @@ export const readRelations = async (
     updateRule: ForeignAction;
     deleteRule: ForeignAction;
     ordinalPosition: number;
+    comment?: string;
   }[] = await query;
 
   for (const row of rows) {
@@ -95,7 +119,7 @@ export const readRelations = async (
 
     // Create the contraint key
     if (!tableRef.hasOwnProperty(row.relationName)) {
-      tableRef[row.relationName] = {
+      const relation = {
         columns: [row.localColumnName],
         references: {
           table: row.remoteTableName,
@@ -105,6 +129,12 @@ export const readRelations = async (
         onDelete: row.deleteRule.toLowerCase() as ForeignAction,
         onUpdate: row.updateRule.toLowerCase() as ForeignAction,
       };
+
+      if (row.comment) {
+        decodeRelationMeta(relation, row.comment);
+      }
+
+      tableRef[row.relationName] = relation;
     }
     // Add the new column
     else {

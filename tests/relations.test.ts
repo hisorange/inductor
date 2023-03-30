@@ -36,6 +36,7 @@ describe('Relations', () => {
         isLocalUnique: true,
         onDelete: ForeignAction.SET_NULL,
         onUpdate: ForeignAction.CASCADE,
+        alias: 'baa',
       },
     };
 

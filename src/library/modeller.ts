@@ -257,8 +257,9 @@ export class Modeller {
       }
 
       const target = this.getModel(fk.references.table);
+      const forwardName = fk.alias || name;
 
-      map[name] = {
+      map[forwardName] = {
         relation: Model.BelongsToOneRelation,
         modelClass: target,
         join: {
@@ -267,7 +268,7 @@ export class Modeller {
         },
       };
 
-      // console.log('Mapped relation', name, map[name]);
+      // console.log('Mapped relation: ', forwardName, '->', map[name]);
 
       if (!target.relationMappings) {
         target.relationMappings = {};
