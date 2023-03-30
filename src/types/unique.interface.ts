@@ -1,5 +1,3 @@
-export interface IUnique<UniqueMeta = unknown> {
-  meta?: UniqueMeta;
-
+export interface IUnique {
   columns: string[];
 }

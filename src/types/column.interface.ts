@@ -70,7 +70,7 @@ type BasicColumnType = {
   length?: number;
 };
 
-export interface IColumn<ColumnMeta = unknown> {
+export interface IColumn {
   /**
    * Type mapping with type attributes
    */
@@ -83,22 +83,22 @@ export interface IColumn<ColumnMeta = unknown> {
   /**
    * Nullable constraint.
    */
-  isNullable: boolean;
+  isNullable?: boolean;
 
   /**
    * Unique contraint.
    */
-  isUnique: boolean;
+  isUnique?: boolean;
 
   /**
    * Primary key constraint.
    */
-  isPrimary: boolean;
+  isPrimary?: boolean;
 
   /**
    * Index
    */
-  isIndexed: false | IndexType;
+  isIndexed?: false | IndexType;
 
   /**
    * Default value
@@ -115,15 +115,10 @@ export interface IColumn<ColumnMeta = unknown> {
   /**
    * Model supported capabilities, stored in comment format.
    */
-  capabilities: ColumnCapability[];
+  capabilities?: ColumnCapability[];
 
   /**
    * Model mapping to property name
    */
   alias?: string;
-
-  /**
-   * Associated metadata with the database
-   */
-  meta?: ColumnMeta;
 }

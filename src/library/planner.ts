@@ -3,7 +3,6 @@ import { IChange } from '../types/change.interface';
 import { IColumn } from '../types/column.interface';
 import { IMigrationContext } from '../types/migration-context.interface';
 import { ITable } from '../types/table.interface';
-import { stripMeta } from '../utils/strip-meta';
 import { addColumn } from './planners/add.column';
 import { alterColumn } from './planners/alter.column';
 import { alterCompositeUnique } from './planners/alter.composite-unique';
@@ -39,7 +38,7 @@ export class Planner {
    */
   async alterTable(target: ITable) {
     const current = this.ctx.reflection.getTableState(target.name);
-    const differences = diff(stripMeta(current), stripMeta(target));
+    const differences = diff(current, target);
     // Track the primary keys change, since it may has to be altered after the columns
     let isPrimaryCreated = false;
     let isPrimaryDropped = false;
@@ -75,7 +74,7 @@ export class Planner {
 
               // Primary columns altered
               isPrimaryCreated =
-                isPrimaryCreated || target.columns[columnName].isPrimary;
+                isPrimaryCreated || !!target.columns[columnName]?.isPrimary;
               break;
 
             // Drops a column
@@ -84,7 +83,7 @@ export class Planner {
 
               // Primary columns altered
               isPrimaryDropped =
-                isPrimaryDropped || current.columns[columnName].isPrimary;
+                isPrimaryDropped || !!current.columns[columnName]?.isPrimary;
               break;
 
             // Column definition changed

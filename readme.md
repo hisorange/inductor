@@ -41,7 +41,6 @@ await driver.setState([
           name: ColumnType.INTEGER,
         },
         isNullable: false,
-        isUnique: false,
         isPrimary: true,
       },
       smth: {
@@ -49,8 +48,7 @@ await driver.setState([
           name: ColumnType.TEXT,
         },
         isNullable: false,
-        isUnique: false,
-        isPrimary: false,
+        isUnique: true,
         isIndexed: IndexType.BTREE,
       },
       decision: {
@@ -60,16 +58,12 @@ await driver.setState([
           nativeName: 'enum_ind_51d6e671dcb9db93bb8de6c453e975f8089d6535',
         },
         isNullable: false,
-        isUnique: false,
-        isPrimary: false,
       },
       createdAt: {
         type: {
           name: ColumnType.DATE,
         },
         isNullable: true,
-        isUnique: false,
-        isPrimary: false,
         isIndexed: true,
         alias: 'createdOn',
         capabilities: [ColumnCapability.CREATED_AT],

@@ -1,7 +1,6 @@
 import { IndexType } from './index-type.enum';
 
-export interface ICompositeIndex<IndexMeta = unknown> {
+export interface ICompositeIndex {
   type: IndexType;
   columns: string[];
-  meta?: IndexMeta;
 }

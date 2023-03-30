@@ -3,13 +3,7 @@ import { ICompositeIndex } from './index.interface';
 import { IRelation } from './relation.interface';
 import { IUnique } from './unique.interface';
 
-export interface ITable<
-  TableMeta = unknown,
-  ColumnMeta = unknown,
-  UniqueMeta = unknown,
-  IndexMeta = unknown,
-  RelationMeta = unknown,
-> {
+export interface ITable {
   /**
    * Programatical identified of the table.
    */
@@ -19,28 +13,28 @@ export interface ITable<
    * Columns of the table.
    */
   columns: {
-    [columnRef: string]: IColumn<ColumnMeta>;
+    [columnRef: string]: IColumn;
   };
 
   /**
    * Unique constraints of the table.
    */
   uniques: {
-    [uniqueName: string]: IUnique<UniqueMeta>;
+    [uniqueName: string]: IUnique;
   };
 
   /**
    * Indices of the table.
    */
   indexes: {
-    [indexName: string]: ICompositeIndex<IndexMeta>;
+    [indexName: string]: ICompositeIndex;
   };
 
   /**
    * Foreign keys of the table.
    */
   relations: {
-    [foreignKeyName: string]: IRelation<RelationMeta>;
+    [foreignKeyName: string]: IRelation;
   };
 
   /**
@@ -48,9 +42,4 @@ export interface ITable<
    * This is useful for tables that are used for logging or temporary storage.
    */
   isLogged: boolean;
-
-  /**
-   * Associated metadata with the table
-   */
-  meta?: TableMeta;
 }

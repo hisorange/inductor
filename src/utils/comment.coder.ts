@@ -9,7 +9,7 @@ type Comments = {
 export const encodeComments = (column: IColumn): string => {
   const r: Comments = {};
 
-  if (column.capabilities.length) {
+  if (column.capabilities?.length) {
     r.c = 0;
 
     for (const cap of column.capabilities.sort()) {
@@ -34,12 +34,14 @@ export const decodeComments = (column: IColumn, comment: string): IColumn => {
     let r: Comments = JSON.parse(comment) as Comments;
 
     if (r.c && typeof r.c === 'number') {
+      column.capabilities = [];
+
       [
         ColumnCapability.CREATED_AT,
         ColumnCapability.UPDATED_AT,
         ColumnCapability.DELETED_AT,
         ColumnCapability.VERSION,
-      ].forEach(cap => r.c! & cap && column.capabilities.push(cap));
+      ].forEach(cap => r.c! & cap && column.capabilities!.push(cap));
 
       column.capabilities.sort((a, b) => a - b);
     }

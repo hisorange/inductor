@@ -34,7 +34,7 @@ export class Modeller {
     ValidateTable(table);
 
     for (const columnName in table.columns) {
-      table.columns[columnName].capabilities.sort((a, b) => a - b);
+      table.columns[columnName].capabilities?.sort((a, b) => a - b);
     }
 
     const model = this.toModel(table);
@@ -137,7 +137,7 @@ export class Modeller {
       const property = columnToProperty.get(columnName)!;
       const capabilities = column.capabilities;
 
-      if (capabilities.length) {
+      if (capabilities && capabilities.length) {
         if (capabilities.includes(ColumnCapability.VERSION)) {
           versionProps.add(property);
         } else if (capabilities.includes(ColumnCapability.CREATED_AT)) {

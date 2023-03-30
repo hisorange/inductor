@@ -1,6 +1,6 @@
 import { ForeignAction } from './foreign-action.enum';
 
-export interface IRelation<RelationMeta = unknown> {
+export interface IRelation {
   /**
    * List of local references.
    */
@@ -26,9 +26,4 @@ export interface IRelation<RelationMeta = unknown> {
   onDelete: ForeignAction;
   // Action executed on foreign update
   onUpdate: ForeignAction;
-
-  /**
-   * Associated metadata with the table
-   */
-  meta?: RelationMeta;
 }

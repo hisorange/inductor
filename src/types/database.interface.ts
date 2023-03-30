@@ -4,7 +4,7 @@ import { ITable } from './table.interface';
 /**
  * Describe the database table, and the connection associated with it.
  */
-export interface IDatabase<TableMeta = unknown, ColumnMeta = unknown> {
+export interface IDatabase {
   /**
    * Database connection configuration
    */
@@ -19,7 +19,7 @@ export interface IDatabase<TableMeta = unknown, ColumnMeta = unknown> {
   /**
    * Tables associated with the database
    */
-  tables: ITable<TableMeta, ColumnMeta>[];
+  tables: ITable[];
 
   /**
    * List of regex patterns to filter tables from the database.
