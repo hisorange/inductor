@@ -4,11 +4,7 @@ import { IDatabase } from '../../src/types/database.interface';
 export const createTestDriver = (filters: string[] = []): Inductor => {
   const database: IDatabase = {
     connection: {
-      host: 'localhost',
-      port: 9999,
-      database: 'inductor',
-      user: 'inductor',
-      password: 'inductor',
+      connectionString: 'postgres://inductor:inductor@localhost:9999/inductor',
     },
     isReadOnly: false,
     tables: [],

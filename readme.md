@@ -24,14 +24,10 @@ import { Driver } from '@hisorange/inductor';
 
 const driver = new Driver({
   connection: {
-    host: 'localhost',
-    port: 5432,
-    database: 'inductor',
-    user: 'inductor',
-    password: 'inductor',
+    connectionString: 'postgres://inductor:inductor@localhost:9999/inductor',
   },
   isReadOnly: false,
-  filters: ['my_.+', 'wp_.+'],
+  filters: ['_artgen_.+', 'wp_.+'],
 });
 
 // Apply the desired state, and the library will create or modify the databse to match the given schema
@@ -41,7 +37,6 @@ await driver.setState([
     isLogged: true,
     columns: {
       id: {
-        kind: ColumnKind.COLUMN,
         type: {
           name: ColumnType.INTEGER,
         },
@@ -50,7 +45,6 @@ await driver.setState([
         isPrimary: true,
       },
       smth: {
-        kind: ColumnKind.COLUMN,
         type: {
           name: ColumnType.TEXT,
         },
@@ -60,7 +54,6 @@ await driver.setState([
         isIndexed: IndexType.BTREE,
       },
       decision: {
-        kind: ColumnKind.COLUMN,
         type: {
           name: ColumnType.ENUM,
           values: ['Yes', 'No', 'Maybe'],
@@ -71,7 +64,6 @@ await driver.setState([
         isPrimary: false,
       },
       createdAt: {
-        kind: ColumnKind.COLUMN,
         type: {
           name: ColumnType.DATE,
         },
@@ -79,6 +71,7 @@ await driver.setState([
         isUnique: false,
         isPrimary: false,
         isIndexed: true,
+        alias: 'createdOn',
         capabilities: [ColumnCapability.CREATED_AT],
       },
     },
