@@ -1,4 +1,12 @@
-import { Model, ModelClass, ModelOptions, Pojo, QueryContext } from 'objection';
+import { pluralize, singularize } from 'inflection';
+import {
+  Model,
+  ModelClass,
+  ModelOptions,
+  Pojo,
+  QueryContext,
+  RelationMappings,
+} from 'objection';
 import { ModelNotFound } from '../exception/model-not-found.exception';
 import { ColumnCapability } from '../types/column.capability';
 import { ITable } from '../types/table.interface';
@@ -39,6 +47,19 @@ export class Modeller {
 
     const model = this.toModel(table);
     this.tables.set(table.name, { table, model });
+
+    this.remapRelations();
+  }
+
+  protected remapRelations(): void {
+    // Map relations to models
+    for (const { table, model } of this.tables.values()) {
+      const success = this.mapRelations(model, table);
+
+      if (!success) {
+        console.warn(`Failed to map relations for table ${table.name}`);
+      }
+    }
   }
 
   public removeTable(tableName: string): void {
@@ -220,5 +241,65 @@ export class Modeller {
     // TODO: map relations in context for the database
 
     return model;
+  }
+
+  protected mapRelations(model: ModelClass<Model>, table: ITable): boolean {
+    const map: RelationMappings = {};
+    let success = true;
+
+    for (const name in table.relations) {
+      const fk = table.relations[name];
+
+      if (!this.tables.has(fk.references.table)) {
+        success = false;
+
+        continue;
+      }
+
+      const target = this.getModel(fk.references.table);
+
+      map[name] = {
+        relation: Model.BelongsToOneRelation,
+        modelClass: target,
+        join: {
+          from: fk.columns.map(column => `${table.name}.${column}`),
+          to: fk.references.columns.map(column => `${target.name}.${column}`),
+        },
+      };
+
+      // console.log('Mapped relation', name, map[name]);
+
+      if (!target.relationMappings) {
+        target.relationMappings = {};
+      }
+
+      if (typeof target.relationMappings == 'object') {
+        const inverse: RelationMappings[string] = {
+          relation: fk.isLocalUnique
+            ? Model.HasOneRelation
+            : Model.HasManyRelation,
+          modelClass: model,
+          join: {
+            from: fk.references.columns.map(
+              column => `${target.name}.${column}`,
+            ),
+            to: fk.columns.map(column => `${table.name}.${column}`),
+          },
+        };
+
+        const inverseName = fk.isLocalUnique
+          ? singularize(table.name)
+          : pluralize(table.name);
+
+        // Define the inverse relation
+        target.relationMappings[inverseName] = inverse;
+
+        // console.log('Mapped inverse relation', inverseName, inverse);
+      }
+    }
+
+    model.relationMappings = map;
+
+    return success;
   }
 }

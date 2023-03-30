@@ -82,7 +82,7 @@ await driver.setState([
     },
     relations: {
       fk_my_table_user: {
-        propertyName: 'user',
+        alias: 'user',
         columns: ['id'],
         references: {
           table: 'users',

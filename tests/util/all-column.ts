@@ -52,6 +52,8 @@ export const createTestColumn = (
   // Fix the is primary flag
   if (ColumnTools.isSerialType(definition)) {
     definition.isPrimary = true;
+    definition.isNullable = false;
+    definition.isUnique = false;
   }
 
   return definition;

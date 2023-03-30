@@ -6,6 +6,11 @@ export interface IRelation {
    */
   columns: string[];
 
+  /**
+   * Property name of the relation.
+   */
+  alias?: string;
+
   references: {
     /**
      * Name of the foreign table.
