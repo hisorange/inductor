@@ -33,8 +33,8 @@ const driver = new Driver({
 // Apply the desired state, and the library will create or modify the databse to match the given schema
 await driver.setState([
   {
-    name: 'my_table',
-    isLogged: true,
+    name: 'my_fast_table',
+    isUnlogged: true,
     columns: {
       id: {
         type: {
@@ -47,7 +47,6 @@ await driver.setState([
         type: {
           name: ColumnType.TEXT,
         },
-        isNullable: false,
         isUnique: true,
         isIndexed: IndexType.BTREE,
       },
@@ -57,14 +56,12 @@ await driver.setState([
           values: ['Yes', 'No', 'Maybe'],
           nativeName: 'enum_ind_51d6e671dcb9db93bb8de6c453e975f8089d6535',
         },
-        isNullable: false,
+        defaultValue: 'Yes',
       },
       createdAt: {
         type: {
           name: ColumnType.DATE,
         },
-        isNullable: true,
-        isIndexed: true,
         alias: 'createdOn',
         capabilities: [ColumnCapability.CREATED_AT],
       },

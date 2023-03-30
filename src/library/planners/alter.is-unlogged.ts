@@ -1,16 +1,16 @@
 import { IChange } from '../../types/change.interface';
 import { MigrationRisk } from '../../types/migration-risk.enum';
 
-export const alterIsLogged = ({ context: ctx, target }: IChange) => {
+export const alterIsUnlogged = ({ context: ctx, target }: IChange) => {
   ctx.plan.steps.push({
     query: ctx.knex.schema.raw(
       `ALTER TABLE "${target.name}" SET ${
-        target.isLogged ? 'LOGGED' : 'UNLOGGED'
+        target.isUnlogged ? 'UNLOGGED' : 'LOGGED'
       }`,
     ),
     risk: MigrationRisk.LOW,
     description: `Changing table ${target.name} to ${
-      target.isLogged ? 'logged' : 'unlogged'
+      target.isUnlogged ? 'unlogged' : 'logged'
     }`,
     phase: 1,
   });

@@ -41,5 +41,5 @@ export interface ITable {
    * Unlogged tables are not replicated to standby servers.
    * This is useful for tables that are used for logging or temporary storage.
    */
-  isLogged: boolean;
+  isUnlogged?: boolean;
 }

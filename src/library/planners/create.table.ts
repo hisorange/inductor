@@ -15,7 +15,7 @@ export const createTable = (table: ITable, ctx: IMigrationContext) => {
 
   // By default each table is created as logged
   // But we can alter the table to be unlogged
-  if (!table.isLogged) {
+  if (table.isUnlogged) {
     ctx.plan.steps.push({
       query: ctx.knex.schema.raw(
         `ALTER TABLE ${ctx.knex.client.wrapIdentifier(

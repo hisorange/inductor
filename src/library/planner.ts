@@ -6,7 +6,7 @@ import { ITable } from '../types/table.interface';
 import { addColumn } from './planners/add.column';
 import { alterColumn } from './planners/alter.column';
 import { alterCompositeUnique } from './planners/alter.composite-unique';
-import { alterIsLogged } from './planners/alter.is-logged';
+import { alterIsUnlogged } from './planners/alter.is-unlogged';
 import { alterPrimaryKeys } from './planners/alter.primary-keys';
 import { createColumns } from './planners/create.columns';
 import { createForeignKeys } from './planners/create.foreign-keys';
@@ -58,8 +58,8 @@ export class Planner {
       const tableKey = path[0] as keyof ITable;
 
       // Changes the isLogged state
-      if (tableKey === 'isLogged') {
-        alterIsLogged(change);
+      if (tableKey === 'isUnlogged') {
+        alterIsUnlogged(change);
       }
       // Changes a column
       else if (tableKey === 'columns') {

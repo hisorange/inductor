@@ -21,9 +21,7 @@ export class Reflection {
     table.indexes = this.getTableIndexes(tableName);
 
     // Check if the table is unlogged
-    if (this.state.unloggedTables.includes(tableName)) {
-      table.isLogged = false;
-    }
+    table.isUnlogged = this.state.unloggedTables.includes(tableName);
 
     const compositePrimaryKeys = this.getTablePrimaryKeys(tableName);
     const columns = this.getTableColumnInfo(tableName);

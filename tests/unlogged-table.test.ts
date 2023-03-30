@@ -10,7 +10,7 @@ describe('Unlogged Table', () => {
     const tableName = `unlogged_table_1`;
 
     const table = InitiateTable(tableName);
-    table.isLogged = false;
+    table.isUnlogged = true;
 
     // Remove table if exists from a previous test
     await driver.migrator.drop(table.name);
@@ -19,13 +19,13 @@ describe('Unlogged Table', () => {
     expect((await driver.read([tableName]))[0]).toStrictEqual(table);
 
     // Alter table to be logged
-    table.isLogged = true;
+    table.isUnlogged = false;
     await driver.set([table]);
 
     expect((await driver.read([tableName]))[0]).toStrictEqual(table);
 
     // Alter table to be unlogged
-    table.isLogged = false;
+    table.isUnlogged = true;
     await driver.set([table]);
 
     expect((await driver.read([tableName]))[0]).toStrictEqual(table);
