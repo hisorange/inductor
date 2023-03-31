@@ -6,7 +6,7 @@ import { IndexType } from '../types/index-type.enum';
 import { IRelation } from '../types/relation.interface';
 import { ITable } from '../types/table.interface';
 import { ColumnTools } from '../utils/column-tools';
-import { decodeColumnMeta } from '../utils/meta.coder';
+import { decodeColumnMeta, decodeTableMeta } from '../utils/meta.coder';
 import { readRowCount } from './reflectors/row-count.reader';
 import { InitiateTable } from './table.initiator';
 import { ValidateTable } from './table.validator';
@@ -19,6 +19,9 @@ export class Reflection {
     table.relations = this.getTableForeignKeys(tableName);
     table.uniques = this.getTableUniques(tableName);
     table.indexes = this.getTableIndexes(tableName);
+
+    // Decode table comment into meta
+    decodeTableMeta(table, this.state.tablesMeta[tableName].comment);
 
     // Check if the table is unlogged
     table.isUnlogged = this.state.unloggedTables.includes(tableName);

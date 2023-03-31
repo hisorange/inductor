@@ -17,6 +17,12 @@ export interface IDatabaseState {
   unloggedTables: string[];
   types: string[];
   uniqueConstraints: string[];
+  tablesMeta: {
+    [tableName: string]: {
+      isLogged: boolean;
+      comment: string;
+    };
+  };
   uniques: {
     [tableName: string]: ITable['uniques'];
   };

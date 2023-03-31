@@ -1,6 +1,7 @@
 import { ColumnCapability } from '../types/column.capability';
 import { IColumn } from '../types/column.interface';
 import { IRelation } from '../types/relation.interface';
+import { ITable } from '../types/table.interface';
 
 type ColumnMeta = {
   c?: number; // capabilities
@@ -8,6 +9,10 @@ type ColumnMeta = {
 };
 
 type RelationMeta = {
+  a?: string; // alias
+};
+
+type TableMeta = {
   a?: string; // alias
 };
 
@@ -90,4 +95,29 @@ export const decodeRelationMeta = (
   } catch (e) {}
 
   return relation;
+};
+
+export const encodeTableMeta = (table: ITable): string => {
+  const meta: TableMeta = {};
+
+  if (table.alias) {
+    meta.a = table.alias;
+  }
+
+  return Object.keys(meta).length ? JSON.stringify(meta) : '';
+};
+
+export const decodeTableMeta = (table: ITable, comment: string) => {
+  // Skip on empty comment
+  if (!comment || !comment.length || comment === '{}') {
+    return;
+  }
+
+  try {
+    let meta: TableMeta = JSON.parse(comment) as TableMeta;
+
+    if (meta.a && typeof meta.a === 'string') {
+      table.alias = meta.a;
+    }
+  } catch (e) {}
 };

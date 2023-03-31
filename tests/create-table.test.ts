@@ -20,12 +20,20 @@ describe('Create Table from Table', () => {
     async (tableName: string) => {
       const table = InitiateTable(tableName);
       table.columns = TestColumns;
+      table.alias = 'Test' + tableName;
 
       await driver.set([table]);
 
-      const newState = await driver.migrator.read();
+      expect((await driver.read([tableName]))[0]).toStrictEqual(table);
 
-      expect(newState.find(t => table.name == tableName)).toBeTruthy();
+      // Change the alias and apply the changes
+      table.alias = 'Test' + tableName + '2';
+
+      await driver.set([table]);
+
+      expect((await driver.read([tableName]))[0]).toStrictEqual(table);
+
+      await driver.migrator.drop(table.name);
     },
   );
 });

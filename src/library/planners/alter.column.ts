@@ -16,8 +16,6 @@ export const alterColumn = async (
 ) => {
   switch (key) {
     case 'alias':
-      alterComments(change, name);
-      break;
     case 'capabilities':
       alterComments(change, name);
       break;
