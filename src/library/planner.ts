@@ -117,7 +117,7 @@ export class Planner {
       else if (tableKey === 'relations') {
       }
       // Change the meta
-      else if (tableKey === 'alias') {
+      else if (tableKey === 'meta') {
         alterTableMeta(change);
       }
     }

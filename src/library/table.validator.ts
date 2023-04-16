@@ -65,18 +65,21 @@ export const ValidateTable = (table: ITable): void => {
       const definition = table.columns[name];
       const isSerialType = ColumnTools.isSerialType(definition);
 
-      if (definition.alias) {
-        aliases.push(definition.alias);
+      if (definition.meta.alias) {
+        aliases.push(definition.meta.alias);
       }
 
-      if (definition.capabilities && definition.capabilities.length > 0) {
+      if (
+        definition.meta.capabilities &&
+        definition.meta.capabilities.length > 0
+      ) {
         // Exclusive capabilities
         if (
-          definition.capabilities.includes(ColumnCapability.CREATED_AT) ||
-          definition.capabilities.includes(ColumnCapability.UPDATED_AT) ||
-          definition.capabilities.includes(ColumnCapability.DELETED_AT)
+          definition.meta.capabilities.includes(ColumnCapability.CREATED_AT) ||
+          definition.meta.capabilities.includes(ColumnCapability.UPDATED_AT) ||
+          definition.meta.capabilities.includes(ColumnCapability.DELETED_AT)
         ) {
-          if (definition.capabilities.length > 1) {
+          if (definition.meta.capabilities.length > 1) {
             throw new InvalidTable(
               `Column [${name}] cannot have other capabilities when using CreatedAt, UpdatedAt, DeletedAt or Version capabilities`,
             );
@@ -85,9 +88,9 @@ export const ValidateTable = (table: ITable): void => {
 
         // CreatedAt, UpdatedAt, or DeletedAt can only be a date or timestamp
         if (
-          definition.capabilities.includes(ColumnCapability.CREATED_AT) ||
-          definition.capabilities.includes(ColumnCapability.UPDATED_AT) ||
-          definition.capabilities.includes(ColumnCapability.DELETED_AT)
+          definition.meta.capabilities.includes(ColumnCapability.CREATED_AT) ||
+          definition.meta.capabilities.includes(ColumnCapability.UPDATED_AT) ||
+          definition.meta.capabilities.includes(ColumnCapability.DELETED_AT)
         ) {
           if (!ColumnTools.isDateType(definition)) {
             throw new InvalidTable(
@@ -138,14 +141,17 @@ export const ValidateTable = (table: ITable): void => {
       }
 
       // Alias cannot contain any control characters
-      if (definition.alias && definition.alias.match(/[\x00-\x1F\x7F]/)) {
+      if (
+        definition.meta.alias &&
+        definition.meta.alias.match(/[\x00-\x1F\x7F]/)
+      ) {
         throw new InvalidTable(
           `Column [${name}] alias cannot contain control characters`,
         );
       }
 
       // Alias cannot start or end with a space
-      if (definition.alias && definition.alias.match(/^ | $/)) {
+      if (definition.meta.alias && definition.meta.alias.match(/^ | $/)) {
         throw new InvalidTable(
           `Column [${name}] alias cannot start or end with a space`,
         );
@@ -193,7 +199,7 @@ export const ValidateTable = (table: ITable): void => {
     if (Object.prototype.hasOwnProperty.call(table.columns, name)) {
       const definition = table.columns[name];
 
-      if (definition.alias && aliases.includes(name)) {
+      if (definition.meta.alias && aliases.includes(name)) {
         throw new InvalidTable(
           `Column [${name}] alias cannot collide with another column`,
         );

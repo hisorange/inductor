@@ -1,6 +1,6 @@
-import { ITransformer } from '../types/transformer.interface';
+import { IColumnHook } from '../types/column-hook.interface';
 
-export const Base64Transformer: ITransformer = {
+export const Base64Transformer: IColumnHook = {
   onWrite: (text: string): string =>
     text ? Buffer.from(text, 'utf-8').toString('base64') : text,
 

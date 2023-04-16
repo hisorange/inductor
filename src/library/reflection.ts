@@ -69,8 +69,10 @@ export class Reflection {
         isPrimary: compositePrimaryKeys.includes(columnName),
         isIndexed: false,
         defaultValue: columnInfo.defaultValue,
-        capabilities: [],
-        transformers: [],
+        meta: {
+          capabilities: [],
+          transformers: [],
+        },
       };
 
       if (columnInfo.comment) {

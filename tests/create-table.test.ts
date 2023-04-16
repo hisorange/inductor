@@ -20,14 +20,14 @@ describe('Create Table from Table', () => {
     async (tableName: string) => {
       const table = InitiateTable(tableName);
       table.columns = TestColumns;
-      table.alias = 'Test' + tableName;
+      table.meta.alias = 'Test' + tableName;
 
       await driver.set([table]);
 
       expect((await driver.read([tableName]))[0]).toStrictEqual(table);
 
       // Change the alias and apply the changes
-      table.alias = 'Test' + tableName + '2';
+      table.meta.alias = 'Test' + tableName + '2';
 
       await driver.set([table]);
 

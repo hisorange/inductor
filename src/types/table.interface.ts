@@ -43,5 +43,10 @@ export interface ITable {
    */
   isUnlogged?: boolean;
 
-  alias?: string;
+  /**
+   * Comment based meta information.
+   */
+  meta: {
+    alias?: string;
+  };
 }

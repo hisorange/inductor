@@ -1,4 +1,4 @@
-export interface ITransformer {
+export interface IColumnHook {
   /**
    * Encoder
    */

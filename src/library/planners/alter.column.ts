@@ -15,13 +15,7 @@ export const alterColumn = async (
   definition: IColumn,
 ) => {
   switch (key) {
-    case 'alias':
-      alterComments(change, name);
-      break;
-    case 'transformers':
-      alterComments(change, name);
-      break;
-    case 'capabilities':
+    case 'meta':
       alterComments(change, name);
       break;
     case 'isPrimary':

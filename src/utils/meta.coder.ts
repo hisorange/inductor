@@ -1,7 +1,7 @@
+import { ColumnHook } from '../types/column-hook.enum';
 import { ColumnCapability } from '../types/column.capability';
 import { IColumn } from '../types/column.interface';
 import { IRelation } from '../types/relation.interface';
-import { Transformers } from '../types/transformers.enum';
 import { ITable } from '../types/table.interface';
 
 type ColumnMeta = {
@@ -21,24 +21,24 @@ type TableMeta = {
 export const encodeColumnMeta = (column: IColumn): string => {
   const meta: ColumnMeta = {};
 
-  if (column.capabilities?.length) {
+  if (column.meta.capabilities?.length) {
     meta.c = 0;
 
-    for (const cap of column.capabilities.sort()) {
+    for (const cap of column.meta.capabilities.sort()) {
       meta.c = meta.c! | cap;
     }
   }
 
-  if (column?.transformers?.length) {
+  if (column?.meta?.transformers?.length) {
     meta.t = 0;
 
-    for (const transformer of column.transformers.sort()) {
+    for (const transformer of column.meta.transformers.sort()) {
       meta.t = meta.t! | transformer;
     }
   }
 
-  if (column.alias) {
-    meta.a = column.alias;
+  if (column.meta.alias) {
+    meta.a = column.meta.alias;
   }
 
   return Object.keys(meta).length ? JSON.stringify(meta) : '';
@@ -54,34 +54,34 @@ export const decodeColumnMeta = (column: IColumn, comment: string): IColumn => {
     let meta: ColumnMeta = JSON.parse(comment) as ColumnMeta;
 
     if (meta.c && typeof meta.c === 'number') {
-      column.capabilities = [];
+      column.meta.capabilities = [];
 
       [
         ColumnCapability.CREATED_AT,
         ColumnCapability.UPDATED_AT,
         ColumnCapability.DELETED_AT,
-      ].forEach(cap => meta.c! & cap && column.capabilities!.push(cap));
+      ].forEach(cap => meta.c! & cap && column.meta.capabilities!.push(cap));
 
-      column.capabilities.sort((a, b) => a - b);
+      column.meta.capabilities.sort((a, b) => a - b);
     }
 
     if (meta.t && typeof meta.t === 'number') {
-      column.transformers = [];
+      column.meta.transformers = [];
 
       [
-        Transformers.JSON,
-        Transformers.BASE16,
-        Transformers.BASE64,
-        Transformers.KEBAB,
-        Transformers.SNAKE,
-        Transformers.PASSWORD,
-      ].forEach(cap => meta.t! & cap && column.transformers!.push(cap));
+        ColumnHook.JSON,
+        ColumnHook.BASE16,
+        ColumnHook.BASE64,
+        ColumnHook.KEBAB,
+        ColumnHook.SNAKE,
+        ColumnHook.PASSWORD,
+      ].forEach(cap => meta.t! & cap && column.meta.transformers!.push(cap));
 
-      column.transformers.sort((a, b) => a - b);
+      column.meta.transformers.sort((a, b) => a - b);
     }
 
     if (meta.a && typeof meta.a === 'string') {
-      column.alias = meta.a;
+      column.meta.alias = meta.a;
     }
 
     return column;
@@ -125,8 +125,8 @@ export const decodeRelationMeta = (
 export const encodeTableMeta = (table: ITable): string => {
   const meta: TableMeta = {};
 
-  if (table.alias) {
-    meta.a = table.alias;
+  if (table?.meta?.alias) {
+    meta.a = table.meta.alias;
   }
 
   return Object.keys(meta).length ? JSON.stringify(meta) : '';
@@ -142,7 +142,7 @@ export const decodeTableMeta = (table: ITable, comment: string) => {
     let meta: TableMeta = JSON.parse(comment) as TableMeta;
 
     if (meta.a && typeof meta.a === 'string') {
-      table.alias = meta.a;
+      table.meta.alias = meta.a;
     }
   } catch (e) {}
 };

@@ -28,6 +28,7 @@ const driver = new Driver({
   },
   isReadOnly: false,
   filters: ['_artgen_.+', 'wp_.+'],
+  metax: [],
 });
 
 // Apply the desired state, and the library will create or modify the databse to match the given schema
@@ -35,6 +36,9 @@ await driver.setState([
   {
     name: 'my_fast_table',
     isUnlogged: true,
+    meta: {
+      alias: 'MyFastTable',
+    },
     columns: {
       id: {
         type: {
@@ -50,6 +54,16 @@ await driver.setState([
         isUnique: true,
         isIndexed: IndexType.BTREE,
       },
+      password: {
+        type: {
+          name: ColumnType.TEXT,
+        },
+        isUnique: true,
+        isIndexed: IndexType.BTREE,
+        meta: {
+          transformers: [ColumnHook.PASSWORD],
+        },
+      },
       decision: {
         type: {
           name: ColumnType.ENUM,
@@ -62,8 +76,10 @@ await driver.setState([
         type: {
           name: ColumnType.DATE,
         },
-        alias: 'createdOn',
-        capabilities: [ColumnCapability.CREATED_AT],
+        meta: {
+          alias: 'createdOn',
+          capabilities: [ColumnCapability.CREATED_AT],
+        },
       },
     },
     uniques: {

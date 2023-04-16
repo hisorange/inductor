@@ -1,4 +1,4 @@
-export enum Transformers {
+export enum ColumnHook {
   JSON = 1,
   BASE16 = 2,
   BASE64 = 4,

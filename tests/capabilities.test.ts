@@ -31,9 +31,10 @@ describe('Capabilities', () => {
         },
         [columnName]: {
           ...createTestColumn(ColumnType.DATE),
-          capabilities: [cap],
         },
       };
+
+      table.columns[columnName].meta.capabilities = [cap];
 
       // Remove table if exists from a previous test
       await driver.set([table]);
@@ -57,22 +58,23 @@ describe('Capabilities', () => {
       },
       with_cap: {
         ...createTestColumn(ColumnType.TIMESTAMP),
-        capabilities: [ColumnCapability.CREATED_AT],
       },
     };
+
+    table.columns.with_cap.meta.capabilities = [ColumnCapability.CREATED_AT];
 
     await driver.set([table]);
     expect(table).toStrictEqual((await driver.read([tableName]))[0]);
 
     const tableV2 = cloneDeep(table);
 
-    tableV2.columns.with_cap.capabilities = [];
+    tableV2.columns.with_cap.meta.capabilities = [];
 
     await driver.set([tableV2]);
     expect(tableV2).toStrictEqual((await driver.read([tableName]))[0]);
 
     const tableV3 = cloneDeep(tableV2);
-    tableV3.columns.with_cap.capabilities = [ColumnCapability.UPDATED_AT];
+    tableV3.columns.with_cap.meta.capabilities = [ColumnCapability.UPDATED_AT];
 
     await driver.set([tableV3]);
     expect(tableV3).toStrictEqual((await driver.read([tableName]))[0]);

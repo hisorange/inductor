@@ -23,22 +23,23 @@ describe('Column Alias', () => {
       },
       with_alias: {
         ...createTestColumn(ColumnType.INTEGER),
-        alias: 'withCAP',
       },
     };
+
+    table.columns.with_alias.meta.alias = 'theAlias';
 
     await driver.set([table]);
     expect(table).toStrictEqual((await driver.read([tableName]))[0]);
 
     const tableV2 = cloneDeep(table);
 
-    delete tableV2.columns.with_alias.alias;
+    delete tableV2.columns.with_alias.meta.alias;
 
     await driver.set([tableV2]);
     expect(tableV2).toStrictEqual((await driver.read([tableName]))[0]);
 
     const tableV3 = cloneDeep(tableV2);
-    tableV3.columns.with_alias.alias = 'withCAP23';
+    tableV3.columns.with_alias.meta.alias = 'withCAP23';
 
     await driver.set([tableV3]);
     expect(tableV3).toStrictEqual((await driver.read([tableName]))[0]);

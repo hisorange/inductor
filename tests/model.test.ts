@@ -21,17 +21,18 @@ describe('Model', () => {
       id: {
         ...createTestColumn(ColumnType.SERIAL),
         isPrimary: true,
-        alias: 'identifier',
       },
       data: {
         ...createTestColumn(ColumnType.TEXT),
       },
       created_at: {
         ...createTestColumn(ColumnType.TIMESTAMP),
-        alias: 'createdAtPropAlias',
-        capabilities: [ColumnCapability.CREATED_AT],
       },
     };
+
+    table.columns.id.meta.alias = 'identifier';
+    table.columns.created_at.meta.alias = 'createdAtPropAlias';
+    table.columns.created_at.meta.capabilities = [ColumnCapability.CREATED_AT];
 
     await driver.set([table]);
     expect(table).toStrictEqual((await driver.read([tableName]))[0]);

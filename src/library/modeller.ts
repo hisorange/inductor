@@ -43,7 +43,7 @@ export class Modeller {
     ValidateTable(table);
 
     for (const columnName in table.columns) {
-      table.columns[columnName].capabilities?.sort((a, b) => a - b);
+      table.columns[columnName].meta.capabilities?.sort((a, b) => a - b);
     }
 
     const model = this.toModel(table);
@@ -116,7 +116,7 @@ export class Modeller {
     for (const columnName in table.columns) {
       if (Object.prototype.hasOwnProperty.call(table.columns, columnName)) {
         const column = table.columns[columnName];
-        const propertyName = column.alias || columnName;
+        const propertyName = column.meta.alias || columnName;
 
         // Map column names to property names
         columnToProperty.set(columnName, propertyName);
@@ -124,8 +124,8 @@ export class Modeller {
         propertyToColumn.set(propertyName, columnName);
 
         // Map setters and getters
-        if (column?.transformers) {
-          column.transformers.forEach(transformer => {
+        if (column?.meta.transformers) {
+          column.meta.transformers.forEach(transformer => {
             // Column name maps the getters
             const readHook = TransformerMap[transformer].onRead;
 
@@ -207,7 +207,7 @@ export class Modeller {
     Object.keys(table.columns).forEach(columnName => {
       const column = table.columns[columnName];
       const property = columnToProperty.get(columnName)!;
-      const capabilities = column.capabilities;
+      const capabilities = column.meta.capabilities;
 
       if (capabilities && capabilities.length) {
         if (capabilities.includes(ColumnCapability.CREATED_AT)) {

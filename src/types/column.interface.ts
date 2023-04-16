@@ -1,8 +1,8 @@
 import { Pojo } from 'objection';
+import { ColumnHook } from './column-hook.enum';
 import { ColumnType } from './column-type.enum';
 import { ColumnCapability } from './column.capability';
 import { IndexType } from './index-type.enum';
-import { Transformers } from './transformers.enum';
 
 export type EnumColumnType = {
   name: ColumnType.ENUM;
@@ -113,20 +113,22 @@ export interface IColumn {
     | Array<unknown>
     | Pojo;
 
-  /**
-   * Model supported capabilities, stored in comment format.
-   */
-  capabilities?: ColumnCapability[];
+  meta: {
+    /**
+     * Model supported capabilities, stored in comment format.
+     */
+    capabilities?: ColumnCapability[];
 
-  /**
-   * Model mapping to property name
-   */
-  alias?: string;
+    /**
+     * Model mapping to property name
+     */
+    alias?: string;
 
-  /**
-   * Setter / Getter transformers
-   *
-   * Applied when wrote / read from database.
-   */
-  transformers?: Transformers[];
+    /**
+     * Setter / Getter transformers
+     *
+     * Applied when wrote / read from database.
+     */
+    transformers?: ColumnHook[];
+  };
 }

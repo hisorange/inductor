@@ -12,7 +12,9 @@ describe('Alter Nullable', () => {
         isPrimary: false,
         isUnique: false,
         defaultValue: 'd',
-        capabilities: [],
+        meta: {
+          capabilities: [],
+        },
         type: {
           name: ColumnType.ENUM,
           values: ['a', 'b', 'c'],

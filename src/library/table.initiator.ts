@@ -7,4 +7,5 @@ export const InitiateTable = (name: string): ITable => ({
   uniques: {},
   indexes: {},
   relations: {},
+  meta: {},
 });

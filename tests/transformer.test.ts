@@ -1,8 +1,8 @@
 import cloneDeep from 'lodash.clonedeep';
 import { Model } from 'objection';
 import { InitiateTable } from '../src/library/table.initiator';
+import { ColumnHook } from '../src/types/column-hook.enum';
 import { ColumnType } from '../src/types/column-type.enum';
-import { Transformers } from '../src/types/transformers.enum';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
 
@@ -17,37 +17,31 @@ describe('Transformers', () => {
   afterAll(() => driver.close());
 
   test.each([
-    [
-      'JSON',
-      Transformers.JSON,
-      { a: 1, b: 2 },
-      { a: 1, b: 2 },
-      '{"a":1,"b":2}',
-    ],
+    ['JSON', ColumnHook.JSON, { a: 1, b: 2 }, { a: 1, b: 2 }, '{"a":1,"b":2}'],
     [
       'Base16',
-      Transformers.BASE16,
+      ColumnHook.BASE16,
       'Hello World',
       'Hello World',
       '48656c6c6f20576f726c64',
     ],
     [
       'Base64',
-      Transformers.BASE64,
+      ColumnHook.BASE64,
       'Hello World',
       'Hello World',
       'SGVsbG8gV29ybGQ=',
     ],
     [
       'KebabCase',
-      Transformers.KEBAB,
+      ColumnHook.KEBAB,
       'hello world',
       'hello-world',
       'hello-world',
     ],
     [
       'SnakeCase',
-      Transformers.SNAKE,
+      ColumnHook.SNAKE,
       'hello world',
       'hello_world',
       'hello_world',
@@ -68,9 +62,10 @@ describe('Transformers', () => {
         },
         transformed: {
           ...createTestColumn(ColumnType.TEXT),
-          transformers: [transformer],
         },
       };
+
+      table.columns.transformed.meta.transformers = [transformer];
 
       await driver.set([table]);
 
@@ -97,7 +92,7 @@ describe('Transformers', () => {
 
       const tableV2 = cloneDeep(table);
 
-      tableV2.columns.transformed.transformers = [];
+      tableV2.columns.transformed.meta.transformers = [];
 
       await driver.set([tableV2]);
       expect(tableV2).toStrictEqual((await driver.read([tableName]))[0]);

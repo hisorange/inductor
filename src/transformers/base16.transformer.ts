@@ -1,6 +1,6 @@
-import { ITransformer } from '../types/transformer.interface';
+import { IColumnHook } from '../types/column-hook.interface';
 
-export const Base16Transformer: ITransformer = {
+export const Base16Transformer: IColumnHook = {
   onWrite: (text: string): string =>
     text ? Buffer.from(text).toString('hex') : text,
 
