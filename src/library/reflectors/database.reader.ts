@@ -33,11 +33,23 @@ export const readDatabase = async (knex: Knex): Promise<IDatabaseState> => {
     readEnumerators(knex),
   ]);
 
+  const tablesMeta = tables.reduce(
+    (acc, [name, isLogged, comment]) => ({
+      ...acc,
+      [name]: {
+        isLogged,
+        comment,
+      },
+    }),
+    {},
+  ) as IDatabaseState['tablesMeta'];
+
   const state: IDatabaseState = {
     tables: tables.map(([table]) => table),
     unloggedTables: tables
       .filter(([_, isLogged]) => !isLogged)
       .map(([table]) => table),
+    tablesMeta,
     types,
     uniques,
     relations,

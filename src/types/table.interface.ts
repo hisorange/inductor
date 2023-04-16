@@ -42,4 +42,6 @@ export interface ITable {
    * This is useful for tables that are used for logging or temporary storage.
    */
   isUnlogged?: boolean;
+
+  alias?: string;
 }

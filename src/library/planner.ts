@@ -8,6 +8,7 @@ import { alterColumn } from './planners/alter.column';
 import { alterCompositeUnique } from './planners/alter.composite-unique';
 import { alterIsUnlogged } from './planners/alter.is-unlogged';
 import { alterPrimaryKeys } from './planners/alter.primary-keys';
+import { alterTableMeta } from './planners/alter.table-meta';
 import { createColumns } from './planners/create.columns';
 import { createForeignKeys } from './planners/create.foreign-keys';
 import { createIndexes } from './planners/create.indexes';
@@ -114,6 +115,10 @@ export class Planner {
       }
       // Change is affecting the foreign keys
       else if (tableKey === 'relations') {
+      }
+      // Change the meta
+      else if (tableKey === 'alias') {
+        alterTableMeta(change);
       }
     }
 

@@ -1,10 +1,13 @@
 import { IMigrationContext } from '../../types/migration-context.interface';
 import { MigrationRisk } from '../../types/migration-risk.enum';
 import { ITable } from '../../types/table.interface';
+import { encodeTableMeta } from '../../utils/meta.coder';
 
 export const createTable = (table: ITable, ctx: IMigrationContext) => {
   ctx.plan.steps.push({
-    query: ctx.knex.schema.createTable(table.name, () => {}),
+    query: ctx.knex.schema.createTable(table.name, builder => {
+      builder.comment(encodeTableMeta(table));
+    }),
     risk: MigrationRisk.NONE,
     description: `Create table [${table.name}]`,
     phase: 0,
