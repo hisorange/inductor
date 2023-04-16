@@ -13,12 +13,13 @@ export const readTableList = async (knex: Knex): Promise<TableList> =>
         persistence: 'rel.relpersistence',
         comment: 'desc.description',
       })
-      .innerJoin(
+      .leftJoin(
         {
           desc: 'pg_description',
         },
         {
           'desc.objoid': 'rel.oid',
+          'desc.objsubid': 0,
         },
       )
       .where({
