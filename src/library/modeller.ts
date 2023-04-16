@@ -8,6 +8,7 @@ import {
   RelationMappings,
 } from 'objection';
 import { ModelNotFound } from '../exception/model-not-found.exception';
+import { TransformerMap } from '../transformers/transformer.map';
 import { ColumnCapability } from '../types/column.capability';
 import { ITable } from '../types/table.interface';
 import { TableMap } from '../types/table.map';
@@ -97,23 +98,57 @@ export class Modeller {
     // Prepare fast lookup maps for both propery and column name conversions.
     // Even tho this is a small amount of data, it's worth it to avoid
     // having to iterate over the properties of the model class.
-    const columnToProperty = new Map<string, string>();
-    const propertyToColumn = new Map<string, string>();
+    type ColumName = string;
+    type PropertyName = string;
+    type ReadTransformer = (v: any) => any;
+    type WriteTransformer = (v: any) => any;
+
+    const columnToProperty = new Map<ColumName, PropertyName>();
+    const propertyToColumn = new Map<PropertyName, ColumName>();
+
+    // TODO: convert this to a single function with a chain of calls, so we can avoid the iteration
+    const transformerColumnCache = new Map<ColumName, ReadTransformer[]>();
+    const transformerPropertyCache = new Map<
+      PropertyName,
+      WriteTransformer[]
+    >();
 
     for (const columnName in table.columns) {
       if (Object.prototype.hasOwnProperty.call(table.columns, columnName)) {
         const column = table.columns[columnName];
+        const propertyName = column.alias || columnName;
 
         // Map column names to property names
-        columnToProperty.set(columnName, column.alias || columnName);
+        columnToProperty.set(columnName, propertyName);
         // Map property names to column names
-        propertyToColumn.set(column.alias || columnName, columnName);
+        propertyToColumn.set(propertyName, columnName);
+
+        // Map setters and getters
+        if (column?.transformers) {
+          column.transformers.forEach(transformer => {
+            // Column name maps the getters
+            const readHook = TransformerMap[transformer].onRead;
+
+            if (readHook) {
+              const getters = transformerColumnCache.get(columnName) || [];
+              getters.push(readHook);
+              transformerColumnCache.set(columnName, getters);
+            }
+
+            // Property name maps the setters
+            const writeHook = TransformerMap[transformer].onWrite;
+
+            if (writeHook) {
+              const setters = transformerPropertyCache.get(propertyName) || [];
+              setters.push(writeHook);
+              transformerPropertyCache.set(propertyName, setters);
+            }
+          });
+        }
       }
     }
 
     model.idColumn = ColumnTools.filterPrimary(table);
-
-    // TODO: getter and setter hooks
 
     // Map database columns to code level references
     // Database -> Model = Getter
@@ -121,8 +156,16 @@ export class Modeller {
       Object.keys(dbPojo).forEach(column => {
         const property = columnToProperty.get(column)!;
 
+        // Apply read transformers
+        const readTransformer = transformerColumnCache.get(column);
+
+        readTransformer?.forEach(transform => {
+          dbPojo[column] = transform(dbPojo[column]);
+        });
+
         if (property !== column) {
           dbPojo[columnToProperty.get(column)!] = dbPojo[column];
+
           delete dbPojo[column];
         }
       });
@@ -136,8 +179,16 @@ export class Modeller {
       Object.keys(modelPojo).forEach(property => {
         const column = propertyToColumn.get(property)!;
 
+        // Apply write transformers
+        const writeTransformer = transformerPropertyCache.get(property);
+
+        writeTransformer?.forEach(transform => {
+          modelPojo[property] = transform(modelPojo[property]);
+        });
+
         if (property !== column) {
           modelPojo[column] = modelPojo[property];
+
           delete modelPojo[property];
         }
       });

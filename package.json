@@ -31,8 +31,11 @@
     "gen:test": "hygen pg-test new"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.0",
     "@types/jest": "^28.0.0",
     "@types/lodash.clonedeep": "^4.5.7",
+    "@types/lodash.kebabcase": "^4.1.7",
+    "@types/lodash.snakecase": "^4.1.7",
     "@types/node": "^16.0.0",
     "jest": "^28.0.0",
     "objection": "^3.0.1",
@@ -42,10 +45,13 @@
     "typescript": "^4.7.0"
   },
   "dependencies": {
+    "bcrypt": "^5.1.0",
     "inflection": "^2.0.1",
     "just-diff": "^5.0.1",
     "knex": "^2.2.0",
     "lodash.clonedeep": "^4.5.0",
+    "lodash.kebabcase": "^4.1.1",
+    "lodash.snakecase": "^4.1.1",
     "objection": "^3.0.1",
     "pg": "^8.7.3",
     "pino": "^7.11.0",

@@ -1,10 +1,12 @@
 import { ColumnCapability } from '../types/column.capability';
 import { IColumn } from '../types/column.interface';
 import { IRelation } from '../types/relation.interface';
+import { Transformers } from '../types/transformers.enum';
 
 type ColumnMeta = {
   c?: number; // capabilities
   a?: string; // alias
+  t?: number; // transformers
 };
 
 type RelationMeta = {
@@ -19,6 +21,14 @@ export const encodeColumnMeta = (column: IColumn): string => {
 
     for (const cap of column.capabilities.sort()) {
       meta.c = meta.c! | cap;
+    }
+  }
+
+  if (column?.transformers?.length) {
+    meta.t = 0;
+
+    for (const transformer of column.transformers.sort()) {
+      meta.t = meta.t! | transformer;
     }
   }
 
@@ -48,6 +58,21 @@ export const decodeColumnMeta = (column: IColumn, comment: string): IColumn => {
       ].forEach(cap => meta.c! & cap && column.capabilities!.push(cap));
 
       column.capabilities.sort((a, b) => a - b);
+    }
+
+    if (meta.t && typeof meta.t === 'number') {
+      column.transformers = [];
+
+      [
+        Transformers.JSON,
+        Transformers.BASE16,
+        Transformers.BASE64,
+        Transformers.KEBAB,
+        Transformers.SNAKE,
+        Transformers.PASSWORD,
+      ].forEach(cap => meta.t! & cap && column.transformers!.push(cap));
+
+      column.transformers.sort((a, b) => a - b);
     }
 
     if (meta.a && typeof meta.a === 'string') {

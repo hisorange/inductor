@@ -2,6 +2,7 @@ import { Pojo } from 'objection';
 import { ColumnType } from './column-type.enum';
 import { ColumnCapability } from './column.capability';
 import { IndexType } from './index-type.enum';
+import { Transformers } from './transformers.enum';
 
 export type EnumColumnType = {
   name: ColumnType.ENUM;
@@ -121,4 +122,11 @@ export interface IColumn {
    * Model mapping to property name
    */
   alias?: string;
+
+  /**
+   * Setter / Getter transformers
+   *
+   * Applied when wrote / read from database.
+   */
+  transformers?: Transformers[];
 }

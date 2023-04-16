@@ -67,6 +67,7 @@ export class Reflection {
         isIndexed: false,
         defaultValue: columnInfo.defaultValue,
         capabilities: [],
+        transformers: [],
       };
 
       if (columnInfo.comment) {

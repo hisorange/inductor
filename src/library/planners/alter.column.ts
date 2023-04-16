@@ -18,6 +18,9 @@ export const alterColumn = async (
     case 'alias':
       alterComments(change, name);
       break;
+    case 'transformers':
+      alterComments(change, name);
+      break;
     case 'capabilities':
       alterComments(change, name);
       break;
