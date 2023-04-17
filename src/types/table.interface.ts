@@ -1,3 +1,4 @@
+import { Pojo } from 'objection';
 import { IColumn } from './column.interface';
 import { ICompositeIndex } from './index.interface';
 import { IRelation } from './relation.interface';
@@ -46,7 +47,5 @@ export interface ITable {
   /**
    * Comment based meta information.
    */
-  meta: {
-    alias?: string;
-  };
+  meta: Pojo;
 }

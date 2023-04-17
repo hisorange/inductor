@@ -1,3 +1,5 @@
+import type { Pojo } from 'objection';
+
 export interface IMetaExtension {
   /**
    * Unique identifier of the meta extension.
@@ -17,17 +19,12 @@ export interface IMetaExtension {
     | 'enum';
 
   /**
-   * Property name to be used for the meta extension.
-   */
-  readonly property: string;
-
-  /**
    * Function to be called when the meta information is changed.
    */
-  onWrite(def: any, value: any): void;
+  onWrite(comment: Pojo, meta: Pojo): void;
 
   /**
    * Function to be called when the meta information is read.
    */
-  onRead(def: any, value: string): void;
+  onRead(comment: Pojo, meta: Pojo): void;
 }

@@ -3,16 +3,22 @@ import { ColumnType } from '../types/column-type.enum';
 import { IColumn } from '../types/column.interface';
 import { IDatabaseState } from '../types/database-state.interface';
 import { IndexType } from '../types/index-type.enum';
+import { IMetaExtension } from '../types/meta-coder.interface';
 import { IRelation } from '../types/relation.interface';
 import { ITable } from '../types/table.interface';
 import { ColumnTools } from '../utils/column-tools';
-import { decodeColumnMeta, decodeTableMeta } from '../utils/meta.coder';
+import { decodeMetaComment } from '../utils/meta.coder';
+import { decodeColumnMeta } from '../utils/old-meta.coder';
 import { readRowCount } from './reflectors/row-count.reader';
 import { InitiateTable } from './table.initiator';
 import { ValidateTable } from './table.validator';
 
 export class Reflection {
-  constructor(readonly connection: Knex, public state: IDatabaseState) {}
+  constructor(
+    readonly connection: Knex,
+    public state: IDatabaseState,
+    protected meta: IMetaExtension[],
+  ) {}
 
   getTableState(tableName: string): ITable {
     const table = InitiateTable(tableName);
@@ -21,7 +27,15 @@ export class Reflection {
     table.indexes = this.getTableIndexes(tableName);
 
     // Decode table comment into meta
-    decodeTableMeta(table, this.state.tablesMeta[tableName].comment);
+    const comment = decodeMetaComment(this.state.tablesMeta[tableName].comment);
+    table.meta = {};
+
+    // Apply meta extensions interested in the table
+    this.meta
+      .filter(meta => meta.interest === 'table')
+      .forEach(meta => {
+        meta.onRead(comment, table.meta);
+      });
 
     // Check if the table is unlogged
     table.isUnlogged = this.state.unloggedTables.includes(tableName);

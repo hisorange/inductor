@@ -1,7 +1,7 @@
 import { Knex } from 'knex';
 import { IDatabaseState } from '../../types/database-state.interface';
 import { ForeignAction } from '../../types/foreign-action.enum';
-import { decodeRelationMeta } from '../../utils/meta.coder';
+import { decodeRelationMeta } from '../../utils/old-meta.coder';
 
 export const readRelations = async (
   knex: Knex,

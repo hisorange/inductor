@@ -1,7 +1,7 @@
 import { IMigrationContext } from '../../types/migration-context.interface';
 import { MigrationRisk } from '../../types/migration-risk.enum';
 import { ITable } from '../../types/table.interface';
-import { encodeRelationMeta } from '../../utils/meta.coder';
+import { encodeRelationMeta } from '../../utils/old-meta.coder';
 
 export const createForeignKeys = (_table: ITable, ctx: IMigrationContext) => {
   // Add foreign keys

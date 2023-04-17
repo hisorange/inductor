@@ -1,6 +1,6 @@
 import { IChange } from '../../types/change.interface';
 import { MigrationRisk } from '../../types/migration-risk.enum';
-import { encodeColumnMeta } from '../../utils/meta.coder';
+import { encodeColumnMeta } from '../../utils/old-meta.coder';
 
 export const alterComments = async (change: IChange, name: string) => {
   const newComment = encodeColumnMeta(change.target.columns[name]);

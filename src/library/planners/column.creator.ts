@@ -3,7 +3,7 @@ import { ColumnType } from '../../types/column-type.enum';
 import { IColumn } from '../../types/column.interface';
 import { ITable } from '../../types/table.interface';
 import { ColumnTools } from '../../utils/column-tools';
-import { encodeColumnMeta } from '../../utils/meta.coder';
+import { encodeColumnMeta } from '../../utils/old-meta.coder';
 import { Reflection } from '../reflection';
 import { generateNativeType } from './utils/native-type.generator';
 

@@ -1,6 +1,8 @@
 import knex, { Knex } from 'knex';
 import pino, { Logger } from 'pino';
+import { TableAliasMeta } from '../meta/table-alias.meta';
 import { IDatabase } from '../types/database.interface';
+import { IMetaExtension } from '../types/meta-coder.interface';
 import { IMigrationContext } from '../types/migration-context.interface';
 import { ITable } from '../types/table.interface';
 import { Plan } from './plan';
@@ -12,8 +14,11 @@ import { readDatabase } from './reflectors/database.reader';
 export class Migrator {
   readonly logger: Logger;
   readonly connection: Knex;
+  readonly meta: IMetaExtension[] = [TableAliasMeta];
 
-  constructor(sessionId: string, database: IDatabase) {
+  constructor(sessionId: string, readonly database: IDatabase) {
+    database?.metax?.forEach(meta => this.meta.push(meta));
+
     this.connection = knex({
       client: 'pg',
       connection: {
@@ -35,7 +40,11 @@ export class Migrator {
   }
 
   protected async reflect(): Promise<Reflection> {
-    return new Reflection(this.connection, await readDatabase(this.connection));
+    return new Reflection(
+      this.connection,
+      await readDatabase(this.connection),
+      this.meta,
+    );
   }
 
   /**
@@ -55,6 +64,7 @@ export class Migrator {
       knex: this.connection,
       reflection: reflection,
       plan: new Plan(this.logger),
+      meta: this.meta,
     };
 
     const planner = new Planner(ctx);
