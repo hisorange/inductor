@@ -3,7 +3,7 @@ import { ColumnType } from '../types/column-type.enum';
 import { IColumn } from '../types/column.interface';
 import { IDatabaseState } from '../types/database-state.interface';
 import { IndexType } from '../types/index-type.enum';
-import { IMetaExtension } from '../types/meta-coder.interface';
+import { IMeta } from '../types/meta.interface';
 import { IRelation } from '../types/relation.interface';
 import { ITable } from '../types/table.interface';
 import { ColumnTools } from '../utils/column-tools';
@@ -16,7 +16,7 @@ export class Reflection {
   constructor(
     readonly connection: Knex,
     public state: IDatabaseState,
-    protected meta: IMetaExtension[],
+    protected meta: IMeta[],
   ) {}
 
   getTableState(tableName: string): ITable {

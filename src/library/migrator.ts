@@ -5,7 +5,7 @@ import { ColumnCapMeta } from '../meta/column-cap.meta';
 import { ColumnHookMeta } from '../meta/column-hook.meta';
 import { TableAliasMeta } from '../meta/table-alias.meta';
 import { IDatabase } from '../types/database.interface';
-import { IMetaExtension } from '../types/meta-coder.interface';
+import { IMeta } from '../types/meta.interface';
 import { IMigrationContext } from '../types/migration-context.interface';
 import { ITable } from '../types/table.interface';
 import { Plan } from './plan';
@@ -17,7 +17,7 @@ import { readDatabase } from './reflectors/database.reader';
 export class Migrator {
   readonly logger: Logger;
   readonly connection: Knex;
-  readonly meta: IMetaExtension[] = [
+  readonly meta: IMeta[] = [
     ColumnAliasMeta,
     ColumnCapMeta,
     ColumnHookMeta,
@@ -72,7 +72,7 @@ export class Migrator {
       knex: this.connection,
       reflection: reflection,
       plan: new Plan(this.logger),
-      meta: this.meta,
+      metas: this.meta,
     };
 
     const planner = new Planner(ctx);

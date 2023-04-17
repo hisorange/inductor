@@ -1,6 +1,6 @@
 import type { Pojo } from 'objection';
 
-export interface IMetaExtension {
+export interface IMeta {
   /**
    * Unique identifier of the meta extension.
    */

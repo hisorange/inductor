@@ -1,11 +1,5 @@
 import { IRelation } from '../types/relation.interface';
 
-type ColumnMeta = {
-  c?: number; // capabilities
-  a?: string; // alias
-  t?: number; // transformers
-};
-
 type RelationMeta = {
   a?: string; // alias
 };

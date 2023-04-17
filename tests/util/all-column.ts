@@ -46,11 +46,7 @@ export const createTestColumn = (
     isPrimary: false,
     isIndexed: false,
     defaultValue: undefined,
-    meta: {
-      // capabilities: [],
-      // transformers: [],
-      // alias: undefined, TODO: fix this in the future
-    },
+    meta: {},
   };
 
   // Fix the is primary flag

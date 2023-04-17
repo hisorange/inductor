@@ -11,7 +11,7 @@ type TestModel = {
   transformed: any;
 } & Model;
 
-describe('Transformers', () => {
+describe('Hooks', () => {
   const driver = createTestDriver();
 
   afterAll(() => driver.close());
@@ -48,7 +48,7 @@ describe('Transformers', () => {
     ],
   ])(
     'should transform the content to and from %s',
-    async (name, transformer, input, output, raw) => {
+    async (name, hook, input, output, raw) => {
       const tableName = 'transformer_' + name.toLowerCase() + '_test';
       const table = InitiateTable(tableName);
 
@@ -65,7 +65,7 @@ describe('Transformers', () => {
         },
       };
 
-      table.columns.transformed.meta.transformers = [transformer];
+      table.columns.transformed.meta.hooks = [hook];
 
       await driver.set([table]);
 
@@ -92,7 +92,7 @@ describe('Transformers', () => {
 
       const tableV2 = cloneDeep(table);
 
-      tableV2.columns.transformed.meta.transformers = [];
+      tableV2.columns.transformed.meta.hooks = [];
 
       await driver.set([tableV2]);
       expect(tableV2).toStrictEqual((await driver.read([tableName]))[0]);

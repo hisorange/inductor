@@ -8,7 +8,7 @@ import {
   RelationMappings,
 } from 'objection';
 import { ModelNotFound } from '../exception/model-not-found.exception';
-import { TransformerMap } from '../transformers/transformer.map';
+import { HookDictionary } from '../hooks/hook.dictionary';
 import { ColumnHook } from '../types/column-hook.enum';
 import { ColumnCapability } from '../types/column.capability';
 import { ITable } from '../types/table.interface';
@@ -127,10 +127,10 @@ export class Modeller {
         propertyToColumn.set(propertyName, columnName);
 
         // Map setters and getters
-        if (column?.meta.transformers) {
-          (column.meta.transformers as ColumnHook[]).forEach(transformer => {
+        if (column?.meta.hooks) {
+          (column.meta.hooks as ColumnHook[]).forEach(transformer => {
             // Column name maps the getters
-            const readHook = TransformerMap[transformer].onRead;
+            const readHook = HookDictionary[transformer].onRead;
 
             if (readHook) {
               const getters = transformerColumnCache.get(columnName) || [];
@@ -139,7 +139,7 @@ export class Modeller {
             }
 
             // Property name maps the setters
-            const writeHook = TransformerMap[transformer].onWrite;
+            const writeHook = HookDictionary[transformer].onWrite;
 
             if (writeHook) {
               const setters = transformerPropertyCache.get(propertyName) || [];
@@ -182,11 +182,11 @@ export class Modeller {
       Object.keys(modelPojo).forEach(property => {
         const column = propertyToColumn.get(property)!;
 
-        // Apply write transformers
-        const writeTransformer = transformerPropertyCache.get(property);
+        // Apply write hooks
+        const onWriteHooks = transformerPropertyCache.get(property);
 
-        writeTransformer?.forEach(transform => {
-          modelPojo[property] = transform(modelPojo[property]);
+        onWriteHooks?.forEach(onWrite => {
+          modelPojo[property] = onWrite(modelPojo[property]);
         });
 
         if (property !== column) {

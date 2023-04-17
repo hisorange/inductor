@@ -1,6 +1,6 @@
-import { IMetaExtension } from '../types/meta-coder.interface';
+import { IMeta } from '../types/meta.interface';
 
-export const ColumnAliasMeta: IMetaExtension = {
+export const ColumnAliasMeta: IMeta = {
   id: 'inductor.column-alias',
   interest: 'column',
 

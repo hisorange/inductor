@@ -1,23 +1,23 @@
 import { ColumnHook } from '../types/column-hook.enum';
-import { IMetaExtension } from '../types/meta-coder.interface';
+import { IMeta } from '../types/meta.interface';
 
-export const ColumnHookMeta: IMetaExtension = {
+export const ColumnHookMeta: IMeta = {
   id: 'inductor.column-hook',
   interest: 'column',
 
   onWrite(comment, meta) {
-    if (Object.keys(meta).includes('transformers')) {
+    if (Object.keys(meta).includes('hooks')) {
       comment.t = 0;
 
-      for (const transformer of meta.transformers.sort()) {
-        comment.t = comment.t! | transformer;
+      for (const hook of meta.hooks.sort()) {
+        comment.t = comment.t! | hook;
       }
     }
   },
 
   onRead(comment, meta) {
     if (typeof comment?.t === 'number') {
-      meta.transformers = [];
+      meta.hooks = [];
 
       [
         ColumnHook.JSON,
@@ -26,9 +26,9 @@ export const ColumnHookMeta: IMetaExtension = {
         ColumnHook.KEBAB,
         ColumnHook.SNAKE,
         ColumnHook.PASSWORD,
-      ].forEach(cap => comment.t! & cap && meta.transformers!.push(cap));
+      ].forEach(hook => comment.t! & hook && meta.hooks!.push(hook));
 
-      meta.transformers.sort((a: ColumnHook, b: ColumnHook) => a - b);
+      meta.hooks.sort((a: ColumnHook, b: ColumnHook) => a - b);
     }
   },
 };

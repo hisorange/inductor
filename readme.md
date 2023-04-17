@@ -61,7 +61,7 @@ await driver.setState([
         isUnique: true,
         isIndexed: IndexType.BTREE,
         meta: {
-          transformers: [ColumnHook.PASSWORD],
+          hooks: [ColumnHook.PASSWORD],
         },
       },
       decision: {

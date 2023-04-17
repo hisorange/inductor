@@ -1,6 +1,6 @@
 import { IColumnHook } from '../types/column-hook.interface';
 
-export const Base16Transformer: IColumnHook = {
+export const Base16Hook: IColumnHook = {
   onWrite: (text: string): string =>
     text ? Buffer.from(text).toString('hex') : text,
 

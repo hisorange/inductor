@@ -1,6 +1,6 @@
-import { IMetaExtension } from '../types/meta-coder.interface';
+import { IMeta } from '../types/meta.interface';
 
-export const TableAliasMeta: IMetaExtension = {
+export const TableAliasMeta: IMeta = {
   id: 'inductor.table-alias',
   interest: 'table',
 

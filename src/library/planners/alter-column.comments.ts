@@ -6,7 +6,7 @@ export const alterColumnComments = async (change: IChange, name: string) => {
   const comment = {};
 
   // Apply meta extensions interested in the column
-  change.context.meta
+  change.context.metas
     .filter(meta => meta.interest === 'column')
     .forEach(meta => meta.onWrite(comment, change.target.columns[name].meta));
 

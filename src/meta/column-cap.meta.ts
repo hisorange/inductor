@@ -1,7 +1,7 @@
 import { ColumnCapability } from '../types/column.capability';
-import { IMetaExtension } from '../types/meta-coder.interface';
+import { IMeta } from '../types/meta.interface';
 
-export const ColumnCapMeta: IMetaExtension = {
+export const ColumnCapMeta: IMeta = {
   id: 'inductor.column-cap',
   interest: 'column',
 

@@ -1,5 +1,5 @@
 import { Knex } from 'knex';
-import { IMetaExtension } from './meta-coder.interface';
+import { IMeta } from './meta.interface';
 import { ITable } from './table.interface';
 
 /**
@@ -31,5 +31,5 @@ export interface IDatabase {
   /**
    * List of meta extensions to be used for the database.
    */
-  metax?: IMetaExtension[];
+  metax?: IMeta[];
 }

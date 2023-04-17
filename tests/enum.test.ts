@@ -69,10 +69,7 @@ describe('Enumerated Column', () => {
         isPrimary: false,
         isIndexed: false,
         defaultValue: undefined,
-        meta: {
-          capabilities: [],
-          transformers: [],
-        },
+        meta: {},
       },
     };
 

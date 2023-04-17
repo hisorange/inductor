@@ -10,7 +10,7 @@ export const createTable = (table: ITable, ctx: IMigrationContext) => {
       table.meta = table.meta || {};
       const comment = {};
 
-      ctx.meta
+      ctx.metas
         .filter(ext => ext.interest === 'table')
         .forEach(ext => ext.onWrite(comment, table.meta));
 

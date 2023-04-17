@@ -1,7 +1,7 @@
 import { Knex } from 'knex';
 import { ColumnType } from '../../types/column-type.enum';
 import { IColumn } from '../../types/column.interface';
-import { IMetaExtension } from '../../types/meta-coder.interface';
+import { IMeta } from '../../types/meta.interface';
 import { ITable } from '../../types/table.interface';
 import { ColumnTools } from '../../utils/column-tools';
 import { encodeMetaComment } from '../../utils/meta.coder';
@@ -14,7 +14,7 @@ export const createColumn = (
   columnDef: IColumn,
   tableDesc: ITable,
   reflection: Reflection,
-  metax: IMetaExtension[],
+  metax: IMeta[],
 ) => {
   let columnBuilder: Knex.PostgreSqlColumnBuilder;
 

@@ -7,7 +7,7 @@ export const alterTableMeta = ({ context, target }: IChange) => {
   target.meta = target.meta || {};
   const comment = {};
 
-  context.meta
+  context.metas
     .filter(ext => ext.interest === 'table')
     .forEach(ext => ext.onWrite(comment, target.meta));
 
