@@ -47,8 +47,8 @@ export const createTestColumn = (
     isIndexed: false,
     defaultValue: undefined,
     meta: {
-      capabilities: [],
-      transformers: [],
+      // capabilities: [],
+      // transformers: [],
       // alias: undefined, TODO: fix this in the future
     },
   };

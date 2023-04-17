@@ -8,7 +8,6 @@ import { IRelation } from '../types/relation.interface';
 import { ITable } from '../types/table.interface';
 import { ColumnTools } from '../utils/column-tools';
 import { decodeMetaComment } from '../utils/meta.coder';
-import { decodeColumnMeta } from '../utils/old-meta.coder';
 import { readRowCount } from './reflectors/row-count.reader';
 import { InitiateTable } from './table.initiator';
 import { ValidateTable } from './table.validator';
@@ -83,15 +82,19 @@ export class Reflection {
         isPrimary: compositePrimaryKeys.includes(columnName),
         isIndexed: false,
         defaultValue: columnInfo.defaultValue,
-        meta: {
-          capabilities: [],
-          transformers: [],
-        },
+        meta: {},
       };
 
-      if (columnInfo.comment) {
-        decodeColumnMeta(columnDef, columnInfo.comment);
-      }
+      // Decode column comment object
+      const comment = decodeMetaComment(columnInfo.comment ?? '');
+      columnDef.meta = {};
+
+      // Apply meta extensions interested in the column
+      this.meta
+        .filter(meta => meta.interest === 'column')
+        .forEach(meta => {
+          meta.onRead(comment, columnDef.meta);
+        });
 
       columnDef.isIndexed = singleColumnIndexes.has(columnName)
         ? singleColumnIndexes.get(columnName)!

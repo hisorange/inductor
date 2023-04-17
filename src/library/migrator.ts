@@ -1,5 +1,8 @@
 import knex, { Knex } from 'knex';
 import pino, { Logger } from 'pino';
+import { ColumnAliasMeta } from '../meta/column-alias.meta';
+import { ColumnCapMeta } from '../meta/column-cap.meta';
+import { ColumnHookMeta } from '../meta/column-hook.meta';
 import { TableAliasMeta } from '../meta/table-alias.meta';
 import { IDatabase } from '../types/database.interface';
 import { IMetaExtension } from '../types/meta-coder.interface';
@@ -14,7 +17,12 @@ import { readDatabase } from './reflectors/database.reader';
 export class Migrator {
   readonly logger: Logger;
   readonly connection: Knex;
-  readonly meta: IMetaExtension[] = [TableAliasMeta];
+  readonly meta: IMetaExtension[] = [
+    ColumnAliasMeta,
+    ColumnCapMeta,
+    ColumnHookMeta,
+    TableAliasMeta,
+  ];
 
   constructor(sessionId: string, readonly database: IDatabase) {
     database?.metax?.forEach(meta => this.meta.push(meta));

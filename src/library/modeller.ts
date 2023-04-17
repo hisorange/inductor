@@ -9,6 +9,7 @@ import {
 } from 'objection';
 import { ModelNotFound } from '../exception/model-not-found.exception';
 import { TransformerMap } from '../transformers/transformer.map';
+import { ColumnHook } from '../types/column-hook.enum';
 import { ColumnCapability } from '../types/column.capability';
 import { ITable } from '../types/table.interface';
 import { TableMap } from '../types/table.map';
@@ -43,7 +44,9 @@ export class Modeller {
     ValidateTable(table);
 
     for (const columnName in table.columns) {
-      table.columns[columnName].meta.capabilities?.sort((a, b) => a - b);
+      table.columns[columnName].meta.capabilities?.sort(
+        (a: number, b: number) => a - b,
+      );
     }
 
     const model = this.toModel(table);
@@ -125,7 +128,7 @@ export class Modeller {
 
         // Map setters and getters
         if (column?.meta.transformers) {
-          column.meta.transformers.forEach(transformer => {
+          (column.meta.transformers as ColumnHook[]).forEach(transformer => {
             // Column name maps the getters
             const readHook = TransformerMap[transformer].onRead;
 

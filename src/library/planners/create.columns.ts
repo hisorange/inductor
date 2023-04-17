@@ -17,6 +17,7 @@ export const createColumns = (table: ITable, ctx: IMigrationContext) => {
               table.columns[name],
               table,
               ctx.reflection,
+              ctx.meta,
             );
           }
         }

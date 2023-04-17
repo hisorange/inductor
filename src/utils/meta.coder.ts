@@ -1,7 +1,9 @@
+import type { Pojo } from 'objection';
+
 export const encodeMetaComment = (meta: Record<string, any>) =>
   Object.keys(meta).length ? JSON.stringify(meta) : '';
 
-export const decodeMetaComment = (comment: string) => {
+export const decodeMetaComment = (comment: string): Pojo => {
   if (!comment || !comment.length || comment === '{}') {
     return {};
   }

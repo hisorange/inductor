@@ -27,6 +27,7 @@ export const addColumn = async (
         target.columns[cname],
         target,
         ctx.reflection,
+        ctx.meta,
       ),
     ),
     risk,
