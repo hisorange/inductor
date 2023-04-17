@@ -1,10 +1,13 @@
 import { Knex } from 'knex';
 import { IDatabaseState } from '../../types/database-state.interface';
 import { ForeignAction } from '../../types/foreign-action.enum';
-import { decodeRelationMeta } from '../../utils/old-meta.coder';
+import { IMeta } from '../../types/meta.interface';
+import { IRelation } from '../../types/relation.interface';
+import { decodeMetaComment } from '../../utils/meta.coder';
 
 export const readRelations = async (
   knex: Knex,
+  metas: IMeta[],
 ): Promise<IDatabaseState['relations']> => {
   const state: IDatabaseState['relations'] = {};
 
@@ -119,7 +122,7 @@ export const readRelations = async (
 
     // Create the contraint key
     if (!tableRef.hasOwnProperty(row.relationName)) {
-      const relation = {
+      const relation: IRelation = {
         columns: [row.localColumnName],
         references: {
           table: row.remoteTableName,
@@ -128,11 +131,15 @@ export const readRelations = async (
         isLocalUnique: true,
         onDelete: row.deleteRule.toLowerCase() as ForeignAction,
         onUpdate: row.updateRule.toLowerCase() as ForeignAction,
+        meta: {},
       };
 
-      if (row.comment) {
-        decodeRelationMeta(relation, row.comment);
-      }
+      const comment = decodeMetaComment(row.comment ?? '');
+
+      // Apply meta extensions interested in the column
+      metas
+        .filter(meta => meta.interest === 'relation')
+        .forEach(meta => meta.onRead(comment, relation.meta));
 
       tableRef[row.relationName] = relation;
     }

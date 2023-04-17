@@ -1,3 +1,4 @@
+import type { Pojo } from 'objection';
 import { ForeignAction } from './foreign-action.enum';
 
 export interface IRelation {
@@ -6,10 +7,7 @@ export interface IRelation {
    */
   columns: string[];
 
-  /**
-   * Property name of the relation.
-   */
-  alias?: string;
+  meta: Pojo;
 
   references: {
     /**

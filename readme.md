@@ -98,7 +98,6 @@ await driver.setState([
     },
     relations: {
       fk_my_table_user: {
-        alias: 'user',
         columns: ['id'],
         references: {
           table: 'users',
@@ -107,6 +106,9 @@ await driver.setState([
         isLocalUnique: true,
         onDelete: ForeignAction.SET_NULL,
         onUpdate: ForeignAction.CASCADE,
+        meta: {
+          alias: 'user',
+        },
       },
     },
   },

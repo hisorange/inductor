@@ -29,6 +29,7 @@ describe('Relationship mapping', () => {
       isLocalUnique: false,
       onDelete: ForeignAction.CASCADE,
       onUpdate: ForeignAction.CASCADE,
+      meta: {},
     };
 
     profile.columns.id = createTestColumn(ColumnType.SERIAL);
@@ -42,6 +43,7 @@ describe('Relationship mapping', () => {
       isLocalUnique: true,
       onDelete: ForeignAction.CASCADE,
       onUpdate: ForeignAction.CASCADE,
+      meta: {},
     };
 
     avatar.columns.id = createTestColumn(ColumnType.SERIAL);
@@ -55,7 +57,9 @@ describe('Relationship mapping', () => {
       isLocalUnique: true,
       onDelete: ForeignAction.CASCADE,
       onUpdate: ForeignAction.CASCADE,
-      alias: 'owner',
+      meta: {
+        alias: 'owner',
+      },
     };
 
     driver.modeller.addTable(users);

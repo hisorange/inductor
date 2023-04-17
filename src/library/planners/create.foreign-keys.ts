@@ -1,7 +1,7 @@
 import { IMigrationContext } from '../../types/migration-context.interface';
 import { MigrationRisk } from '../../types/migration-risk.enum';
 import { ITable } from '../../types/table.interface';
-import { encodeRelationMeta } from '../../utils/old-meta.coder';
+import { encodeMetaComment } from '../../utils/meta.coder';
 
 export const createForeignKeys = (_table: ITable, ctx: IMigrationContext) => {
   // Add foreign keys
@@ -36,20 +36,25 @@ export const createForeignKeys = (_table: ITable, ctx: IMigrationContext) => {
         phase: 8,
       });
 
-      const comment = encodeRelationMeta(relation);
+      const comment = {};
 
-      if (comment) {
-        ctx.plan.steps.push({
-          query: ctx.knex.schema.raw(
-            `COMMENT ON CONSTRAINT "${foreignKeyName}" ON "${_table.name}" IS '${comment}'`,
-          ),
-          risk: ctx.reflection.isTableExists(table)
-            ? MigrationRisk.LOW
-            : MigrationRisk.HIGH, // Foreign table may not exists yet!
-          description: `Add relation meta to [${foreignKeyName}] for table [${_table.name}]`,
-          phase: 9,
-        });
-      }
+      // Apply meta extensions interested in the relation
+      ctx.metas
+        .filter(meta => meta.interest === 'relation')
+        .forEach(meta => meta.onWrite(comment, relation.meta));
+
+      ctx.plan.steps.push({
+        query: ctx.knex.schema.raw(
+          `COMMENT ON CONSTRAINT "${foreignKeyName}" ON "${
+            _table.name
+          }" IS '${encodeMetaComment(comment)}'`,
+        ),
+        risk: ctx.reflection.isTableExists(table)
+          ? MigrationRisk.LOW
+          : MigrationRisk.HIGH, // Foreign table may not exists yet!
+        description: `Add relation meta to [${foreignKeyName}] for table [${_table.name}]`,
+        phase: 9,
+      });
     }
   }
 };

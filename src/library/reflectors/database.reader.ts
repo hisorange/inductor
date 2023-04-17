@@ -1,5 +1,6 @@
 import { Knex } from 'knex';
 import { IDatabaseState } from '../../types/database-state.interface';
+import { IMeta } from '../../types/meta.interface';
 import { readColumns } from './column.reader';
 import { readCompositePrimaryKeys } from './composite-primary-key.reader';
 import { readEnumerators } from './enumerator.reader';
@@ -10,7 +11,10 @@ import { readTypes } from './type.reader';
 import { readUniqueConstraints } from './unique-constraint.reader';
 import { readUniques } from './unique.reader';
 
-export const readDatabase = async (knex: Knex): Promise<IDatabaseState> => {
+export const readDatabase = async (
+  knex: Knex,
+  metas: IMeta[],
+): Promise<IDatabaseState> => {
   const [
     tables,
     types,
@@ -25,7 +29,7 @@ export const readDatabase = async (knex: Knex): Promise<IDatabaseState> => {
     readTableList(knex),
     readTypes(knex),
     readUniqueConstraints(knex),
-    readRelations(knex),
+    readRelations(knex, metas),
     readUniques(knex),
     readCompositePrimaryKeys(knex),
     readIndexes(knex),

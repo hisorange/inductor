@@ -3,6 +3,7 @@ import pino, { Logger } from 'pino';
 import { ColumnAliasMeta } from '../meta/column-alias.meta';
 import { ColumnCapMeta } from '../meta/column-cap.meta';
 import { ColumnHookMeta } from '../meta/column-hook.meta';
+import { RelationAliasMeta } from '../meta/relation-alias.meta';
 import { TableAliasMeta } from '../meta/table-alias.meta';
 import { IDatabase } from '../types/database.interface';
 import { IMeta } from '../types/meta.interface';
@@ -17,15 +18,16 @@ import { readDatabase } from './reflectors/database.reader';
 export class Migrator {
   readonly logger: Logger;
   readonly connection: Knex;
-  readonly meta: IMeta[] = [
+  readonly metas: IMeta[] = [
     ColumnAliasMeta,
     ColumnCapMeta,
     ColumnHookMeta,
     TableAliasMeta,
+    RelationAliasMeta,
   ];
 
   constructor(sessionId: string, readonly database: IDatabase) {
-    database?.metax?.forEach(meta => this.meta.push(meta));
+    database?.metax?.forEach(meta => this.metas.push(meta));
 
     this.connection = knex({
       client: 'pg',
@@ -50,8 +52,8 @@ export class Migrator {
   protected async reflect(): Promise<Reflection> {
     return new Reflection(
       this.connection,
-      await readDatabase(this.connection),
-      this.meta,
+      await readDatabase(this.connection, this.metas),
+      this.metas,
     );
   }
 
@@ -72,7 +74,7 @@ export class Migrator {
       knex: this.connection,
       reflection: reflection,
       plan: new Plan(this.logger),
-      metas: this.meta,
+      metas: this.metas,
     };
 
     const planner = new Planner(ctx);

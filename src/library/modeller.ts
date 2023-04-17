@@ -311,7 +311,7 @@ export class Modeller {
       }
 
       const target = this.getModel(fk.references.table);
-      const forwardName = fk.alias || name;
+      const forwardName = fk.meta?.alias || name;
 
       map[forwardName] = {
         relation: Model.BelongsToOneRelation,
