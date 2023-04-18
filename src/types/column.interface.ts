@@ -111,5 +111,8 @@ export interface IColumn {
     | Array<unknown>
     | Pojo;
 
-  meta: Pojo;
+  meta: {
+    alias?: string;
+    [key: string]: any;
+  };
 }
