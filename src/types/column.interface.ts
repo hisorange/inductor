@@ -1,5 +1,7 @@
 import { Pojo } from 'objection';
+import { ColumnHook } from './column-hook.enum';
 import { ColumnType } from './column-type.enum';
+import { ColumnCapability } from './column.capability';
 import { IndexType } from './index-type.enum';
 
 export type EnumColumnType = {
@@ -113,6 +115,9 @@ export interface IColumn {
 
   meta: {
     alias?: string;
+    capabilities?: ColumnCapability[];
+    hooks?: ColumnHook[];
+    description?: string;
     [key: string]: any;
   };
 }

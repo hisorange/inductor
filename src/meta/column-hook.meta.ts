@@ -7,16 +7,16 @@ export const ColumnHookMeta: IMeta = {
 
   onWrite(comment, meta) {
     if (Object.keys(meta).includes('hooks')) {
-      comment.t = 0;
+      comment.h = 0;
 
       for (const hook of meta.hooks.sort()) {
-        comment.t = comment.t! | hook;
+        comment.h = comment.h! | hook;
       }
     }
   },
 
   onRead(comment, meta) {
-    if (typeof comment?.t === 'number') {
+    if (typeof comment?.h === 'number') {
       meta.hooks = [];
 
       [
@@ -26,7 +26,7 @@ export const ColumnHookMeta: IMeta = {
         ColumnHook.KEBAB,
         ColumnHook.SNAKE,
         ColumnHook.PASSWORD,
-      ].forEach(hook => comment.t! & hook && meta.hooks!.push(hook));
+      ].forEach(hook => comment.h! & hook && meta.hooks!.push(hook));
 
       meta.hooks.sort((a: ColumnHook, b: ColumnHook) => a - b);
     }

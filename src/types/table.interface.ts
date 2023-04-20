@@ -48,6 +48,7 @@ export interface ITable {
    */
   meta: {
     alias?: string;
+    description?: string;
     [key: string]: any;
   };
 }

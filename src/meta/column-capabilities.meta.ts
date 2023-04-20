@@ -1,8 +1,8 @@
 import { ColumnCapability } from '../types/column.capability';
 import { IMeta } from '../types/meta.interface';
 
-export const ColumnCapMeta: IMeta = {
-  id: 'inductor.column-cap',
+export const ColumnCapabilitiesMeta: IMeta = {
+  id: 'inductor.column-capabilities',
   interest: 'column',
 
   onWrite(comment, meta) {

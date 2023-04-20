@@ -1,10 +1,12 @@
 import knex, { Knex } from 'knex';
 import pino, { Logger } from 'pino';
 import { ColumnAliasMeta } from '../meta/column-alias.meta';
-import { ColumnCapMeta } from '../meta/column-cap.meta';
+import { ColumnCapabilitiesMeta } from '../meta/column-capabilities.meta';
+import { ColumnDescriptionMeta } from '../meta/column-description.meta';
 import { ColumnHookMeta } from '../meta/column-hook.meta';
 import { RelationAliasMeta } from '../meta/relation-alias.meta';
 import { TableAliasMeta } from '../meta/table-alias.meta';
+import { TableDescriptionMeta } from '../meta/table-description.meta';
 import { IDatabase } from '../types/database.interface';
 import { IMeta } from '../types/meta.interface';
 import { IMigrationContext } from '../types/migration-context.interface';
@@ -19,11 +21,17 @@ export class Migrator {
   readonly logger: Logger;
   readonly connection: Knex;
   readonly metas: IMeta[] = [
-    ColumnAliasMeta,
-    ColumnCapMeta,
+    ColumnCapabilitiesMeta,
     ColumnHookMeta,
-    TableAliasMeta,
     RelationAliasMeta,
+
+    // Alias
+    ColumnAliasMeta,
+    TableAliasMeta,
+
+    // Descriptions for UI / documentation
+    ColumnDescriptionMeta,
+    TableDescriptionMeta,
   ];
 
   constructor(sessionId: string, readonly database: IDatabase) {
