@@ -7,7 +7,8 @@ import { ColumnHookMeta } from '../meta/column-hook.meta';
 import { RelationAliasMeta } from '../meta/relation-alias.meta';
 import { TableAliasMeta } from '../meta/table-alias.meta';
 import { TableDescriptionMeta } from '../meta/table-description.meta';
-import { IDatabase } from '../types/database.interface';
+import { TableIdMeta } from '../meta/table-id.meta';
+import { IConfig } from '../types/config.interface';
 import { IMeta } from '../types/meta.interface';
 import { IMigrationContext } from '../types/migration-context.interface';
 import { ITable } from '../types/table.interface';
@@ -21,26 +22,23 @@ export class Migrator {
   readonly logger: Logger;
   readonly connection: Knex;
   readonly metas: IMeta[] = [
+    ColumnAliasMeta,
     ColumnCapabilitiesMeta,
+    ColumnDescriptionMeta,
     ColumnHookMeta,
     RelationAliasMeta,
-
-    // Alias
-    ColumnAliasMeta,
     TableAliasMeta,
-
-    // Descriptions for UI / documentation
-    ColumnDescriptionMeta,
     TableDescriptionMeta,
+    TableIdMeta,
   ];
 
-  constructor(sessionId: string, readonly database: IDatabase) {
-    database?.metax?.forEach(meta => this.metas.push(meta));
+  constructor(sessionId: string, readonly config: IConfig) {
+    config?.metax?.forEach(meta => this.metas.push(meta));
 
     this.connection = knex({
       client: 'pg',
       connection: {
-        ...database.connection,
+        ...config.connection,
         application_name: `inductor.${sessionId}`,
       },
       pool: {

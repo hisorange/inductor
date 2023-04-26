@@ -1,35 +1,12 @@
-import { Knex } from 'knex';
-import { IMeta } from './meta.interface';
 import { ITable } from './table.interface';
 
-/**
- * Describe the database table, and the connection associated with it.
- */
 export interface IDatabase {
-  /**
-   * Database connection configuration
-   */
-  readonly connection: Knex.PgConnectionConfig;
+  meta: {
+    id: string;
+    [key: string]: any;
+  };
 
-  /**
-   * Flag to indicate that the tables are read only,
-   * and the database should not be modified.
-   */
-  readonly isReadOnly: boolean;
-
-  /**
-   * Tables associated with the database
-   */
   tables: ITable[];
 
-  /**
-   * List of regex patterns to filter tables from the database.
-   * In case it's empty, all tables are returned.
-   */
-  filters: string[];
-
-  /**
-   * List of meta extensions to be used for the database.
-   */
-  metax?: IMeta[];
+  // views: IView[];
 }

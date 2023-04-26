@@ -27,14 +27,11 @@ export class Reflection {
 
     // Decode table comment into meta
     const comment = decodeMetaComment(this.state.tablesMeta[tableName].comment);
-    table.meta = {};
 
     // Apply meta extensions interested in the table
     this.meta
       .filter(meta => meta.interest === 'table')
-      .forEach(meta => {
-        meta.onRead(comment, table.meta);
-      });
+      .forEach(meta => meta.onRead(comment, table.meta));
 
     // Check if the table is unlogged
     table.isUnlogged = this.state.unloggedTables.includes(tableName);

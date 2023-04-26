@@ -1,7 +1,7 @@
 import { Migrator } from './library/migrator';
 import { Modeller } from './library/modeller';
 import { Plan } from './library/plan';
-import { IDatabase } from './types/database.interface';
+import { IConfig } from './types/config.interface';
 import { IStepResult } from './types/step-result.interface';
 import { ITable } from './types/table.interface';
 
@@ -21,11 +21,11 @@ export class Inductor {
    */
   readonly modeller: Modeller;
 
-  constructor(readonly database: IDatabase) {
-    this.migrator = new Migrator(this.id, database);
+  constructor(readonly config: IConfig) {
+    this.migrator = new Migrator(this.id, config);
 
     this.modeller = new Modeller(this.migrator);
-    this.modeller.setTables(database.tables);
+    this.modeller.setTables(config.tables);
   }
 
   /**

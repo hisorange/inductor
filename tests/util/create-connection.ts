@@ -1,8 +1,8 @@
 import { Inductor } from '../../src/inductor';
-import { IDatabase } from '../../src/types/database.interface';
+import { IConfig } from '../../src/types/config.interface';
 
 export const createTestDriver = (filters: string[] = []): Inductor => {
-  const database: IDatabase = {
+  const config: IConfig = {
     connection: {
       connectionString: 'postgres://inductor:inductor@localhost:9999/inductor',
     },
@@ -11,5 +11,5 @@ export const createTestDriver = (filters: string[] = []): Inductor => {
     filters: filters,
   };
 
-  return new Inductor(database);
+  return new Inductor(config);
 };

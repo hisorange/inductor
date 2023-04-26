@@ -47,6 +47,7 @@ export interface ITable {
    * Comment based meta information.
    */
   meta: {
+    id: string;
     alias?: string;
     description?: string;
     [key: string]: any;

@@ -1,4 +1,5 @@
 import { ITable } from '../types/table.interface';
+import { toUUID } from '../utils/str-to-uuid';
 
 export const InitiateTable = (name: string): ITable => ({
   name,
@@ -7,5 +8,7 @@ export const InitiateTable = (name: string): ITable => ({
   uniques: {},
   indexes: {},
   relations: {},
-  meta: {},
+  meta: {
+    id: toUUID(name),
+  },
 });
