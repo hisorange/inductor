@@ -1,3 +1,8 @@
+[![CD](https://github.com/hisorange/inductor/actions/workflows/cd.yml/badge.svg?branch=main)](https://github.com/hisorange/inductor/actions/workflows/cd.yml)
+[![NPM](https://img.shields.io/npm/dt/@hisorange/inductor?label=NPM+Pulls)](https://www.npmjs.com/package/@hisorange/inductor)
+[![GitHub Last Commit](https://img.shields.io/github/last-commit/hisorange/inductor?label=Last+Commit)](https://github.com/hisorange/inductor/commits/main)
+![License](https://img.shields.io/github/license/hisorange/inductor?label=License)
+
 # Inductor
 
 Easy to use library to control your database table's schema without migrations or any manual work.
@@ -12,17 +17,17 @@ the connection manager can change your database to your likings.
 ### Quick Start
 
 ```sh
-npm i @hisorange/inductor
-# or
 yarn add @hisorange/inductor
+# or
+npm i @hisorange/inductor
 ```
 
 ### Create the connection
 
 ```typescript
-import { Driver } from '@hisorange/inductor';
+import { Inductor } from '@hisorange/inductor';
 
-const driver = new Driver({
+const driver = new Inductor({
   connection: {
     connectionString: 'postgres://inductor:inductor@localhost:9999/inductor',
   },
