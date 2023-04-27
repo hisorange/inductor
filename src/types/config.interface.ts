@@ -6,9 +6,9 @@ import { IMeta } from './meta.interface';
  */
 export interface IConfig {
   /**
-   * Database connection configuration
+   * Database connection configuration or the connection itself
    */
-  readonly connection: Knex.PgConnectionConfig;
+  readonly connection: Knex.PgConnectionConfig | Knex;
 
   /**
    * Flag to indicate that the tables are read only,
@@ -25,5 +25,5 @@ export interface IConfig {
   /**
    * List of meta extensions to be used for the database.
    */
-  metax?: IMeta[];
+  metas?: IMeta[];
 }

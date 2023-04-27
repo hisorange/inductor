@@ -12,7 +12,7 @@ import { readUniqueConstraints } from './unique-constraint.reader';
 import { readUniques } from './unique.reader';
 
 export const readDatabase = async (
-  knex: Knex,
+  connection: Knex,
   metas: IMeta[],
 ): Promise<IDatabaseState> => {
   const [
@@ -26,15 +26,15 @@ export const readDatabase = async (
     columnValues,
     enumerators,
   ] = await Promise.all([
-    readTableList(knex),
-    readTypes(knex),
-    readUniqueConstraints(knex),
-    readRelations(knex, metas),
-    readUniques(knex),
-    readCompositePrimaryKeys(knex),
-    readIndexes(knex),
-    readColumns(knex),
-    readEnumerators(knex),
+    readTableList(connection),
+    readTypes(connection),
+    readUniqueConstraints(connection),
+    readRelations(connection, metas),
+    readUniques(connection),
+    readCompositePrimaryKeys(connection),
+    readIndexes(connection),
+    readColumns(connection),
+    readEnumerators(connection),
   ]);
 
   const tablesMeta = tables.reduce(

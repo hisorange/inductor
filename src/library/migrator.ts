@@ -1,15 +1,7 @@
 import knex, { Knex } from 'knex';
 import pino, { Logger } from 'pino';
-import { ColumnAliasMeta } from '../meta/column-alias.meta';
-import { ColumnCapabilitiesMeta } from '../meta/column-capabilities.meta';
-import { ColumnDescriptionMeta } from '../meta/column-description.meta';
-import { ColumnHookMeta } from '../meta/column-hook.meta';
-import { RelationAliasMeta } from '../meta/relation-alias.meta';
-import { TableAliasMeta } from '../meta/table-alias.meta';
-import { TableDescriptionMeta } from '../meta/table-description.meta';
-import { TableIdMeta } from '../meta/table-id.meta';
+import { defaultMetaExtensions } from '../meta/default.metas';
 import { IConfig } from '../types/config.interface';
-import { IMeta } from '../types/meta.interface';
 import { IMigrationContext } from '../types/migration-context.interface';
 import { ITable } from '../types/table.interface';
 import { Plan } from './plan';
@@ -21,32 +13,30 @@ import { readDatabase } from './reflectors/database.reader';
 export class Migrator {
   readonly logger: Logger;
   readonly connection: Knex;
-  readonly metas: IMeta[] = [
-    ColumnAliasMeta,
-    ColumnCapabilitiesMeta,
-    ColumnDescriptionMeta,
-    ColumnHookMeta,
-    RelationAliasMeta,
-    TableAliasMeta,
-    TableDescriptionMeta,
-    TableIdMeta,
-  ];
 
   constructor(sessionId: string, readonly config: IConfig) {
-    config?.metax?.forEach(meta => this.metas.push(meta));
+    if (!this.config.metas) {
+      this.config.metas = [];
+    }
 
-    this.connection = knex({
-      client: 'pg',
-      connection: {
-        ...config.connection,
-        application_name: `inductor.${sessionId}`,
-      },
-      pool: {
-        max: 50,
-        min: 0,
-        idleTimeoutMillis: 5_000,
-      },
-    });
+    defaultMetaExtensions.forEach(meta => this.config.metas!.push(meta));
+
+    if (typeof this.config.connection === 'function') {
+      this.connection = this.config.connection;
+    } else {
+      this.connection = knex({
+        client: 'pg',
+        connection: {
+          ...config.connection,
+          application_name: `inductor.${sessionId}`,
+        },
+        pool: {
+          max: 50,
+          min: 0,
+          idleTimeoutMillis: 5_000,
+        },
+      });
+    }
 
     this.logger = pino({
       name: `inductor.${sessionId}`,
@@ -58,8 +48,8 @@ export class Migrator {
   protected async reflect(): Promise<Reflection> {
     return new Reflection(
       this.connection,
-      await readDatabase(this.connection, this.metas),
-      this.metas,
+      await readDatabase(this.connection, this.config.metas!),
+      this.config.metas!,
     );
   }
 
@@ -80,7 +70,7 @@ export class Migrator {
       knex: this.connection,
       reflection: reflection,
       plan: new Plan(this.logger),
-      metas: this.metas,
+      metas: this.config.metas!,
     };
 
     const planner = new Planner(ctx);
