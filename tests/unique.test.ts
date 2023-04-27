@@ -4,9 +4,11 @@ import { ColumnType } from '../src/types/column-type.enum';
 import { ColumnTools } from '../src/utils/column-tools';
 import { createTestColumn, TestColumns } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
+import { createToEqual } from './util/read-equal';
 
 describe('Unique Constraint', () => {
   const driver = createTestDriver();
+  const toEqual = createToEqual(driver);
 
   const uniqueCols = cloneDeep(TestColumns);
 
@@ -50,24 +52,17 @@ describe('Unique Constraint', () => {
       };
       // Set unique to false
       tableRV1.columns[colName].isUnique = false;
-      await driver.set([tableRV1]);
-
-      expect(tableRV1).toStrictEqual((await driver.read([tableName]))[0]);
+      await toEqual(tableRV1);
 
       const tableRV2 = cloneDeep(tableRV1);
       // Change the unique
       tableRV2.columns[colName].isUnique = true;
-      await driver.set([tableRV2]);
-
-      expect(tableRV2).toStrictEqual((await driver.read([tableName]))[0]);
+      await toEqual(tableRV2);
 
       const tableRV3 = cloneDeep(tableRV2);
       // Revert the unique
       tableRV3.columns[colName].isUnique = false;
-
-      await driver.set([tableRV3]);
-
-      expect(tableRV3).toStrictEqual((await driver.read([tableName]))[0]);
+      await toEqual(tableRV3);
     },
   );
 
@@ -94,9 +89,7 @@ describe('Unique Constraint', () => {
           columns: [columnKey, 'pair_for_comp'],
         },
       };
-      await driver.set([table]);
-
-      expect(table).toStrictEqual((await driver.read([tableName]))[0]);
+      await toEqual(table);
     },
   );
 
@@ -110,11 +103,7 @@ describe('Unique Constraint', () => {
       },
       col_2: createTestColumn(ColumnType.INTEGER),
     };
-    await driver.set([tableRV1]);
-
-    console.log('READ STATE', (await driver.read([tableName]))[0]);
-
-    expect((await driver.read([tableName]))[0]).toStrictEqual(tableRV1);
+    await toEqual(tableRV1);
 
     // Set the second column as unique to convert the index into a composite one
     const tableRV2 = cloneDeep(tableRV1);
@@ -122,23 +111,17 @@ describe('Unique Constraint', () => {
     tableRV2.uniques.test_cmp_1 = {
       columns: ['col_1', 'col_2'],
     };
-    await driver.set([tableRV2]);
-
-    expect(tableRV2).toStrictEqual((await driver.read([tableName]))[0]);
+    await toEqual(tableRV2);
 
     // Create a new column and add it to the composite unique
     const tableRV3 = cloneDeep(tableRV2);
     tableRV3.columns.col_3 = createTestColumn(ColumnType.INTEGER);
     tableRV3.uniques.test_cmp_1.columns.push('col_3');
-    await driver.set([tableRV3]);
-
-    expect(tableRV3).toStrictEqual((await driver.read([tableName]))[0]);
+    await toEqual(tableRV3);
 
     // Remove the composite unique
     const tableRV4 = cloneDeep(tableRV3);
     delete tableRV4.uniques.test_cmp_1;
-    await driver.set([tableRV4]);
-
-    expect(tableRV4).toStrictEqual((await driver.read([tableName]))[0]);
+    await toEqual(tableRV4);
   });
 });

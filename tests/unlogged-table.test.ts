@@ -1,8 +1,10 @@
 import { InitiateTable } from '../src/library/initiators';
 import { createTestDriver } from './util/create-connection';
+import { createToEqual } from './util/read-equal';
 
 describe('Unlogged Table', () => {
   const driver = createTestDriver(['unlogged_']);
+  const toEqual = createToEqual(driver);
 
   afterAll(() => driver.close());
 
@@ -14,21 +16,15 @@ describe('Unlogged Table', () => {
 
     // Remove table if exists from a previous test
     await driver.migrator.drop(table.name);
-    await driver.set([table]);
-
-    expect((await driver.read([tableName]))[0]).toStrictEqual(table);
+    await toEqual(table);
 
     // Alter table to be logged
     table.isUnlogged = false;
-    await driver.set([table]);
-
-    expect((await driver.read([tableName]))[0]).toStrictEqual(table);
+    await toEqual(table);
 
     // Alter table to be unlogged
     table.isUnlogged = true;
-    await driver.set([table]);
-
-    expect((await driver.read([tableName]))[0]).toStrictEqual(table);
+    await toEqual(table);
 
     // Cleanup
     await driver.migrator.drop(table.name);

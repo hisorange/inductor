@@ -4,9 +4,12 @@ import { IColumn } from '../src/types/column.interface';
 import { ColumnTools } from '../src/utils/column-tools';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
+import { createToEqual } from './util/read-equal';
 
 describe('Column Adding', () => {
   const driver = createTestDriver();
+  const toEqual = createToEqual(driver);
+
   const cases: [string, IColumn][] = ColumnTools.listColumnTypes()
     .filter(type => type !== ColumnType.BIT_VARYING)
     .map(type => [type, createTestColumn(type)]);
@@ -29,13 +32,7 @@ describe('Column Adding', () => {
         [columnName]: columnDef,
       };
 
-      // Remove table if exists from a previous test
-      await driver.migrator.drop(tableName);
-      await driver.set([table]);
-
-      expect((await driver.read([tableName]))[0]).toStrictEqual(table);
-
-      // Cleanup
+      await toEqual(table);
       await driver.migrator.drop(tableName);
     },
   );

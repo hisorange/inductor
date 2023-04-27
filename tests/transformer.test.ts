@@ -5,6 +5,7 @@ import { ColumnHook } from '../src/types/column-hook.enum';
 import { ColumnType } from '../src/types/column-type.enum';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
+import { createToEqual } from './util/read-equal';
 
 type TestModel = {
   id: number;
@@ -13,6 +14,7 @@ type TestModel = {
 
 describe('Hooks', () => {
   const driver = createTestDriver();
+  const toEqual = createToEqual(driver);
 
   afterAll(() => driver.close());
 
@@ -67,9 +69,7 @@ describe('Hooks', () => {
 
       table.columns.transformed.meta.hooks = [hook];
 
-      await driver.set([table]);
-
-      expect(table).toStrictEqual((await driver.read([tableName]))[0]);
+      await toEqual(table);
 
       // Insert a JSON object and retrieve it while it's tranformed to string and back
       const model = driver.models.getModel<TestModel>(tableName);
@@ -90,12 +90,11 @@ describe('Hooks', () => {
       expect(rawResult).toBeDefined();
       expect(rawResult!.transformed).toStrictEqual(raw);
 
-      const tableV2 = cloneDeep(table);
+      const tableRV2 = cloneDeep(table);
 
-      tableV2.columns.transformed.meta.hooks = [];
+      tableRV2.columns.transformed.meta.hooks = [];
 
-      await driver.set([tableV2]);
-      expect(tableV2).toStrictEqual((await driver.read([tableName]))[0]);
+      await toEqual(tableRV2);
 
       // Drop table
       await driver.migrator.drop(tableName);

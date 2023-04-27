@@ -3,20 +3,22 @@ import { InitiateTable } from '../src/library/initiators';
 import { ColumnType } from '../src/types/column-type.enum';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
+import { createToEqual } from './util/read-equal';
 
 describe('Column Alias', () => {
   const driver = createTestDriver();
+  const toEqual = createToEqual(driver);
 
   afterAll(() => driver.close());
 
   test('should be able to add/remove a column alias', async () => {
     const tableName = 'column_alias_test';
-    const table = InitiateTable(tableName);
+    const tableRV1 = InitiateTable(tableName);
 
     // Drop table if exists from a previous test
     await driver.migrator.drop(tableName);
 
-    table.columns = {
+    tableRV1.columns = {
       primary_column: {
         ...createTestColumn(ColumnType.SERIAL),
         isPrimary: true,
@@ -26,23 +28,20 @@ describe('Column Alias', () => {
       },
     };
 
-    table.columns.with_alias.meta.alias = 'theAlias';
+    tableRV1.columns.with_alias.meta.alias = 'theAlias';
 
-    await driver.set([table]);
-    expect(table).toStrictEqual((await driver.read([tableName]))[0]);
+    await toEqual(tableRV1);
 
-    const tableV2 = cloneDeep(table);
+    const tableRV2 = cloneDeep(tableRV1);
 
-    delete tableV2.columns.with_alias.meta.alias;
+    delete tableRV2.columns.with_alias.meta.alias;
 
-    await driver.set([tableV2]);
-    expect(tableV2).toStrictEqual((await driver.read([tableName]))[0]);
+    await toEqual(tableRV2);
 
-    const tableV3 = cloneDeep(tableV2);
-    tableV3.columns.with_alias.meta.alias = 'withCAP23';
+    const tableRV3 = cloneDeep(tableRV2);
+    tableRV3.columns.with_alias.meta.alias = 'withCAP23';
 
-    await driver.set([tableV3]);
-    expect(tableV3).toStrictEqual((await driver.read([tableName]))[0]);
+    await toEqual(tableRV3);
 
     await driver.migrator.drop(tableName);
   });

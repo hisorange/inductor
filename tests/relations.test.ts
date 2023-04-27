@@ -3,9 +3,11 @@ import { ColumnType } from '../src/types/column-type.enum';
 import { ForeignAction } from '../src/types/foreign-action.enum';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
+import { createToEqual } from './util/read-equal';
 
 describe('Relations', () => {
   const driver = createTestDriver();
+  const toEqual = createToEqual(driver);
 
   afterAll(() => driver.close());
 
@@ -58,10 +60,8 @@ describe('Relations', () => {
     await driver.migrator.drop(tableA.name);
 
     // Apply the new state
-    await driver.set([tableA, tableB]);
-
-    expect(tableA).toStrictEqual((await driver.read([tableNameA]))[0]);
-    expect(tableB).toStrictEqual((await driver.read([tableNameB]))[0]);
+    await toEqual(tableA);
+    await toEqual(tableB);
 
     // Cleanup
     await driver.migrator.drop(tableB.name);

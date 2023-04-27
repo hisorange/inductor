@@ -4,9 +4,11 @@ import { ColumnType } from '../src/types/column-type.enum';
 import { ColumnCapability } from '../src/types/column.capability';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
+import { createToEqual } from './util/read-equal';
 
 describe('Capabilities', () => {
   const driver = createTestDriver();
+  const toEqual = createToEqual(driver);
 
   afterAll(() => driver.close());
 
@@ -36,10 +38,7 @@ describe('Capabilities', () => {
 
       table.columns[columnName].meta.capabilities = [cap];
 
-      // Remove table if exists from a previous test
-      await driver.set([table]);
-      expect(table).toStrictEqual((await driver.read([tableName]))[0]);
-
+      await toEqual(table);
       await driver.migrator.drop(tableName);
     },
   );
@@ -63,22 +62,17 @@ describe('Capabilities', () => {
 
     table.columns.with_cap.meta.capabilities = [ColumnCapability.CREATED_AT];
 
-    await driver.set([table]);
-    expect(table).toStrictEqual((await driver.read([tableName]))[0]);
+    await toEqual(table);
 
     const tableV2 = cloneDeep(table);
-
     tableV2.columns.with_cap.meta.capabilities = [];
 
-    await driver.set([tableV2]);
-    expect(tableV2).toStrictEqual((await driver.read([tableName]))[0]);
+    await toEqual(tableV2);
 
     const tableV3 = cloneDeep(tableV2);
     tableV3.columns.with_cap.meta.capabilities = [ColumnCapability.UPDATED_AT];
 
-    await driver.set([tableV3]);
-    expect(tableV3).toStrictEqual((await driver.read([tableName]))[0]);
-
+    await toEqual(tableV3);
     await driver.migrator.drop(tableName);
   });
 });

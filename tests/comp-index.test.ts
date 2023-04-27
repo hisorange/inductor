@@ -3,9 +3,11 @@ import { ColumnType } from '../src/types/column-type.enum';
 import { IndexType } from '../src/types/index-type.enum';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
+import { createToEqual } from './util/read-equal';
 
 describe('Composite Indexing', () => {
   const driver = createTestDriver();
+  const toEqual = createToEqual(driver);
 
   afterAll(() => driver.close());
 
@@ -58,13 +60,7 @@ describe('Composite Indexing', () => {
         },
       };
 
-      // Remove table if exists from a previous test
-      await driver.migrator.drop(table.name);
-      await driver.set([table]);
-
-      expect((await driver.read([tableName]))[0]).toStrictEqual(table);
-
-      // Cleanup
+      await toEqual(table);
       await driver.migrator.drop(table.name);
     },
   );

@@ -4,9 +4,11 @@ import { ColumnType } from '../src/types/column-type.enum';
 import { ColumnCapability } from '../src/types/column.capability';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
+import { createToEqual } from './util/read-equal';
 
 describe('Model', () => {
   const driver = createTestDriver();
+  const toEqual = createToEqual(driver);
 
   afterAll(() => driver.close());
 
@@ -34,8 +36,7 @@ describe('Model', () => {
     table.columns.created_at.meta.alias = 'createdAtPropAlias';
     table.columns.created_at.meta.capabilities = [ColumnCapability.CREATED_AT];
 
-    await driver.set([table]);
-    expect(table).toStrictEqual((await driver.read([tableName]))[0]);
+    await toEqual(table);
 
     const model = driver.models.getModel(tableName);
     const insert = (await model.query().insertAndFetch({

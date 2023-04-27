@@ -5,9 +5,12 @@ import { IndexType } from '../src/types/index-type.enum';
 import { ITable } from '../src/types/table.interface';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
+import { createToEqual } from './util/read-equal';
 
 describe('Drop Column', () => {
   const driver = createTestDriver();
+  const toEqual = createToEqual(driver);
+
   const clearTables = () =>
     Promise.all(testTables.map(name => driver.migrator.drop(name)));
 
@@ -47,15 +50,11 @@ describe('Drop Column', () => {
 
       const tableRV1 = InitiateTable(tableName);
       tableRV1.columns = columns;
-      await driver.set([tableRV1]);
-
-      expect((await driver.read([tableName]))[0]).toStrictEqual(tableRV1);
+      await toEqual(tableRV1);
 
       const tableRV2 = cloneDeep(tableRV1);
       delete tableRV2.columns[col];
-      await driver.set([tableRV2]);
-
-      expect((await driver.read([tableName]))[0]).toStrictEqual(tableRV2);
+      await toEqual(tableRV2);
     },
     5_000,
   );

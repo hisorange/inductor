@@ -5,9 +5,12 @@ import { IndexType } from '../src/types/index-type.enum';
 import { ColumnTools } from '../src/utils/column-tools';
 import { createTestColumn, TestColumns } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
+import { createToEqual } from './util/read-equal';
 
 describe('Primary Constraint', () => {
   const driver = createTestDriver();
+  const toEqual = createToEqual(driver);
+
   const primaryColumns = cloneDeep(TestColumns);
 
   // Remove the non primary able columns
@@ -44,16 +47,14 @@ describe('Primary Constraint', () => {
     'should create the PRIMARY flag for [%s] column',
     async colName => {
       const tableName = `create_primary_${colName}`;
-      const testTable = InitiateTable(tableName);
-      testTable.columns = {
+      const table = InitiateTable(tableName);
+      table.columns = {
         [colName]: {
           ...primaryColumns[colName],
           isPrimary: true,
         },
       };
-      await driver.set([testTable]);
-
-      expect(testTable).toStrictEqual((await driver.read([tableName]))[0]);
+      await toEqual(table);
     },
   );
 
@@ -74,23 +75,17 @@ describe('Primary Constraint', () => {
       };
 
       tableRV1.columns[colName].isPrimary = false;
-      await driver.set([tableRV1]);
-
-      expect(tableRV1).toStrictEqual((await driver.read([tableName]))[0]);
+      await toEqual(tableRV1);
 
       const tableRV2 = cloneDeep(tableRV1);
       tableRV2.columns[colName].isPrimary = true;
-      await driver.set([tableRV2]);
-
-      expect(tableRV2).toStrictEqual((await driver.read([tableName]))[0]);
+      await toEqual(tableRV2);
 
       const tableRV3 = cloneDeep(tableRV2);
       // Revert the nullable
       tableRV3.columns[colName].isPrimary = false;
 
-      await driver.set([tableRV3]);
-
-      expect(tableRV3).toStrictEqual((await driver.read([tableName]))[0]);
+      await toEqual(tableRV3);
     },
     5_000,
   );
@@ -104,9 +99,7 @@ describe('Primary Constraint', () => {
         isPrimary: true,
       },
     };
-    await driver.set([tableRV1]);
-
-    expect(tableRV1).toStrictEqual((await driver.read([tableName]))[0]);
+    await toEqual(tableRV1);
 
     // Extend the primary
     const tableRV2 = cloneDeep(tableRV1);
@@ -114,9 +107,7 @@ describe('Primary Constraint', () => {
       ...createTestColumn(ColumnType.INTEGER),
       isPrimary: true,
     };
-    await driver.set([tableRV2]);
-
-    expect(tableRV2).toStrictEqual((await driver.read([tableName]))[0]);
+    await toEqual(tableRV2);
 
     // Add the third primary column
     const tableRV3 = cloneDeep(tableRV2);
@@ -124,22 +115,16 @@ describe('Primary Constraint', () => {
       ...createTestColumn(ColumnType.INTEGER),
       isPrimary: true,
     };
-    await driver.set([tableRV3]);
-
-    expect(tableRV3).toStrictEqual((await driver.read([tableName]))[0]);
+    await toEqual(tableRV3);
 
     // Remove the third primary column
     const tableRV4 = cloneDeep(tableRV3);
     tableRV4.columns.third.isPrimary = false;
-    await driver.set([tableRV4]);
-
-    expect(tableRV4).toStrictEqual((await driver.read([tableName]))[0]);
+    await toEqual(tableRV4);
 
     // Remove the second primary column
     const tableRV5 = cloneDeep(tableRV4);
     tableRV5.columns.second.isPrimary = false;
-    await driver.set([tableRV5]);
-
-    expect(tableRV5).toStrictEqual((await driver.read([tableName]))[0]);
+    await toEqual(tableRV5);
   });
 });

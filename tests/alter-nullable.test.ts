@@ -4,9 +4,11 @@ import { IColumn } from '../src/types/column.interface';
 import { ColumnTools } from '../src/utils/column-tools';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
+import { createToEqual } from './util/read-equal';
 
 describe('Alter Nullable', () => {
   const driver = createTestDriver();
+  const toEqual = createToEqual(driver);
 
   const cases: [string, IColumn][] = ColumnTools.listColumnTypes()
     .map(type => [type, createTestColumn(type)] as [string, IColumn])
@@ -22,8 +24,8 @@ describe('Alter Nullable', () => {
       const columnName = `column_${columnSlug}`;
       const tableName = `alter_nullable_${columnSlug}`;
 
-      const tableRV1 = InitiateTable(tableName);
-      tableRV1.columns = {
+      const table = InitiateTable(tableName);
+      table.columns = {
         primary_column: {
           ...createTestColumn(ColumnType.SERIAL),
           isPrimary: true,
@@ -33,26 +35,20 @@ describe('Alter Nullable', () => {
 
       // Remove table if exists from a previous test
       await driver.migrator.drop(tableName);
-      await driver.set([tableRV1]);
-
-      expect((await driver.read([tableName]))[0]).toStrictEqual(tableRV1);
+      await toEqual(table);
 
       // Continue with a true state
-      tableRV1.columns[columnName].isNullable = true;
-      tableRV1.columns[columnName].defaultValue = null;
-      await driver.set([tableRV1]);
-
-      expect((await driver.read([tableName]))[0]).toStrictEqual(tableRV1);
+      table.columns[columnName].isNullable = true;
+      table.columns[columnName].defaultValue = null;
+      await toEqual(table);
 
       // Continue with a false state
-      tableRV1.columns[columnName].isNullable = false;
-      tableRV1.columns[columnName].defaultValue = undefined;
-      await driver.set([tableRV1]);
-
-      expect((await driver.read([tableName]))[0]).toStrictEqual(tableRV1);
+      table.columns[columnName].isNullable = false;
+      table.columns[columnName].defaultValue = undefined;
+      await toEqual(table);
 
       // Cleanup
-      await driver.migrator.drop(tableRV1.name);
+      await driver.migrator.drop(table.name);
     },
   );
 });

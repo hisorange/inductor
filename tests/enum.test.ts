@@ -4,9 +4,11 @@ import { ColumnType } from '../src/types/column-type.enum';
 import { EnumColumnType, IColumn } from '../src/types/column.interface';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
+import { createToEqual } from './util/read-equal';
 
 describe('Enumerated Column', () => {
   const driver = createTestDriver();
+  const toEqual = createToEqual(driver);
 
   afterAll(() => driver.close());
 
@@ -41,9 +43,7 @@ describe('Enumerated Column', () => {
 
       // Remove table if exists from a previous test
       await driver.migrator.drop(table.name);
-      await driver.set([table]);
-
-      expect((await driver.read([tableName]))[0]).toStrictEqual(table);
+      await toEqual(table);
 
       // Cleanup
       await driver.migrator.drop(table.name);
@@ -53,8 +53,8 @@ describe('Enumerated Column', () => {
   // We will change an enumeration values and check if the change is reflected in the database
   test.skip('should change an enumeration value', async () => {
     const tableName = 'enum_change_v1';
-    const tableV1 = InitiateTable(tableName);
-    tableV1.columns = {
+    const tableRV1 = InitiateTable(tableName);
+    tableRV1.columns = {
       primary_column: {
         ...createTestColumn(ColumnType.SERIAL),
       },
@@ -74,17 +74,14 @@ describe('Enumerated Column', () => {
     };
 
     await driver.migrator.drop(tableName);
-    await driver.set([tableV1]);
-    expect((await driver.read([tableName]))[0]).toStrictEqual(tableV1);
+    await toEqual(tableRV1);
 
-    const tableV2 = cloneDeep(tableV1);
-    (tableV2.columns.enum_column.type as EnumColumnType).values = [
+    const tableRV2 = cloneDeep(tableRV1);
+    (tableRV2.columns.enum_column.type as EnumColumnType).values = [
       'a',
       'b',
       'd',
     ];
-    await driver.set([tableV2]);
-
-    expect((await driver.read([tableName]))[0]).toStrictEqual(tableV2);
+    await toEqual(tableRV2);
   });
 });
