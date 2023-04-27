@@ -1,9 +1,10 @@
 import knex, { Knex } from 'knex';
+import cloneDeep from 'lodash.clonedeep';
 import pino, { Logger } from 'pino';
 import { defaultMetaExtensions } from '../meta/default.metas';
 import { IConfig } from '../types/config.interface';
+import { IDatabase } from '../types/database.interface';
 import { IMigrationContext } from '../types/migration-context.interface';
-import { ITable } from '../types/table.interface';
 import { Plan } from './plan';
 import { Planner } from './planner';
 import { Reflection } from './reflection';
@@ -14,7 +15,11 @@ export class Migrator {
   readonly logger: Logger;
   readonly connection: Knex;
 
-  constructor(sessionId: string, readonly config: IConfig) {
+  constructor(
+    sessionId: string,
+    readonly config: IConfig,
+    readonly database: IDatabase,
+  ) {
     if (!this.config.metas) {
       this.config.metas = [];
     }
@@ -56,15 +61,17 @@ export class Migrator {
   /**
    * Read the database state and return it as a list of tables.
    */
-  async read(filters: string[] = []): Promise<ITable[]> {
+  async read(filters: string[] = []): Promise<IDatabase> {
     const reflection = await this.reflect();
-
-    return reflection
+    const state = cloneDeep(this.database);
+    state.tables = reflection
       .getTables(filters)
       .map(table => reflection.getTableState(table));
+
+    return state;
   }
 
-  async compare(tables: ITable[]): Promise<Plan> {
+  async compare(state: IDatabase): Promise<Plan> {
     const reflection = await this.reflect();
     const ctx: IMigrationContext = {
       knex: this.connection,
@@ -76,7 +83,7 @@ export class Migrator {
     const planner = new Planner(ctx);
 
     await Promise.all(
-      tables.map(table => {
+      state.tables.map(table => {
         // If the table doesn't exist, create it
         if (!reflection.isTableExists(table.name)) {
           return planner.createTable(table);

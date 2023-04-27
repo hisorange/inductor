@@ -34,7 +34,10 @@ describe('Able to handle new column risks', () => {
       defaultValue: 42,
     };
 
-    await driver.set([tableRV2]);
+    const stateRV2 = cloneDeep(driver.database);
+    stateRV2.tables = [tableRV2];
+
+    await driver.set(stateRV2);
     const modelRV2 = driver.models.getModel(tableName);
     await modelRV2.query().insert({ name: 'lama' });
 
@@ -83,7 +86,10 @@ describe('Able to handle new column risks', () => {
       ColumnType.INTEGER,
     );
 
-    await expect(driver.set([tableRV2])).rejects.toBeInstanceOf(
+    const stateRV2 = cloneDeep(driver.database);
+    stateRV2.tables = [tableRV2];
+
+    await expect(driver.set(stateRV2)).rejects.toBeInstanceOf(
       ImpossibleMigration,
     );
 

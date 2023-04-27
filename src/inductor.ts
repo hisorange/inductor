@@ -4,7 +4,6 @@ import { Plan } from './library/plan';
 import { IConfig } from './types/config.interface';
 import { IDatabase } from './types/database.interface';
 import { IStepResult } from './types/step-result.interface';
-import { ITable } from './types/table.interface';
 
 export class Inductor {
   /**
@@ -23,26 +22,26 @@ export class Inductor {
   readonly models: ModelManager;
 
   constructor(readonly config: IConfig, readonly database: IDatabase) {
-    this.migrator = new Migrator(this.id, config);
+    this.migrator = new Migrator(this.id, config, this.database);
     this.models = new ModelManager(this.migrator, database);
   }
 
   /**
    * Compare the given state with the current database state, and return with a change plan.
    */
-  compare(tables: ITable[]): Promise<Plan> {
-    return this.migrator.compare(tables);
+  compare(state: IDatabase): Promise<Plan> {
+    return this.migrator.compare(state);
   }
 
   /**
    * Alter the database state to match the given state.
    */
-  set(tables: ITable[]): Promise<IStepResult[]> {
+  set(state: IDatabase): Promise<IStepResult[]> {
     return this.migrator
-      .compare(tables)
+      .compare(state)
       .then(plan => plan.execute())
       .then(result => {
-        this.models.setTables(tables);
+        this.models.setTables(state.tables);
 
         return result;
       });
@@ -51,9 +50,9 @@ export class Inductor {
   /**
    * Read the current database state.
    */
-  read(filters: string[] = []): Promise<ITable[]> {
+  read(filters: string[] = []): Promise<IDatabase> {
     return this.migrator.read(filters).then(state => {
-      this.models.setTables(state);
+      this.models.setTables(state.tables);
       return state;
     });
   }
