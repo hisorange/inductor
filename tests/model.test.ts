@@ -1,5 +1,5 @@
 import { Pojo } from 'objection';
-import { InitiateTable } from '../src/library/table.initiator';
+import { InitiateTable } from '../src/library/initiators';
 import { ColumnType } from '../src/types/column-type.enum';
 import { ColumnCapability } from '../src/types/column.capability';
 import { createTestColumn } from './util/all-column';
@@ -37,7 +37,7 @@ describe('Model', () => {
     await driver.set([table]);
     expect(table).toStrictEqual((await driver.read([tableName]))[0]);
 
-    const model = driver.modeller.getModel(tableName);
+    const model = driver.models.getModel(tableName);
     const insert = (await model.query().insertAndFetch({
       identifier: 5,
       data: 'test',

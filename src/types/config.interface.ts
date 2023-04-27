@@ -1,6 +1,5 @@
 import { Knex } from 'knex';
 import { IMeta } from './meta.interface';
-import { ITable } from './table.interface';
 
 /**
  * Describe the database table, and the connection associated with it.
@@ -16,11 +15,6 @@ export interface IConfig {
    * and the database should not be modified.
    */
   readonly isReadOnly: boolean;
-
-  /**
-   * Tables associated with the database
-   */
-  tables: ITable[];
 
   /**
    * List of regex patterns to filter tables from the database.

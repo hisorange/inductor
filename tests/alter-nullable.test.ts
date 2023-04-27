@@ -1,4 +1,4 @@
-import { InitiateTable } from '../src/library/table.initiator';
+import { InitiateTable } from '../src/library/initiators';
 import { ColumnType } from '../src/types/column-type.enum';
 import { IColumn } from '../src/types/column.interface';
 import { ColumnTools } from '../src/utils/column-tools';

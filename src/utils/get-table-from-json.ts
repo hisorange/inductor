@@ -1,5 +1,5 @@
 import snakeCase from 'lodash.snakecase';
-import { InitiateTable } from '../library/table.initiator';
+import { InitiateTable } from '../library/initiators';
 import { ColumnType } from '../types/column-type.enum';
 import { IColumn } from '../types/column.interface';
 import { ITable } from '../types/table.interface';

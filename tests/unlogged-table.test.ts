@@ -1,4 +1,4 @@
-import { InitiateTable } from '../src/library/table.initiator';
+import { InitiateTable } from '../src/library/initiators';
 import { createTestDriver } from './util/create-connection';
 
 describe('Unlogged Table', () => {

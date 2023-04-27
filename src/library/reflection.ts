@@ -8,8 +8,8 @@ import { IRelation } from '../types/relation.interface';
 import { ITable } from '../types/table.interface';
 import { ColumnTools } from '../utils/column-tools';
 import { decodeMetaComment } from '../utils/meta.coder';
+import { InitiateTable } from './initiators';
 import { readRowCount } from './reflectors/row-count.reader';
-import { InitiateTable } from './table.initiator';
 import { ValidateTable } from './table.validator';
 
 export class Reflection {

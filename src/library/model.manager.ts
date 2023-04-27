@@ -11,16 +11,21 @@ import { ModelNotFound } from '../exception/model-not-found.exception';
 import { HookDictionary } from '../hooks/hook.dictionary';
 import { ColumnHook } from '../types/column-hook.enum';
 import { ColumnCapability } from '../types/column.capability';
+import { IDatabase } from '../types/database.interface';
 import { ITable } from '../types/table.interface';
-import { TableMap } from '../types/table.map';
 import { ColumnTools } from '../utils/column-tools';
 import type { Migrator } from './migrator';
 import { ValidateTable } from './table.validator';
 
-export class Modeller {
-  protected tables: TableMap = new Map();
+export class ModelManager {
+  protected modelCache: Map<string, ModelClass<Model>> = new Map();
 
-  constructor(protected readonly migrator: Migrator) {}
+  constructor(
+    protected readonly migrator: Migrator,
+    readonly database: IDatabase,
+  ) {
+    this.setTables(database.tables);
+  }
 
   public asJson(tableName: string): string {
     return JSON.stringify(this.getTable(tableName), null, 2);
@@ -30,12 +35,18 @@ export class Modeller {
     this.addTable(JSON.parse(json) as ITable);
   }
 
-  public getTableMap(): TableMap {
-    return this.tables;
+  public getTableMap(): Map<
+    string,
+    { table: ITable; model: ModelClass<Model> }
+  > {
+    return this.database.tables.reduce((map, table) => {
+      map.set(table.name, { table, model: this.getModel(table.name) });
+      return map;
+    }, new Map());
   }
 
   public setTables(tables: ITable[]): void {
-    this.tables.clear();
+    this.database.tables = [];
 
     tables.forEach(table => this.addTable(table));
   }
@@ -49,15 +60,18 @@ export class Modeller {
       );
     }
 
+    this.database.tables.push(table);
+
     const model = this.toModel(table);
-    this.tables.set(table.name, { table, model });
+    this.modelCache.set(table.name, model);
 
     this.remapRelations();
   }
 
   protected remapRelations(): void {
     // Map relations to models
-    for (const { table, model } of this.tables.values()) {
+    for (const table of this.database.tables) {
+      const model = this.getModel(table.name);
       const success = this.mapRelations(model, table);
 
       if (!success) {
@@ -66,28 +80,46 @@ export class Modeller {
     }
   }
 
+  public isTableExists(tableName: string): boolean {
+    return this.database.tables.some(table => table.name === tableName);
+  }
+
   public removeTable(tableName: string): void {
-    this.tables.delete(tableName);
+    // Find a table index by name in the database tables array.
+    const tableIndex = this.database.tables.findIndex(
+      table => table.name === tableName,
+    );
+
+    // Remove the table from the database tables array.
+    if (tableIndex !== -1) {
+      this.database.tables.splice(tableIndex, 1);
+    }
   }
 
   public getTable(tableName: string): ITable {
-    const table = this.tables.get(tableName);
+    const table = this.database.tables.find(table => table.name === tableName);
 
     if (!table) {
       throw new Error(`Table ${tableName} not found`);
     }
 
-    return table.table;
+    return table;
   }
 
   public getModel<T extends Model = Model>(tableName: string): ModelClass<T> {
-    const table = this.tables.get(tableName);
+    const table = this.getTable(tableName);
 
     if (!table) {
       throw new ModelNotFound(tableName);
     }
 
-    return table.model as ModelClass<T>;
+    // Check if the table exists in the model cache, create and store if not.
+    if (!this.modelCache.has(tableName)) {
+      const model = this.toModel(table);
+      this.modelCache.set(tableName, model);
+    }
+
+    return this.modelCache.get(tableName) as ModelClass<T>;
   }
 
   /**
@@ -304,7 +336,7 @@ export class Modeller {
     for (const name in table.relations) {
       const fk = table.relations[name];
 
-      if (!this.tables.has(fk.references.table)) {
+      if (!this.isTableExists(fk.references.table)) {
         success = false;
 
         continue;

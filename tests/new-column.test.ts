@@ -1,6 +1,6 @@
 import cloneDeep from 'lodash.clonedeep';
 import { ImpossibleMigration } from '../src/exception/impossible-migration.exception';
-import { InitiateTable } from '../src/library/table.initiator';
+import { InitiateTable } from '../src/library/initiators';
 import { ColumnType } from '../src/types/column-type.enum';
 import { createTestColumn } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
@@ -24,7 +24,7 @@ describe('Able to handle new column risks', () => {
 
     expect((await driver.read([tableName]))[0]).toStrictEqual(tableRV1);
 
-    const modelRV1 = driver.modeller.getModel(tableName);
+    const modelRV1 = driver.models.getModel(tableName);
     await modelRV1.query().insert({ name: 'duckling' });
 
     const tableRV2 = cloneDeep(tableRV1);
@@ -34,7 +34,7 @@ describe('Able to handle new column risks', () => {
     };
 
     await driver.set([tableRV2]);
-    const modelRV2 = driver.modeller.getModel(tableName);
+    const modelRV2 = driver.models.getModel(tableName);
     await modelRV2.query().insert({ name: 'lama' });
 
     expect((await driver.read([tableName]))[0]).toStrictEqual(tableRV2);
@@ -82,7 +82,7 @@ describe('Able to handle new column risks', () => {
 
     expect((await driver.read([tableName]))[0]).toStrictEqual(tableRV1);
 
-    const modelRV1 = driver.modeller.getModel(tableName);
+    const modelRV1 = driver.models.getModel(tableName);
     await modelRV1.query().insert({ name: 'poc' });
 
     const tableRV2 = cloneDeep(tableRV1);

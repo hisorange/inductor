@@ -1,7 +1,8 @@
 import { Migrator } from './library/migrator';
-import { Modeller } from './library/modeller';
+import { ModelManager } from './library/model.manager';
 import { Plan } from './library/plan';
 import { IConfig } from './types/config.interface';
+import { IDatabase } from './types/database.interface';
 import { IStepResult } from './types/step-result.interface';
 import { ITable } from './types/table.interface';
 
@@ -19,13 +20,11 @@ export class Inductor {
   /**
    * Table models manager, responsible to translate the table descriptors to database state.
    */
-  readonly modeller: Modeller;
+  readonly models: ModelManager;
 
-  constructor(readonly config: IConfig) {
+  constructor(readonly config: IConfig, readonly database: IDatabase) {
     this.migrator = new Migrator(this.id, config);
-
-    this.modeller = new Modeller(this.migrator);
-    this.modeller.setTables(config.tables);
+    this.models = new ModelManager(this.migrator, database);
   }
 
   /**
@@ -43,7 +42,7 @@ export class Inductor {
       .compare(tables)
       .then(plan => plan.execute())
       .then(result => {
-        this.modeller.setTables(tables);
+        this.models.setTables(tables);
 
         return result;
       });
@@ -54,7 +53,7 @@ export class Inductor {
    */
   read(filters: string[] = []): Promise<ITable[]> {
     return this.migrator.read(filters).then(state => {
-      this.modeller.setTables(state);
+      this.models.setTables(state);
       return state;
     });
   }

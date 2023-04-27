@@ -1,5 +1,5 @@
 import { Model } from 'objection';
-import { InitiateTable } from '../src/library/table.initiator';
+import { InitiateTable } from '../src/library/initiators';
 import { ColumnType } from '../src/types/column-type.enum';
 import { ForeignAction } from '../src/types/foreign-action.enum';
 import { createTestColumn } from './util/all-column';
@@ -62,15 +62,15 @@ describe('Relationship mapping', () => {
       },
     };
 
-    driver.modeller.addTable(users);
-    driver.modeller.addTable(posts);
-    driver.modeller.addTable(profile);
-    driver.modeller.addTable(avatar);
+    driver.models.addTable(users);
+    driver.models.addTable(posts);
+    driver.models.addTable(profile);
+    driver.models.addTable(avatar);
 
-    const User = driver.modeller.getModel('users');
-    const Post = driver.modeller.getModel('posts');
-    const Profile = driver.modeller.getModel('profile');
-    const Avatar = driver.modeller.getModel('avatar');
+    const User = driver.models.getModel('users');
+    const Post = driver.models.getModel('posts');
+    const Profile = driver.models.getModel('profile');
+    const Avatar = driver.models.getModel('avatar');
 
     expect(User).toBeDefined();
     expect(Post).toBeDefined();

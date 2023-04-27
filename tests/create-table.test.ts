@@ -1,4 +1,4 @@
-import { InitiateTable } from '../src/library/table.initiator';
+import { InitiateTable } from '../src/library/initiators';
 import { TestColumns } from './util/all-column';
 import { createTestDriver } from './util/create-connection';
 

@@ -1,6 +1,6 @@
 import cloneDeep from 'lodash.clonedeep';
 import { Model } from 'objection';
-import { InitiateTable } from '../src/library/table.initiator';
+import { InitiateTable } from '../src/library/initiators';
 import { ColumnHook } from '../src/types/column-hook.enum';
 import { ColumnType } from '../src/types/column-type.enum';
 import { createTestColumn } from './util/all-column';
@@ -72,7 +72,7 @@ describe('Hooks', () => {
       expect(table).toStrictEqual((await driver.read([tableName]))[0]);
 
       // Insert a JSON object and retrieve it while it's tranformed to string and back
-      const model = driver.modeller.getModel<TestModel>(tableName);
+      const model = driver.models.getModel<TestModel>(tableName);
       await model.query().insert({ transformed: input });
 
       const result = await model.query().first();

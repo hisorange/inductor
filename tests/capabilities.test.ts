@@ -1,5 +1,5 @@
 import cloneDeep from 'lodash.clonedeep';
-import { InitiateTable } from '../src/library/table.initiator';
+import { InitiateTable } from '../src/library/initiators';
 import { ColumnType } from '../src/types/column-type.enum';
 import { ColumnCapability } from '../src/types/column.capability';
 import { createTestColumn } from './util/all-column';

@@ -1,4 +1,4 @@
-import { InitiateTable } from '../src/library/table.initiator';
+import { InitiateTable } from '../src/library/initiators';
 import { ColumnType } from '../src/types/column-type.enum';
 import { ForeignAction } from '../src/types/foreign-action.enum';
 import { createTestColumn } from './util/all-column';
