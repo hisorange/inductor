@@ -3,7 +3,7 @@ import { Inductor } from '../../src';
 import { ITable } from '../../src/types/table.interface';
 
 export const createToEqual = (driver: Inductor) => async (table: ITable) => {
-  const state = cloneDeep(driver.database);
+  const state = cloneDeep(driver.state);
   state.tables = [table];
 
   await driver.set(state);

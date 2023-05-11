@@ -34,7 +34,7 @@ describe('Able to handle new column risks', () => {
       defaultValue: 42,
     };
 
-    const stateRV2 = cloneDeep(driver.database);
+    const stateRV2 = cloneDeep(driver.state);
     stateRV2.tables = [tableRV2];
 
     await driver.set(stateRV2);
@@ -86,7 +86,7 @@ describe('Able to handle new column risks', () => {
       ColumnType.INTEGER,
     );
 
-    const stateRV2 = cloneDeep(driver.database);
+    const stateRV2 = cloneDeep(driver.state);
     stateRV2.tables = [tableRV2];
 
     await expect(driver.set(stateRV2)).rejects.toBeInstanceOf(

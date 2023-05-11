@@ -21,27 +21,27 @@ export class Inductor {
    */
   readonly models: ModelManager;
 
-  constructor(readonly config: IConfig, readonly database: IDatabase) {
-    this.migrator = new Migrator(this.id, config, this.database);
-    this.models = new ModelManager(this.migrator, database);
+  constructor(readonly config: IConfig, readonly state: IDatabase) {
+    this.migrator = new Migrator(this.id, this.config, this.state);
+    this.models = new ModelManager(this.migrator, this.state);
   }
 
   /**
    * Compare the given state with the current database state, and return with a change plan.
    */
-  compare(state: IDatabase): Promise<Plan> {
-    return this.migrator.compare(state);
+  compare(withState: IDatabase): Promise<Plan> {
+    return this.migrator.compare(withState);
   }
 
   /**
    * Alter the database state to match the given state.
    */
-  set(state: IDatabase): Promise<IStepResult[]> {
+  set(desiredState: IDatabase): Promise<IStepResult[]> {
     return this.migrator
-      .compare(state)
+      .compare(desiredState)
       .then(plan => plan.execute())
       .then(result => {
-        this.models.setTables(state.tables);
+        this.models.setTables(desiredState.tables);
 
         return result;
       });
@@ -51,9 +51,9 @@ export class Inductor {
    * Read the current database state.
    */
   read(filters: string[] = []): Promise<IDatabase> {
-    return this.migrator.read(filters).then(state => {
-      this.models.setTables(state.tables);
-      return state;
+    return this.migrator.read(filters).then(newState => {
+      this.models.setTables(newState.tables);
+      return newState;
     });
   }
 
