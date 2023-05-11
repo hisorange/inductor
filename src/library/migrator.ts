@@ -1,6 +1,6 @@
 import knex, { Knex } from 'knex';
 import cloneDeep from 'lodash.clonedeep';
-import { Logger } from 'pino';
+import { Logger } from 'winston';
 import { defaultMetaExtensions } from '../meta/default.metas';
 import { IConfig } from '../types/config.interface';
 import { IDatabase } from '../types/database.interface';

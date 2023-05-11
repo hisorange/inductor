@@ -52,7 +52,7 @@
     "lodash.snakecase": "^4.1.1",
     "objection": "^3.0.1",
     "pg": "^8.10.0",
-    "pino": "^7.11.0",
-    "tslib": "^2.5.0"
+    "tslib": "^2.5.0",
+    "winston": "^3.8.2"
   }
 }

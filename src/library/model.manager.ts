@@ -7,7 +7,7 @@ import {
   QueryContext,
   RelationMappings,
 } from 'objection';
-import { Logger } from 'pino';
+import { Logger } from 'winston';
 import { ModelNotFound } from '../exception/model-not-found.exception';
 import { HookDictionary } from '../hooks/hook.dictionary';
 import { ColumnHook } from '../types/column-hook.enum';

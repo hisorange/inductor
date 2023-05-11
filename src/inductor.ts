@@ -1,4 +1,4 @@
-import { Logger, pino } from 'pino';
+import { Logger, createLogger } from 'winston';
 import { Migrator } from './library/migrator';
 import { ModelManager } from './library/model.manager';
 import { Plan } from './library/plan';
@@ -28,10 +28,10 @@ export class Inductor {
     readonly logger?: Logger,
   ) {
     if (!this.logger) {
-      this.logger = pino({
-        name: `inductor.${this.id}`,
+      this.logger = createLogger({
+        defaultMeta: { inductor: this.id },
         level: process.env.NODE_ENV === 'production' ? 'warn' : 'debug',
-        enabled: process.env.NODE_ENV !== 'test',
+        silent: process.env.NODE_ENV == 'test',
       });
     }
 

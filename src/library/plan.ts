@@ -1,4 +1,4 @@
-import { Logger } from 'pino';
+import { Logger } from 'winston';
 import { ImpossibleMigration } from '../exception/impossible-migration.exception';
 import { IPlanStep } from '../types/migration-plan.interface';
 import { MigrationRisk } from '../types/migration-risk.enum';
