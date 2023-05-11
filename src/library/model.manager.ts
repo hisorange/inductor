@@ -7,6 +7,7 @@ import {
   QueryContext,
   RelationMappings,
 } from 'objection';
+import { Logger } from 'pino';
 import { ModelNotFound } from '../exception/model-not-found.exception';
 import { HookDictionary } from '../hooks/hook.dictionary';
 import { ColumnHook } from '../types/column-hook.enum';
@@ -23,6 +24,7 @@ export class ModelManager {
   constructor(
     protected readonly migrator: Migrator,
     readonly database: IDatabase,
+    readonly logger: Logger,
   ) {
     this.setTables(database.tables);
   }
@@ -75,7 +77,7 @@ export class ModelManager {
       const success = this.mapRelations(model, table);
 
       if (!success) {
-        console.warn(`Failed to map relations for table ${table.name}`);
+        this.logger.warn(`Failed to map relations for table ${table.name}`);
       }
     }
   }
@@ -291,8 +293,6 @@ export class ModelManager {
       ) {
         const properties = Object.keys(this);
 
-        console.log('Before update', properties);
-
         if (updatedAtProps.size) {
           const updatedAt = new Date().toISOString().replace(/T|Z/g, ' ');
 
@@ -308,7 +308,6 @@ export class ModelManager {
             }
 
             // queryContext.transaction.increment(property, 1);
-            // console.log('Incrementing', property, this[property]);
           });
         }
       };
@@ -354,8 +353,6 @@ export class ModelManager {
         },
       };
 
-      // console.log('Mapped relation: ', forwardName, '->', map[name]);
-
       if (!target.relationMappings) {
         target.relationMappings = {};
       }
@@ -380,8 +377,6 @@ export class ModelManager {
 
         // Define the inverse relation
         target.relationMappings[inverseName] = inverse;
-
-        // console.log('Mapped inverse relation', inverseName, inverse);
       }
     }
 

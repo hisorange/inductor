@@ -52,8 +52,6 @@ export class Planner {
       isPrimaryChanged: false,
     };
 
-    // console.log('Differences: ', differences);
-
     for (const entry of differences) {
       const { op, path } = entry;
       const tableKey = path[0] as keyof ITable;

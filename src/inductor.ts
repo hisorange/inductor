@@ -1,3 +1,4 @@
+import { Logger, pino } from 'pino';
 import { Migrator } from './library/migrator';
 import { ModelManager } from './library/model.manager';
 import { Plan } from './library/plan';
@@ -21,9 +22,21 @@ export class Inductor {
    */
   readonly models: ModelManager;
 
-  constructor(readonly config: IConfig, readonly state: IDatabase) {
-    this.migrator = new Migrator(this.id, this.config, this.state);
-    this.models = new ModelManager(this.migrator, this.state);
+  constructor(
+    readonly config: IConfig,
+    readonly state: IDatabase,
+    readonly logger?: Logger,
+  ) {
+    if (!this.logger) {
+      this.logger = pino({
+        name: `inductor.${this.id}`,
+        level: process.env.NODE_ENV === 'production' ? 'warn' : 'debug',
+        enabled: process.env.NODE_ENV !== 'test',
+      });
+    }
+
+    this.migrator = new Migrator(this.id, this.config, this.state, this.logger);
+    this.models = new ModelManager(this.migrator, this.state, this.logger);
   }
 
   /**

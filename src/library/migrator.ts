@@ -1,6 +1,6 @@
 import knex, { Knex } from 'knex';
 import cloneDeep from 'lodash.clonedeep';
-import pino, { Logger } from 'pino';
+import { Logger } from 'pino';
 import { defaultMetaExtensions } from '../meta/default.metas';
 import { IConfig } from '../types/config.interface';
 import { IDatabase } from '../types/database.interface';
@@ -12,13 +12,13 @@ import { readDatabase } from './reflectors/database.reader';
 
 // Calculates and applies the changes on the database
 export class Migrator {
-  readonly logger: Logger;
   readonly connection: Knex;
 
   constructor(
     sessionId: string,
     readonly config: IConfig,
     readonly database: IDatabase,
+    readonly logger: Logger,
   ) {
     if (!this.config.metas) {
       this.config.metas = [];
@@ -42,12 +42,6 @@ export class Migrator {
         },
       });
     }
-
-    this.logger = pino({
-      name: `inductor.${sessionId}`,
-      level: process.env.NODE_ENV === 'production' ? 'warn' : 'debug',
-      enabled: process.env.NODE_ENV !== 'test',
-    });
   }
 
   protected async reflect(): Promise<Reflection> {

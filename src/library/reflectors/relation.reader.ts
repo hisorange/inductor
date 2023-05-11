@@ -97,8 +97,6 @@ export const readRelations = async (
     .orderBy('fks.constraint_name')
     .orderBy('kcu_foreign.ordinal_position');
 
-  // console.log(query.toQuery());
-
   const rows: {
     localTableName: string;
     relationName: string;

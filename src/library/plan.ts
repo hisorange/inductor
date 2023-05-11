@@ -44,7 +44,7 @@ export class Plan {
         const sql = step.query.toString();
 
         if (sql.length) {
-          console.log(
+          this.logger.info(
             [
               `[P:${step.phase}]`,
               `[${idx + 1}/${this.steps.length}]`,
