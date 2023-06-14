@@ -1,4 +1,4 @@
-import { Logger, createLogger } from 'winston';
+import winston, { Logger, createLogger } from 'winston';
 import { Migrator } from './library/migrator';
 import { ModelManager } from './library/model.manager';
 import { Plan } from './library/plan';
@@ -32,6 +32,7 @@ export class Inductor {
         defaultMeta: { inductor: this.id },
         level: process.env.NODE_ENV === 'production' ? 'warn' : 'debug',
         silent: process.env.NODE_ENV == 'test',
+        transports: [new winston.transports.Console()],
       });
     }
 
