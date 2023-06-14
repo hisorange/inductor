@@ -95,6 +95,12 @@ export class Planner {
               );
               break;
           }
+        } else if (
+          op === 'remove' &&
+          path.length === 3 &&
+          path[1] === 'columns'
+        ) {
+          // Ignore, tries to remove optional properties
         } else {
           await alterColumn(
             change,

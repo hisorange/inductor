@@ -24,7 +24,12 @@ export class Inductor {
 
   constructor(
     readonly config: IConfig,
-    readonly state: IDatabase,
+    readonly state: IDatabase = {
+      meta: {
+        id: 'inductor',
+      },
+      tables: [],
+    },
     readonly logger?: Logger,
   ) {
     if (!this.logger) {
