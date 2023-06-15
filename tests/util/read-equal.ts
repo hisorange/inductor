@@ -7,5 +7,8 @@ export const createToEqual = (driver: Inductor) => async (table: ITable) => {
   state.tables = [table];
 
   await driver.set(state);
-  expect((await driver.read([table.name])).tables[0]).toStrictEqual(table);
+
+  const newState = (await driver.read([table.name])).tables[0];
+
+  expect(table).toStrictEqual(newState);
 };

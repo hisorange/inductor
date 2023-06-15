@@ -7,10 +7,10 @@ export const addCompositeUnique = (
 ) => {
   // We have to check if the unique existed before
   // because the add is only applied to the columns
-  if (current.uniques[uniqueName]) {
+  if (current.uniques && current.uniques[uniqueName]) {
     ctx.plan.steps.push({
       query: ctx.knex.schema.alterTable(target.name, builder =>
-        builder.dropUnique(current.uniques[uniqueName].columns, uniqueName),
+        builder.dropUnique(current.uniques![uniqueName].columns, uniqueName),
       ),
       risk: MigrationRisk.LOW,
       description: `Dropping unique ${uniqueName} before recreation`,
@@ -18,14 +18,16 @@ export const addCompositeUnique = (
     });
   }
 
-  ctx.plan.steps.push({
-    query: ctx.knex.schema.alterTable(target.name, builder =>
-      builder.unique(target.uniques[uniqueName].columns, {
-        indexName: uniqueName,
-      }),
-    ),
-    risk: MigrationRisk.LOW,
-    description: `Creating composite unique ${uniqueName}`,
-    phase: 3,
-  });
+  if (target.uniques && target.uniques[uniqueName]) {
+    ctx.plan.steps.push({
+      query: ctx.knex.schema.alterTable(target.name, builder =>
+        builder.unique(target.uniques![uniqueName].columns, {
+          indexName: uniqueName,
+        }),
+      ),
+      risk: MigrationRisk.LOW,
+      description: `Creating composite unique ${uniqueName}`,
+      phase: 3,
+    });
+  }
 };

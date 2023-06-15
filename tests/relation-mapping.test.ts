@@ -20,7 +20,7 @@ describe('Relationship mapping', () => {
 
     posts.columns.id = createTestColumn(ColumnType.SERIAL);
     posts.columns.userId = createTestColumn(ColumnType.INTEGER);
-    posts.relations.user = {
+    posts.relations!.user = {
       columns: ['userId'],
       references: {
         table: 'users',
@@ -34,7 +34,7 @@ describe('Relationship mapping', () => {
 
     profile.columns.id = createTestColumn(ColumnType.SERIAL);
     profile.columns.userId = createTestColumn(ColumnType.INTEGER);
-    profile.relations.user = {
+    profile.relations!.user = {
       columns: ['userId'],
       references: {
         table: 'users',
@@ -48,7 +48,7 @@ describe('Relationship mapping', () => {
 
     avatar.columns.id = createTestColumn(ColumnType.SERIAL);
     avatar.columns.userId = createTestColumn(ColumnType.INTEGER);
-    avatar.relations.user = {
+    avatar.relations!.user = {
       columns: ['userId'],
       references: {
         table: 'users',

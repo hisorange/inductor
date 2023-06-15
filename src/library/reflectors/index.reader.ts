@@ -54,14 +54,14 @@ export const readIndexes = async (
       fact[row.table] = {};
     }
 
-    if (!fact[row.table].hasOwnProperty(row.idx_name)) {
-      fact[row.table][row.idx_name] = {
+    if (!fact[row.table]!.hasOwnProperty(row.idx_name)) {
+      fact[row.table]![row.idx_name] = {
         columns: [],
         type: row.idx_type,
       };
     }
 
-    fact[row.table][row.idx_name].columns.push(row.column);
+    fact[row.table]![row.idx_name].columns.push(row.column);
   }
 
   return fact;

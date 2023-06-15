@@ -4,22 +4,26 @@ import { ITable } from '../../types/table.interface';
 
 export const createIndexes = (table: ITable, ctx: IMigrationContext) => {
   // Apply the composite indexes
-  for (const indexName in table.indexes) {
-    if (Object.prototype.hasOwnProperty.call(table.indexes, indexName)) {
-      const createIndexQuery = ctx.knex.schema.alterTable(table.name, builder =>
-        builder.index(
-          table.indexes[indexName].columns,
-          indexName,
-          table.indexes[indexName].type,
-        ),
-      );
+  if (table.indexes && Object.keys(table.indexes).length > 0) {
+    for (const indexName in table.indexes) {
+      if (Object.prototype.hasOwnProperty.call(table.indexes, indexName)) {
+        const createIndexQuery = ctx.knex.schema.alterTable(
+          table.name,
+          builder =>
+            builder.index(
+              table.indexes![indexName].columns,
+              indexName,
+              table.indexes![indexName].type,
+            ),
+        );
 
-      ctx.plan.steps.push({
-        query: createIndexQuery,
-        risk: MigrationRisk.LOW,
-        description: `Create composite index [${indexName}] for table [${table.name}]`,
-        phase: 2,
-      });
+        ctx.plan.steps.push({
+          query: createIndexQuery,
+          risk: MigrationRisk.LOW,
+          description: `Create composite index [${indexName}] for table [${table.name}]`,
+          phase: 2,
+        });
+      }
     }
   }
 };

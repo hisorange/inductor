@@ -5,6 +5,7 @@ import { Plan } from './library/plan';
 import { IConfig } from './types/config.interface';
 import { IDatabase } from './types/database.interface';
 import { IStepResult } from './types/step-result.interface';
+import { migrateTableDescriptor } from './utils/migrate-table-descriptor';
 
 export class Inductor {
   /**
@@ -41,6 +42,11 @@ export class Inductor {
       });
     }
 
+    // Migrate the table descriptors on the database state
+    for (const table of this.state.tables) {
+      migrateTableDescriptor(table);
+    }
+
     this.migrator = new Migrator(this.id, this.config, this.state, this.logger);
     this.models = new ModelManager(this.migrator, this.state, this.logger);
   }
@@ -56,6 +62,10 @@ export class Inductor {
    * Alter the database state to match the given state.
    */
   set(desiredState: IDatabase): Promise<IStepResult[]> {
+    for (const table of desiredState.tables) {
+      migrateTableDescriptor(table);
+    }
+
     return this.migrator
       .compare(desiredState)
       .then(plan => plan.execute())

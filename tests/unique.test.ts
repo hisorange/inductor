@@ -23,6 +23,7 @@ describe('Unique Constraint', () => {
 
   const testTables = Object.keys(uniqueCols);
   const cleanup = async () => {
+    return;
     await Promise.all([driver.migrator.drop(`unique_test_upgrade`)]);
     await Promise.all(
       testTables.map(name => driver.migrator.drop(`alter_unique_${name}`)),
@@ -108,7 +109,7 @@ describe('Unique Constraint', () => {
     // Set the second column as unique to convert the index into a composite one
     const tableRV2 = cloneDeep(tableRV1);
     tableRV2.columns.col_1.isUnique = false;
-    tableRV2.uniques.test_cmp_1 = {
+    tableRV2.uniques!.test_cmp_1 = {
       columns: ['col_1', 'col_2'],
     };
     await toEqual(tableRV2);
@@ -116,12 +117,12 @@ describe('Unique Constraint', () => {
     // Create a new column and add it to the composite unique
     const tableRV3 = cloneDeep(tableRV2);
     tableRV3.columns.col_3 = createTestColumn(ColumnType.INTEGER);
-    tableRV3.uniques.test_cmp_1.columns.push('col_3');
+    tableRV3.uniques!.test_cmp_1.columns.push('col_3');
     await toEqual(tableRV3);
 
     // Remove the composite unique
     const tableRV4 = cloneDeep(tableRV3);
-    delete tableRV4.uniques.test_cmp_1;
+    delete tableRV4.uniques!.test_cmp_1;
     await toEqual(tableRV4);
   });
 });

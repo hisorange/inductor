@@ -104,7 +104,7 @@ export interface IColumn {
   /**
    * Default value
    */
-  defaultValue:
+  defaultValue?:
     | string
     | number
     | boolean

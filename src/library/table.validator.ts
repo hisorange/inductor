@@ -14,35 +14,39 @@ export const ValidateTable = (table: ITable): void => {
   const columnNames = Object.keys(table.columns);
 
   // Validate composite indexes
-  for (const [name, compositeIndex] of Object.entries(table.indexes)) {
-    if (compositeIndex.columns.length < 2) {
-      throw new InvalidTable(
-        `Composite index [${name}] must have at least 2 columns`,
-      );
-    }
-
-    for (const column of compositeIndex.columns) {
-      if (!columnNames.includes(column)) {
+  if (table.indexes) {
+    for (const [name, compositeIndex] of Object.entries(table.indexes)) {
+      if (compositeIndex.columns.length < 2) {
         throw new InvalidTable(
-          `Composite index [${name}] references a column that does not exist`,
+          `Composite index [${name}] must have at least 2 columns`,
         );
+      }
+
+      for (const column of compositeIndex.columns) {
+        if (!columnNames.includes(column)) {
+          throw new InvalidTable(
+            `Composite index [${name}] references a column that does not exist`,
+          );
+        }
       }
     }
   }
 
   // Validate composite unique
-  for (const [name, compositeUnique] of Object.entries(table.uniques)) {
-    if (compositeUnique.columns.length < 2) {
-      throw new InvalidTable(
-        `Composite unique [${name}] must have at least 2 columns`,
-      );
-    }
-
-    for (const column of compositeUnique.columns) {
-      if (!columnNames.includes(column)) {
+  if (table.uniques) {
+    for (const [name, compositeUnique] of Object.entries(table.uniques)) {
+      if (compositeUnique.columns.length < 2) {
         throw new InvalidTable(
-          `Composite unique [${name}] references a column that does not exist`,
+          `Composite unique [${name}] must have at least 2 columns`,
         );
+      }
+
+      for (const column of compositeUnique.columns) {
+        if (!columnNames.includes(column)) {
+          throw new InvalidTable(
+            `Composite unique [${name}] references a column that does not exist`,
+          );
+        }
       }
     }
   }
@@ -213,15 +217,17 @@ export const ValidateTable = (table: ITable): void => {
   }
 
   // Validate composite indexes
-  for (const [name, compositeIndex] of Object.entries(table.indexes)) {
-    // Cannot have the type hash or spgist
-    if (
-      compositeIndex.type === IndexType.HASH ||
-      compositeIndex.type === IndexType.SPGIST
-    ) {
-      throw new InvalidTable(
-        `Composite index [${name}] cannot have either hash and spgist`,
-      );
+  if (table.indexes) {
+    for (const [name, compositeIndex] of Object.entries(table.indexes)) {
+      // Cannot have the type hash or spgist
+      if (
+        compositeIndex.type === IndexType.HASH ||
+        compositeIndex.type === IndexType.SPGIST
+      ) {
+        throw new InvalidTable(
+          `Composite index [${name}] cannot have either hash and spgist`,
+        );
+      }
     }
   }
 

@@ -19,21 +19,21 @@ export interface ITable {
   /**
    * Unique constraints of the table.
    */
-  uniques: {
+  uniques?: {
     [uniqueName: string]: IUnique;
   };
 
   /**
    * Indices of the table.
    */
-  indexes: {
+  indexes?: {
     [indexName: string]: ICompositeIndex;
   };
 
   /**
    * Foreign keys of the table.
    */
-  relations: {
+  relations?: {
     [foreignKeyName: string]: IRelation;
   };
 

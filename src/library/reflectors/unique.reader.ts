@@ -28,21 +28,28 @@ export const readUniques = async (
       //'tc.table_name': tableName,
     });
 
-  const rows = await query;
+  const uniques: {
+    tableName: string;
+    uniqueName: string;
+    columnName: string;
+  }[] = await query;
 
-  for (const row of rows) {
-    if (!state.hasOwnProperty(row.tableName)) {
-      state[row.tableName] = {};
+  for (const unique of uniques) {
+    if (!state.hasOwnProperty(unique.tableName)) {
+      state[unique.tableName] = {};
     }
 
-    const tableRef = state[row.tableName];
+    const tableRef = state[unique.tableName];
 
-    if (!tableRef.hasOwnProperty(row.uniqueName)) {
-      tableRef[row.uniqueName] = {
-        columns: [row.columnName],
+    if (
+      typeof tableRef === 'object' &&
+      !tableRef.hasOwnProperty(unique.uniqueName)
+    ) {
+      tableRef[unique.uniqueName] = {
+        columns: [unique.columnName],
       };
     } else {
-      tableRef[row.uniqueName].columns.push(row.columnName);
+      tableRef![unique.uniqueName].columns.push(unique.columnName);
     }
   }
 
