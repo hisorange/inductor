@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { pluralize, singularize } from 'inflection';
 import {
   Model,
@@ -10,6 +11,7 @@ import {
 import { Logger } from 'winston';
 import { ModelNotFound } from '../exception/model-not-found.exception';
 import { HookDictionary } from '../hooks/hook.dictionary';
+import { ColumnType } from '../types';
 import { ColumnHook } from '../types/column-hook.enum';
 import { ColumnCapability } from '../types/column.capability';
 import { IDatabase } from '../types/database.interface';
@@ -143,6 +145,9 @@ export class ModelManager {
     const columnToProperty = new Map<ColumName, PropertyName>();
     const propertyToColumn = new Map<PropertyName, ColumName>();
 
+    // UUID generation property
+    let uuidPrimaryProp: string | undefined;
+
     // TODO: convert this to a single function with a chain of calls, so we can avoid the iteration
     const transformerColumnCache = new Map<ColumName, ReadTransformer[]>();
     const transformerPropertyCache = new Map<
@@ -159,6 +164,11 @@ export class ModelManager {
         columnToProperty.set(columnName, propertyName);
         // Map property names to column names
         propertyToColumn.set(propertyName, columnName);
+
+        // UUID property and primary key, so we automatically generate it if not present
+        if (column.type.name === ColumnType.UUID && column.isPrimary) {
+          uuidPrimaryProp = propertyName;
+        }
 
         // Map setters and getters
         if (column?.meta.hooks) {
@@ -228,6 +238,12 @@ export class ModelManager {
 
           delete modelPojo[property];
         }
+
+        // Record is creating, and has a UUID primary key, but no value
+        // so we generate one for it. Later we can add ULID support.
+        if (property === uuidPrimaryProp && !modelPojo[column]) {
+          modelPojo[column] = randomUUID();
+        }
       });
 
       return modelPojo;
@@ -288,8 +304,8 @@ export class ModelManager {
     // Hook before the model is updated only if there is any capability that activates it
     if (updatedAtProps.size || versionProps.size) {
       model.prototype.$beforeUpdate = function (
-        opts: ModelOptions,
-        queryContext: QueryContext,
+        _options: ModelOptions,
+        _queryContext: QueryContext,
       ) {
         const properties = Object.keys(this);
 
